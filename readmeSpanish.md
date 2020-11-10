@@ -10,6 +10,7 @@ He realizado varias modificaciones:
  <li>Sustitución del OSD por uno de bajos recursos</li>
  <li>Creado proyecto compatible con Arduino IDE y Platform IO</li>
  <li>Eliminado el soporte de SPIFFS</li>
+ <li>Recolocación de ROMs, SNA, .SCR, .TAP en Flash progmem</li>
  <li>Optimización de tamaño en FLASH</li> 
  <li>Optimización de la rutina de video</li>
  <li>Soporte para modo sin hilos</li> 
