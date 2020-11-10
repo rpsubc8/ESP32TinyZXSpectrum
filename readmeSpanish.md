@@ -1,8 +1,7 @@
 # Tiny ESP32 ZX Spectrum
-Fork del emulador de David Crespo con el soporte de mando de WII:
-<a href='https://github.com/dcrespo3d/ZX-ESPectrum-Wiimote'>Wiimote</a>
-Basado en el emulador de Ramon Martinez y Jorge Fuertes:
-<a href='https://github.com/rampa069/ZX-ESPectrum'>ZX-ESPectrum</a>
+Fork del emulador de David Crespo con el soporte de mando de WII <a href='https://github.com/dcrespo3d/ZX-ESPectrum-Wiimote'>Wiimote</a>
+Basado en el emulador de Ramon Martinez y Jorge Fuertes <a href='https://github.com/rampa069/ZX-ESPectrum'>ZX-ESPectrum</a>
+<br>
 He realizado varias modificaciones:
 <ul>
  <li>No se usa PSRAM, funcionando en ESP32 de 520 KB de RAM (TTGO VGA32)</li> 
@@ -21,6 +20,7 @@ He realizado varias modificaciones:
  <li>Posibilidad de elegir modo brillo y modos de 8 colores en compilación.</li>
  <li>Remapeo de los cursores en el menú de +2,+3, así como la tecla de borrar</li>
  <li>Ajuste de pantalla X, Y</li>
+ <li>Escala de colores R, G, B, al estilo de las pantallas de fósforo verde</li>
  <li>Menú de velocidad de video de emulación</li>
  <li>Soporte para leer archivos SCR</li>
  <li>Soporte para cargar archivos screen dentro de ficheros .TAP</li>
