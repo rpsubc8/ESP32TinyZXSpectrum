@@ -1,0 +1,17 @@
+*~
+.DS_Store
+!.keep
+.pioenvs/
+.pio/
+.clang_complete
+.gcc-flags.json
+/work
+.piolibdeps/
+.vscode
+data/sna/**
+!data/sna/sppong.sna
+!data/sna/sppong.txt
+!data/sna/diag.sna
+!data/sna/fantasy.sna
+!data/sna/fantasy.txt
+!data/sna/ManicMiner.txt
