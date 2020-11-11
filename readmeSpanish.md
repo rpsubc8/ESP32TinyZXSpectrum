@@ -29,19 +29,30 @@ He realizado varias modificaciones:
  <li>Creado port de Windows bajo SDL</li>  
 </ul>
 
+
+<h1>Opciones</h1>
+Se requiere:
+ <ul>
+  <li>Visual Studio 1.48.1 PLATFORMIO</li>
+  <li>Arduino IDE 1.8.11</li>
+  <li>Library Arduino fabgl 0.9.0</li>
+  <li>Arduino bitluni 0.3.3</li>
+ </ul>
+ 
+
 <h1>Opciones</h1>
 El archivo <b>gbConfig.h</b> se seleccionan las opciones:
 <ul>
- <li><b>use_lib_mouse_kempston</b> Se usa un ratón conectado al puerto PS/2 emulado por portocolo kempston. Se utiliza la libreria fabgl 0.9.0</li>
- <li><b>use_lib_sound_ay8912</b> Se utilizan un mezclador de 3 canales en modo dirty, emulando el AY8912. El speaker utiliza el canal 1 en modo digital, salvo que se active la opción de resampleo. Se requiere la librería fabgl 0.9.0</li>
- <li><b>use_lib_resample_speaker</b> La salida del speaker se emula como onda senoidal en el canal 1. Se requiere la librería fabgl 0.9.0</li>
- <li><b>use_lib_redirect_tapes_speaker</b> Redirige la salida de tonos de la cinta al altavoz.</li>
- <li><b>use_lib_vga8colors</b> Obliga a usar RGB, sólo 3 pines y sin modo de brillo, 8 colores</li>
- <li><b>use_lib_use_bright</b> Obliga a usar RRGGBB, 6 pines, con modo brillo, 16 colores</li>
- <li><b>use_lib_vga_low_memory</b> Modo experimental de bajo consumo de RAM de video</li>
- <li><b>use_lib_vga_thread</b> Utiliza la salida de video en un hilo. Si se hace ne modo polling, no se usará ni el ajuste de pantalla, ni los modos de brillo. El modo polling está pensado par depuración</li>
- <li><b>use_lib_screen_offset</b> Permite mover a la izquierda y arriba la pantalla.</li>
- <li><b>use_lib_skip_frame</b> Permite saltarse frames al emular</li>
- <li><b>use_lib_vga320x200</b> Modo experimental de video para bajo consumo de RAM</li>
- <li><b>use_lib_log_serial</b> Se envian logs por puerto serie usb</li>
+ <li><b>use_lib_mouse_kempston:</b> Se usa un ratón conectado al puerto PS/2 emulado por portocolo kempston. Se utiliza la libreria fabgl 0.9.0</li>
+ <li><b>use_lib_sound_ay8912:</b> Se utilizan un mezclador de 3 canales en modo dirty, emulando el AY8912. El speaker utiliza el canal 1 en modo digital, salvo que se active la opción de resampleo. Se requiere la librería fabgl 0.9.0</li>
+ <li><b>use_lib_resample_speaker:</b> La salida del speaker se emula como onda senoidal en el canal 1. Se requiere la librería fabgl 0.9.0</li>
+ <li><b>use_lib_redirect_tapes_speaker:</b> Redirige la salida de tonos de la cinta al altavoz.</li>
+ <li><b>use_lib_vga8colors:</b> Obliga a usar RGB, sólo 3 pines y sin modo de brillo, 8 colores</li>
+ <li><b>use_lib_use_bright:</b> Obliga a usar RRGGBB, 6 pines, con modo brillo, 16 colores</li>
+ <li><b>use_lib_vga_low_memory:</b> Modo experimental de bajo consumo de RAM de video</li>
+ <li><b>use_lib_vga_thread:</b> Utiliza la salida de video en un hilo. Si se hace ne modo polling, no se usará ni el ajuste de pantalla, ni los modos de brillo. El modo polling está pensado par depuración</li>
+ <li><b>use_lib_screen_offset:</b> Permite mover a la izquierda y arriba la pantalla.</li>
+ <li><b>use_lib_skip_frame:</b> Permite saltarse frames al emular</li>
+ <li><b>use_lib_vga320x200:</b> Modo experimental de video para bajo consumo de RAM</li>
+ <li><b>use_lib_log_serial:</b> Se envian logs por puerto serie usb</li>
 </ul>
