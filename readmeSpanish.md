@@ -31,7 +31,7 @@ He realizado varias modificaciones:
 </ul>
 
 
-<h1>Opciones</h1>
+<h1>Requerimientos</h1>
 Se requiere:
  <ul>
   <li>Visual Studio 1.48.1 PLATFORMIO</li>
@@ -39,6 +39,18 @@ Se requiere:
   <li>Library Arduino fabgl 0.9.0</li>
   <li>Arduino bitluni 0.3.3</li>
  </ul>
+
+<h1>Usabilidad</h1>
+Se permite cargar:
+ <ul>
+  <li>ROMS de 48K y 128K</li>
+  <li>SNA de 48K</li>
+  <li>Leer pantallas de ficheros .SCR</li>
+  <li>Leer pantallas de cintas .TAP</li>
+  <li>Seleccionar TAP permite elegir el .TAP y situarse en el bloque 0, para poder leer el BASIC de una cinta</li>   
+ </ul>
+ Los ficheros deben ser convertidos a .h en hexadecimal. Puede usarse la herramienta online:<br>
+ <a href='http://tomeko.net/online_tools/file_to_hex.php?lang=en'>http://tomeko.net/online_tools/file_to_hex.php?lang=en</a>
  
 
 <h1>Opciones</h1>
