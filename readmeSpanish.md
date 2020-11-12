@@ -33,11 +33,21 @@ He realizado varias modificaciones:
 <h1>Requerimientos</h1>
 Se requiere:
  <ul>
-  <li>Visual Studio 1.48.1 PLATFORMIO</li>
+  <li>Visual Studio 1.48.1 PLATFORMIO 2.2.0</li>
   <li>Arduino IDE 1.8.11</li>
-  <li>Library Arduino fabgl 0.9.0</li>
-  <li>Arduino bitluni 0.3.3</li>
+  <li>Librería Arduino fabgl 0.9.0</li>
+  <li>Librería Arduino bitluni 0.3.3</li>
  </ul>
+ 
+
+<h1>PlatformIO</h1>
+Se debe instalar el PLATFORMIO 2.2.0 desde las extensiones del Visual Studio.
+<center><img src='https://raw.githubusercontent.com/rpsubc8/ESP32TinyZXSpectrum/main/preview/previewPlatformIOinstall.gif'></center>
+Luego se seleccionará el directorio de trabajo <b>TinyZXESPectrumttgovga32</b>.
+Debemos modificar el fichero <b>platformio.ini</b> la opción <b>upload_port</b> para seleccionar el puerto COM donde tenemos nuestra placa TTGO VGA32.
+<center><img src='https://raw.githubusercontent.com/rpsubc8/ESP32TinyZXSpectrum/main/preview/previewPlatformIO.gif'></center>
+Luego procederemos a compilar y subir a la placa.
+
 
 <h1>Usabilidad</h1>
 Se permite cargar:
@@ -71,7 +81,8 @@ El archivo <b>gbConfig.h</b> se seleccionan las opciones:
  <li><b>use_lib_log_serial:</b> Se envian logs por puerto serie usb</li>
 </ul>
 
+
 <h1>Modo brillo</h1>
-El modo brillo, se corresponde con 16 colores, por tanto, se tiene que usar la saldia del DAC de 6 pines. Este modo es incompatible con el modo de 8 colores, por tanto, si se elige esta opción, se tiene que deshabilitar el <b>use_lib_vga8colors</b> en el gbConfig.h.
+El modo brillo, se corresponde con 16 colores, por tanto, se tiene que usar la salida del DAC de 6 pines. Este modo es incompatible con el modo de 8 colores, por tanto, si se elige esta opción, se tiene que deshabilitar el <b>use_lib_vga8colors</b> en el gbConfig.h.
 <center><img src='https://raw.githubusercontent.com/rpsubc8/ESP32TinyZXSpectrum/main/preview/previewFantasy.gif'></center>
 Este modo consume más CPU y RAM que el modo normal de 8 colores.
