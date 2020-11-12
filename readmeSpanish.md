@@ -102,3 +102,26 @@ El archivo <b>gbConfig.h</b> se seleccionan las opciones:
 El modo brillo, se corresponde con 16 colores, por tanto, se tiene que usar la salida del DAC de 6 pines. Este modo es incompatible con el modo de 8 colores, por tanto, si se elige esta opción, se tiene que deshabilitar el <b>use_lib_vga8colors</b> en el gbConfig.h.
 <center><img src='https://raw.githubusercontent.com/rpsubc8/ESP32TinyZXSpectrum/main/preview/previewFantasy.gif'></center>
 Este modo consume más CPU y RAM que el modo normal de 8 colores.
+
+
+
+<br>
+<h1>Aplicaciones Test</h1>
+Al arrancar el ESP32, se realiza en modo ZX 48K, es decir, cargado la rom del ZX 48k con el BASIC.
+Cada vez que seleccionamos una ROM, se resetea la selección de cinta al bloque 0, así como el sonido.
+Posteriormente podemos elegir las roms:
+<ul>
+ <ul>
+  48K
+  <li><b>DIAG</b> utilidad de diagnósticos, para test de teclado, ram, rom, modo 48k, 128k, AY8912, speaker y video.</li>
+  <li><b>SE</b> El BASIC de Open SE rom, que permite usar el BASIC sin las teclas de funciones del modo 48K, de forma que cada pulsación de tecla no genera una función.</li>
+  <li><b>SINCLAIR</b> El modo 48k</li> 
+ </ul>
+ <ul>
+  128K
+  <li><b>PLUS2A</b> El spectrum +2</li>
+  <li><b>PLUS3</b> El spectrum +3</li>
+  <li><b>PLUS3E</b> El spectrum +3E</li>
+  <li><b>SINCLAIR</b> El 128K</li>
+ </ul>
+</ul>
