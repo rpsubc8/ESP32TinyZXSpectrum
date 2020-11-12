@@ -29,7 +29,7 @@ He realizado varias modificaciones:
  <li>Creado port de Windows bajo SDL</li>  
 </ul>
 
-
+<br>
 <h1>Requerimientos</h1>
 Se requiere:
  <ul>
@@ -46,9 +46,23 @@ Se debe instalar el PLATFORMIO 2.2.0 desde las extensiones del Visual Studio.
 Luego se seleccionará el directorio de trabajo <b>TinyZXESPectrumttgovga32</b>.
 Debemos modificar el fichero <b>platformio.ini</b> la opción <b>upload_port</b> para seleccionar el puerto COM donde tenemos nuestra placa TTGO VGA32.
 <center><img src='https://raw.githubusercontent.com/rpsubc8/ESP32TinyZXSpectrum/main/preview/previewPlatformIO.gif'></center>
-Luego procederemos a compilar y subir a la placa.
+Luego procederemos a compilar y subir a la placa. No se usa particiones, así que debemos subir todo el binario compilado.
+EStá todo preparado para no tener que instalar las librerias de bitluni. Sin embargo, si necesitamos las opciones de sonido y ratón, necesitaremos instalar las librerias de <b>fabgl</b>.
 
 
+<br>
+<h1>Arduino IDE</h1>
+Todo el proyecto es compatible con la estructura de Arduino 1.8.11.
+Tan sólo tenemos que abrir el <b>ZX-ESPectrum.ino</b> del directorio <b>ZX-ESPectrum</b>.
+<center><img src='https://raw.githubusercontent.com/rpsubc8/ESP32TinyZXSpectrum/main/preview/previewArduinoIDEpreferences.gif'></center>
+Debemos instalar las extensiones de spressif en el gestor de urls adicionales de tarjetas <b>https://dl.espressif.com/dl/package_esp32_index.json</b>
+<center><img src='https://raw.githubusercontent.com/rpsubc8/ESP32TinyZXSpectrum/main/preview/previewArduinoIDElibrary.gif'></center>
+Para el modo normal, ya está preparado el proyecto, de forma que no se necesita ninguna librería de bitluni. Sin embargo, si necesitamos el soporte de ratón y sonido, se requiere instalar las librerias <b>fabgl 0.9.0</b>.
+Lo podemos hacer desde el administrador de bibliotecas.
+Debemos desactivar la opción de PSRAM, y en caso de superar 1 MB de binario, seleccionar 4 MB de partición a la hora de subir. Aunque el código no use PSRAM, si la opción está activa y nuestro ESP32 no dispone de ella, se generará una excepción y reinicio del mismo en modo bucle.
+
+
+<br>
 <h1>Usabilidad</h1>
 Se permite cargar:
  <ul>
@@ -63,7 +77,8 @@ Se permite cargar:
  Los ficheros deben ser convertidos a .h en hexadecimal. Puede usarse la herramienta online:<br>
  <a href='http://tomeko.net/online_tools/file_to_hex.php?lang=en'>http://tomeko.net/online_tools/file_to_hex.php?lang=en</a>
  
-
+ 
+<br>
 <h1>Opciones</h1>
 El archivo <b>gbConfig.h</b> se seleccionan las opciones:
 <ul>
@@ -82,6 +97,7 @@ El archivo <b>gbConfig.h</b> se seleccionan las opciones:
 </ul>
 
 
+<br>
 <h1>Modo brillo</h1>
 El modo brillo, se corresponde con 16 colores, por tanto, se tiene que usar la salida del DAC de 6 pines. Este modo es incompatible con el modo de 8 colores, por tanto, si se elige esta opción, se tiene que deshabilitar el <b>use_lib_vga8colors</b> en el gbConfig.h.
 <center><img src='https://raw.githubusercontent.com/rpsubc8/ESP32TinyZXSpectrum/main/preview/previewFantasy.gif'></center>
