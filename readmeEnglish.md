@@ -4,37 +4,37 @@ Fork of David Crespo's emulator with the support of WII <a href='https://github.
 <center><img src='https://raw.githubusercontent.com/rpsubc8/ESP32TinyZXSpectrum/main/preview/previewZx128k.gif'></center>
 I have made several modifications:
 <ul>
- <PSRAM is not used, it works in ESP32 with 520 KB of RAM (TTGO VGA32)</li> 
- <Supports 128K,+2,+3 and +3e modes without lack of PSRAM
+ <li>PSRAM is not used, it works in ESP32 with 520 KB of RAM (TTGO VGA32)</li>
+ <li>Supports 128K,+2,+3 and +3e modes without lack of PSRAM</li>
  <li>Removed the control support WII</li>
- <Replacement of the OSD with a low resource OSD
- <Created project compatible with Arduino IDE and Platform IO
- <Removal of SPIFFS support
- <ROM, SNA, SCR, TAP repositioning in Flash progmem
- <Size optimization in FLASH 
- <Optimization of the video routine
- <Support for wireless mode 
- <Kempston mouse emulation with fabgl  
- <Emulation of AY8912
+ <li>Replacement of the OSD with a low resource OSD</li>
+ <li>Created project compatible with Arduino IDE and Platform IO</li>
+ <li>Removal of SPIFFS support</li>
+ <li>ROM, SNA, SCR, TAP repositioning in Flash progmem</li>
+ <li>Size optimization in FLASH</li>
+ <li>Optimization of the video routine</li>
+ <li>Support for wireless mode</li>
+ <li>Kempston mouse emulation with fabgl</li>
+ <li>Emulation of AY8912</li>
  <li>Redirecting tape recording pulses to the speaker</li>
- <Resample option in speaker mode and mix with AY8912 (unstable)</li>
- <Possibility to choose brightness mode and 8 color modes in compilation.
+ <li>Resample option in speaker mode and mix with AY8912 (unstable)</li>
+ <li>Possibility to choose brightness mode and 8 color modes in compilation.</li>
  <li>Removal of the cursors in the menu of +2,+3, as well as the key of erasing</li>
- <Screen adjustment X, Y</li>
- <R, G, B color scale, green phosphorous screen style
- <Emulation video speed menu
- <Support for reading SCR files
- <Support for loading screen files into TAP files
- <Load BASIC from TAP (tape intercept routine) 
- <Created Windows port under SDL</li>  
+ <li>Screen adjustment X, Y</li>
+ <li>R, G, B color scale, green phosphorous screen style</li>
+ <li>Emulation video speed menu</li>
+ <li>Support for reading SCR files</li>
+ <li>Support for loading screen files into TAP files</li>
+ <li>Load BASIC from TAP (tape intercept routine)</li>
+ <li>Created Windows port under SDL</li>
 </ul>
 
 <br>
 <Requirements
 Required:
  <ul>
-  <Visual Studio 1.48.1 PLATFORM 2.2.0
-  <li>Arduino IDE 1.8.11</li>
+  <li>Visual Studio 1.48.1 PLATFORM 2.2.0</li>
+  <li>li>Arduino IDE 1.8.11</li>
   <li>Arduino fabgl bookstore 0.9.0</li>
   <li>Arduino bitluni bookcase 0.3.3</li>
  </ul>
@@ -63,7 +63,6 @@ We must deactivate the PSRAM option, and in case of exceeding 1 MB of binary, se
 
 
 
-
 <br>
 <h1>Usability</h1>
 Loading is allowed:
@@ -81,7 +80,7 @@ Loading is allowed:
  
  
 <br>
-<Options
+<h1>Options</h1>
 The file <b>gbConfig.h</b> options are selected:
 <ul>
  <li><b>use_lib_mouse_kempston:</b> A mouse connected to the PS/2 port emulating the kempston protocol is used. The fabgl library 0.9.0</li> is used
@@ -100,7 +99,7 @@ The file <b>gbConfig.h</b> options are selected:
 
 
 <br>
-<Brightness mode</h1>
+<h1>Brightness mode</h1>
 The brightness mode corresponds to 16 colors, so the 6-pin DAC output must be used. This mode is incompatible with the 8 colors mode, so if you choose this option, you have to disable the <b>use_lib_vga8colors</b> in the gbConfig.h.
 <center><img src='https://raw.githubusercontent.com/rpsubc8/ESP32TinyZXSpectrum/main/preview/previewFantasy.gif'></center>
 This mode consumes more CPU and RAM than the normal 8-color mode.
@@ -134,27 +133,27 @@ Later we can choose the roms:
 In the case of the SNA:
 <ul> 
  <li>>DIAG:</b> ROM and RAM diagnostic utility.</li>
- <li><b>Fantasy: </b>Gloss support game (16 colors) It allows kempston, which together with the mouse, can be played very comfortably. 
- <li>>Sppong: </b> The classic pong</li>
- <Fire: It is a modified version of Fire, to support kempston mouse, so if you play without it, it will give problems. You can go to the main menu by pressing shift and the space bar. It has support for AY8912, however, the speaker output at the same time as AY8912 is not yet 100% effective. Separately, it is correct.
- <li>>3DcoolKm:</b> 3D tool with kempston mouse support</li>
- <li>>AT4openKM: </b> Drawing tool with kempston mouse support</li>
+ <li><b>Fantasy: </b>Gloss support game (16 colors) It allows kempston, which together with the mouse, can be played very comfortably.</li>
+ <li>Sppong: </b> The classic pong</li>
+ <li>Fire: It is a modified version of Fire, to support kempston mouse, so if you play without it, it will give problems. You can go to the main menu by pressing shift and the space bar. It has support for AY8912, however, the speaker output at the same time as AY8912 is not yet 100% effective. Separately, it is correct.</li>
+ <li>3DcoolKm:</b> 3D tool with kempston mouse support</li>
+ <li>AT4openKM: </b> Drawing tool with kempston mouse support</li>
  <li><b>Sipka: </b> Kempston mouse test tool Allows to change the mouse icon by clicking on the buttons.</li>
- <MouseTestZXds: Tool for testing the kempston mouse protocol 
+ <li><b>MouseTestZXds:</b> Tool for testing the kempston mouse protocol</li>
 </ul>
 <br>
 For SCR loading from TAP:
 <ul>
- <It doesn't load anything, because this tape only has the BASIC code of 3D. 
+ <li><b>3D:</b> It doesn't load anything, because this tape only has the BASIC code of 3D.</li>
  <li><b>4x4:</b> Load the game car 4x4</li> 
 </ul>
 <br>
 For SCRs:
 <ul>
- <Load the image of the game 4x4. 
+ <li><b>4x4:</b> Load the image of the game 4x4.</li>
 </ul>
 <br>
 For loading tapes from BASIC or Tape Loader:
 <ul>
- <3D: Loads a 3D graphics simulation.
+ <li><b>3D:</b> Loads a 3D graphics simulation.</li>
 </ul>
