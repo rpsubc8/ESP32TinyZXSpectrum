@@ -144,8 +144,8 @@ Para el caso de los SNA:
 <br>
 Para la carga de SCR desde TAP:
 <ul>
- <li><b>3D</b> No carga nada, porque esta cinta sólo tiene el código de BASIC de 3D.</li> 
- <li><b>4x4</b> Carga el coche del juego 4x4</li> 
+ <li><b>3D:</b> No carga nada, porque esta cinta sólo tiene el código de BASIC de 3D.</li> 
+ <li><b>4x4:</b> Carga el coche del juego 4x4</li> 
 </ul>
 <br>
 Para los SCR:
