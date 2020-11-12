@@ -1,6 +1,5 @@
 # Tiny ESP32 ZX Spectrum
-Fork del emulador de David Crespo con el soporte de mando de WII <a href='https://github.com/dcrespo3d/ZX-ESPectrum-Wiimote'>Wiimote</a>
-Basado en el emulador de Ramon Martinez y Jorge Fuertes <a href='https://github.com/rampa069/ZX-ESPectrum'>ZX-ESPectrum</a>
+Fork del emulador de David Crespo con el soporte de mando de WII <a href='https://github.com/dcrespo3d/ZX-ESPectrum-Wiimote'>Wiimote</a>, basado a su vez, en el emulador de Ramon Martinez y Jorge Fuertes <a href='https://github.com/rampa069/ZX-ESPectrum'>ZX-ESPectrum</a>, con dependencias del autor Pete Todd.
 <br>
 <center><img src='https://raw.githubusercontent.com/rpsubc8/ESP32TinyZXSpectrum/main/preview/previewZx128k.gif'></center>
 He realizado varias modificaciones:
@@ -49,6 +48,8 @@ Se permite cargar:
   <li>Leer pantallas de cintas .TAP</li>
   <li>Seleccionar TAP permite elegir el .TAP y situarse en el bloque 0, para poder leer el BASIC de una cinta</li>   
  </ul>
+ Se dispone de un OSD básico de bajos recursos, es decir, muy simple, que se visualiza pulsando la tecla <b>F1</b>.
+ <center><img src='https://raw.githubusercontent.com/rpsubc8/ESP32TinyZXSpectrum/main/preview/previewOSD.gif'></center>
  Los ficheros deben ser convertidos a .h en hexadecimal. Puede usarse la herramienta online:<br>
  <a href='http://tomeko.net/online_tools/file_to_hex.php?lang=en'>http://tomeko.net/online_tools/file_to_hex.php?lang=en</a>
  
@@ -69,3 +70,8 @@ El archivo <b>gbConfig.h</b> se seleccionan las opciones:
  <li><b>use_lib_vga320x200:</b> Modo experimental de video para bajo consumo de RAM</li>
  <li><b>use_lib_log_serial:</b> Se envian logs por puerto serie usb</li>
 </ul>
+
+<h1>Modo brillo</h1>
+El modo brillo, se corresponde con 16 colores, por tanto, se tiene que usar la saldia del DAC de 6 pines. Este modo es incompatible con el modo de 8 colores, por tanto, si se elige esta opción, se tiene que deshabilitar el <b>use_lib_vga8colors</b> en el gbConfig.h.
+<center><img src='https://raw.githubusercontent.com/rpsubc8/ESP32TinyZXSpectrum/main/preview/previewFantasy.gif'></center>
+Este modo consume más CPU y RAM que el modo normal de 8 colores.
