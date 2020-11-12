@@ -34,7 +34,7 @@ I have made several modifications:
 Required:
  <ul>
   <li>Visual Studio 1.48.1 PLATFORM 2.2.0</li>
-  <li>li>Arduino IDE 1.8.11</li>
+  <li>Arduino IDE 1.8.11</li>
   <li>Arduino fabgl bookstore 0.9.0</li>
   <li>Arduino bitluni bookcase 0.3.3</li>
  </ul>
@@ -85,7 +85,7 @@ The file <b>gbConfig.h</b> options are selected:
 <ul>
  <li><b>use_lib_mouse_kempston:</b> A mouse connected to the PS/2 port emulating the kempston protocol is used. The fabgl library 0.9.0 is used</li>
  <li><b>use_lib_sound_ay8912:</b> A 3 channel mixer is used in dirty mode, emulating AY8912. The speaker uses channel 1 in digital mode, unless the resample option is enabled. The fabgl library 0.9.0 is required.</li>
- <li><b>use_lib_resample_speaker:</b> The speaker output is emulated as a sine wave on channel 1. The fabgl library 0.9.0 is required</li>
+ <li><b>use_lib_resample_speaker:</b> The speaker output is emulated as a sine wave on channel 1. The fabgl library 0.9.0 is required.</li>
  <li><b>use_lib_redirect_tapes_speaker:</b> Redirects the tone output from the tape to the speaker.</li>
  <li><b>use_lib_vga8colors:</b> Force RGB, only 3 pins and no brightness mode, 8 colors</li>
  <li><b>use_lib_use_bright:</b> Force to use RRGGBB, 6 pins, with brightness mode, 16 colors</li>
@@ -114,9 +114,9 @@ Later we can choose the roms:
  <li>
   <b>ROMS of 48K</b>
   <ul>
-   <li><b>DIAG:</b> diagnostic utility, for keyboard, ram, rom, 48k, 128k, AY8912 mode, speaker and video test.
+   <li><b>DIAG:</b> diagnostic utility, for keyboard, ram, rom, 48k, 128k, AY8912 mode, speaker and video test.</li>
    <li><b>SE:</b> Open SE rom BASIC, which allows you to use BASIC without the 48K mode function keys, so that each keystroke does not generate a function.</li>
-   <li><b>SINCLAIR:</b> The 48k</li> mode 
+   <li><b>SINCLAIR:</b> The 48k mode</li>
   </ul>
  </li>
  <li>
