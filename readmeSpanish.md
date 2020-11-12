@@ -112,16 +112,16 @@ Cada vez que seleccionamos una ROM, se resetea la selección de cinta al bloque 
 Posteriormente podemos elegir las roms:
 <ul>
  <li>
+  <b>ROMS de 48K</b>
   <ul>
-   <b>ROMS de 48K</b>
    <li><b>DIAG:</b> utilidad de diagnósticos, para test de teclado, ram, rom, modo 48k, 128k, AY8912, speaker y video.</li>
    <li><b>SE:</b> El BASIC de Open SE rom, que permite usar el BASIC sin las teclas de funciones del modo 48K, de forma que cada pulsación de tecla no genera una función.</li>
    <li><b>SINCLAIR:</b> El modo 48k</li> 
   </ul>
  </li>
  <li>
+  <b>ROMS de 128K</b>
   <ul>
-   <b>ROMS de 128K</b>
    <li><b>PLUS2A:</b> El spectrum +2</li>
    <li><b>PLUS3:</b> El spectrum +3</li>
    <li><b>PLUS3E:</b> El spectrum +3E</li>
