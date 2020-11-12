@@ -107,7 +107,7 @@ Este modo consume más CPU y RAM que el modo normal de 8 colores.
 
 <br>
 <h1>Aplicaciones Test</h1>
-Al arrancar el ESP32, se realiza en modo ZX 48K, es decir, cargado la rom del ZX 48k con el BASIC.
+Al arrancar el ESP32, se realiza en modo ZX 48K, es decir, cargando la rom del ZX 48k con el BASIC.
 Cada vez que seleccionamos una ROM, se resetea la selección de cinta al bloque 0, así como el sonido.
 Posteriormente podemos elegir las roms:
 <ul>
@@ -128,4 +128,16 @@ Posteriormente podemos elegir las roms:
    <li><b>SINCLAIR:</b> El 128K</li>
   </ul>
  </li> 
+</ul>
+<br>
+Para el caso de los SNA:
+<ul> 
+ <li><b>DIAG:</b> Utilidad de diagnostico de la ROM y RAM.</li>
+ <li><b>Fantasy: </b>Juego con soporte de brillo (16 colores). Permite kempston, que junto con el ratón, se puede jugar muy cómodo.</li> 
+ <li><b>Sppong: </b> El pong clásico</li>
+ <li><b>Fire: </b> Es una versión modificada del Fire, para soportar ratón kempston, por lo que si se juega sin él, dará problemas. Se puede ir al menú principal pulsando shift y la barra espaciadora. Tiene soporte para AY8912, sin embargo, la salida del speaker al mismo tiempo que el AY8912 aún no es 100% efectivo. Por separado, es correcto.</li>
+ <li><b>3DcoolKm:</b> Herramienta de 3D con soporte de ratón kempston</li>
+ <li><b>AT4openKM: </b> Herramienta de dibujo con soporte de ratón kempston</li>
+ <li><b>Sipka: </b> Tool para test de ratón kempston. Permite cambiar el icono del ratón al pulsar sobre los botones.</li>
+ <li><b>MouseTestZXds: </b> Tool para test del protocolo del ratón kempston.</li> 
 </ul>
