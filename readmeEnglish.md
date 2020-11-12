@@ -30,7 +30,7 @@ I have made several modifications:
 </ul>
 
 <br>
-<Requirements
+<h1>Requirements</h1>
 Required:
  <ul>
   <li>Visual Studio 1.48.1 PLATFORM 2.2.0</li>
@@ -135,7 +135,7 @@ In the case of the SNA:
  <li><b>DIAG:</b> ROM and RAM diagnostic utility.</li>
  <li><b>Fantasy: </b>Gloss support game (16 colors) It allows kempston, which together with the mouse, can be played very comfortably.</li>
  <li><b>Sppong: </b> The classic pong</li>
- <li><b>Fire: It is a modified version of Fire, to support kempston mouse, so if you play without it, it will give problems. You can go to the main menu by pressing shift and the space bar. It has support for AY8912, however, the speaker output at the same time as AY8912 is not yet 100% effective. Separately, it is correct.</li>
+ <li><b>Fire: </b> It is a modified version of Fire, to support kempston mouse, so if you play without it, it will give problems. You can go to the main menu by pressing shift and the space bar. It has support for AY8912, however, the speaker output at the same time as AY8912 is not yet 100% effective. Separately, it is correct.</li>
  <li><b>3DcoolKm:</b> 3D tool with kempston mouse support</li>
  <li><b>AT4openKM: </b> Drawing tool with kempston mouse support</li>
  <li><b>Sipka: </b> Kempston mouse test tool Allows to change the mouse icon by clicking on the buttons.</li>
