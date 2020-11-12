@@ -47,7 +47,7 @@ Luego se seleccionará el directorio de trabajo <b>TinyZXESPectrumttgovga32</b>.
 Debemos modificar el fichero <b>platformio.ini</b> la opción <b>upload_port</b> para seleccionar el puerto COM donde tenemos nuestra placa TTGO VGA32.
 <center><img src='https://raw.githubusercontent.com/rpsubc8/ESP32TinyZXSpectrum/main/preview/previewPlatformIO.gif'></center>
 Luego procederemos a compilar y subir a la placa. No se usa particiones, así que debemos subir todo el binario compilado.
-EStá todo preparado para no tener que instalar las librerias de bitluni. Sin embargo, si necesitamos las opciones de sonido y ratón, necesitaremos instalar las librerias de <b>fabgl</b>.
+Está todo preparado para no tener que instalar las librerias de bitluni. Sin embargo, si necesitamos las opciones de sonido y ratón, necesitaremos instalar las librerias de <b>fabgl</b>.
 
 
 <br>
@@ -68,9 +68,9 @@ Se permite cargar:
  <ul>
   <li>ROMS de 48K y 128K</li>
   <li>SNA de 48K</li>
-  <li>Leer pantallas de ficheros .SCR</li>
-  <li>Leer pantallas de cintas .TAP</li>
-  <li>Seleccionar TAP permite elegir el .TAP y situarse en el bloque 0, para poder leer el BASIC de una cinta</li>   
+  <li>Leer pantallas de ficheros .SCR. El fichero .SCR convertido a hexadecimal, contiene una imagen, la cual se vuelca en la zona de memoria de video. Los ficheros .SCR son mus fáciles de conseguir, si usamos el emulador <b>fuse</b>.</li>
+  <li>Leer pantallas de cintas .TAP. Debemos tener un fichero .TAP convertido en hexadecimal con el formato básico de cargador BASIC, seguido de un bloque de datos de SCREEN. La rutina que he realizado es muy básica, y se encarga de buscar el bloque de pantalla, y volcarlo a memoria de video</li>
+  <li>Seleccionar TAP permite elegir el .TAP y situarse en el bloque 0, para poder leer el BASIC de una cinta. De esta forma, si seleccionamos el <b>Tape loader</b> desde el menú del 128K,o si escribimos el comando <b>load ""</b> desde el BASIC, se procederá a cargar el código de BASIC. Debemos tener un fichero .TAP convertido en hexadecimal con el formato básico de cargador y código BASIC.</li>
  </ul>
  Se dispone de un OSD básico de bajos recursos, es decir, muy simple, que se visualiza pulsando la tecla <b>F1</b>.
  <center><img src='https://raw.githubusercontent.com/rpsubc8/ESP32TinyZXSpectrum/main/preview/previewOSD.gif'></center>
