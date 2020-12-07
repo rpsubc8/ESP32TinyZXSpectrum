@@ -157,3 +157,44 @@ For loading tapes from BASIC or Tape Loader:
 <ul>
  <li><b>3D:</b> Loads a 3D graphics simulation.</li>
 </ul>
+
+
+<br><br>
+<h1>Tool data2h</h1>
+I have created a very basic tool, to convert .rom, .tape, .sna, .scr files into .h in ready mode to be processed by the emulator. We only have to leave the files in the folder <b>input</b> in each type of folder and execute the file <b>data2h.exe</b>, so that an output will be generated in the directory <b>output/dataFlash</b>. For testing purposes, several files have been left in each directory, which it is recommended to delete in case of making a new custom list. It is also recommended to delete the files in the <b>ESP32TinyZXSpectrum\dataFlash\/b> directory in order to have a clean project.<br><br>
+<a href='https://github.com/rpsubc8/ESP32TinyZXSpectrum/tree/main/tools/data2h'>Tool data2h</a>
+<br><br>
+<pre>
+ input/
+  roms/
+   48k/
+    jupiter/
+     0.rom - ROM Jupiter Ace
+    sinclair/
+     0.rom - ROM ZX48K 
+   128k/
+    305zx80IF2/
+     0.rom - ROM ZX-80 ROM
+    308zx81IF2/
+     0.rom - ROM ZX-81 ROM
+    SINCLAIR128/
+     0.rom - ZX-128 ROM
+     1.rom
+  scr/
+   trixs01.scr
+   trixs02.scr
+   trixs03.scr
+  sna/
+   48k/
+    coloristic.sna
+    MACGallery.sna
+   128k/
+    nothing.txt
+</pre>
+The concept of numerical rom files (0.rom, 1.rom, 2.rom, 3.rom) follows the same basis as the ZX-ESPectrum emulator. The name of the folder is what defines the title of rom.
+It is mandatory to leave the folder <b>48k/sinclair/0.rom</b>, because you need the 48k rom to start the emulator.
+Then we must copy the directory <b>dataFlash</b> into the project <b>ESP32TinyZXSpectrum\ZX-ESPectrum</b> overwriting the previous dataFlash folder. It is recommended to clean up the project and recompile it.<br>
+This tool is very simple, and does not control errors, so it is recommended to leave you the files with very simple names and as simple as possible.<br>
+The project in PLATFORM.IO is prepared for 2 MB of Flash. If we need the 4MB of flash, we will have to modify the entry in the file <b>platform.ini</b>
+<pre>board_build.partitions = huge_app.csv</pre>
+In the Arduino IDE, we must choose the option <b>Partition Scheme (Huge APP)</b>.
