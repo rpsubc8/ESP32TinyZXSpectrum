@@ -135,7 +135,7 @@ Para el caso de los SNA:
  <li><b>DIAG:</b> Utilidad de diagnóstico de la ROM y RAM.</li>
  <li><b>Fantasy: </b>Juego con soporte de brillo (16 colores). Permite kempston, que junto con el ratón, se puede jugar muy cómodo.</li> 
  <li><b>Sppong: </b> El pong clásico</li>
- <li><b>Fire: </b> Es una versión modificada del Fire, para soportar ratón kempston, por lo que si se juega sin él, dará problemas. Se puede ir al menú principal pulsando shift y la barra espaciadora. Tiene soporte para AY8912, sin embargo, la salida del speaker al mismo tiempo que el AY8912 aún no es 100% efectivo. Por separado, es correcto.</li>
+ <li><b>Fire: </b> Es una versión modificada del Fire, para soportar ratón kempston, por lo que si se juega sin él, dará problemas, pareciendo que se mueve lento. Se puede ir al menú principal pulsando shift y la barra espaciadora. Tiene soporte para AY8912, sin embargo, la salida del speaker al mismo tiempo que el AY8912 aún no es 100% efectivo. Por separado, es correcto.</li>
  <li><b>3DcoolKm:</b> Herramienta de 3D con soporte de ratón kempston</li>
  <li><b>AT4openKM: </b> Herramienta de dibujo con soporte de ratón kempston</li>
  <li><b>Sipka: </b> Tool para test de ratón kempston. Permite cambiar el icono del ratón al pulsar sobre los botones.</li>
@@ -162,7 +162,7 @@ Para la carga de cintas desde BASIC o Tape Loader:
 <br><br>
 <h1>Tool data2h</h1>
 He creado una herramienta muy básica, para convertir los archivos .rom, .tape, .sna, .scr en .h en modo lista para ser procesados por el emulador. Tan sólo tenemos que dejar los archivos en la carpeta <b>input</b> en cada tipo de carpeta y ejecutar el archivo <b>data2h.exe</b>, de forma que se generará una salida en el directorio <b>output/dataFlash</b>. Para pruebas, se han dejado varios archivos en cada directorio, que se recomienda borrar en caso de realizar una nueva lista personalizada.También se recomienda borrar los archivos del directorio <b>ESP32TinyZXSpectrum\dataFlash\</b> para tener un proyecto limpio.<br><br>
-<a href='https://github.com/rpsubc8/ESP32TinyCPC/tree/main/tools/dsk2h'>Tool data2h</a>
+<a href='https://github.com/rpsubc8/ESP32TinyZXSpectrum/tree/main/tools/data2h'>Tool data2h</a>
 <br><br>
 <pre>
  input/
