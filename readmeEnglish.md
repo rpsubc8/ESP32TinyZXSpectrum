@@ -161,7 +161,7 @@ For loading tapes from BASIC or Tape Loader:
 
 <br><br>
 <h1>Tool data2h</h1>
-I have created a very basic tool, to convert .rom, .tape, .sna, .scr files into .h in ready mode to be processed by the emulator. We only have to leave the files in the folder <b>input</b> in each type of folder and execute the file <b>data2h.exe</b>, so that an output will be generated in the directory <b>output/dataFlash</b>. For testing purposes, several files have been left in each directory, which it is recommended to delete in case of making a new custom list. It is also recommended to delete the files in the <b>ESP32TinyZXSpectrum\dataFlash\/b> directory in order to have a clean project.<br><br>
+I have created a very basic tool, to convert .rom, .tape, .sna, .scr files into .h in ready mode to be processed by the emulator. We only have to leave the files in the folder <b>input</b> in each type of folder and execute the file <b>data2h.exe</b>, so that an output will be generated in the directory <b>output/dataFlash</b>. For testing purposes, several files have been left in each directory, which it is recommended to delete in case of making a new custom list. It is also recommended to delete the files in the <b>ESP32TinyZXSpectrum\dataFlash\</b> directory in order to have a clean project.<br><br>
 <a href='https://github.com/rpsubc8/ESP32TinyZXSpectrum/tree/main/tools/data2h'>Tool data2h</a>
 <br><br>
 <pre>
