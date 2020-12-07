@@ -157,3 +157,45 @@ Para la carga de cintas desde BASIC o Tape Loader:
 <ul>
  <li><b>3D:</b> Carga una simulación de gráficas 3D.
 </ul>
+
+
+<br><br>
+<h1>Tool data2h</h1>
+He creado una herramienta muy básica, para convertir los archivos .rom, .tape, .sna, .scr en .h en modo lista para ser procesados por el emulador. Tan sólo tenemos que dejar los archivos en la carpeta <b>input</b> en cada tipo y ejecutar el archivo <b>data2h.exe</b>, de forma que se generará una salida en el directorio <b>output/dataFlash</b>. Para pruebas, se han dejado varios archivos en cada directorio, que se recomienda borrar en caso de realizar una nueva lista personalizada. También se recomienda borrar los archivos del directorio <b>ESP32TinyZXSpectrum\dataFlash\dsk</b> para tener un proyecto limpio.<br><br>
+<a href='https://github.com/rpsubc8/ESP32TinyCPC/tree/main/tools/dsk2h'>Tool dsk2h</a>
+<br><br>
+<pre>
+ input/
+  roms/
+   48k/
+    jupiter/
+     0.rom
+    sinclair/
+     0.rom    
+   128k/
+    305zx80IF2/
+     0.rom
+    308zx81IF2/
+     0.rom
+    SINCLAIR128/
+     0.rom
+     1.rom
+  scr/
+   trixs01.scr
+   trixs02.scr
+   trixs03.scr
+  sna/
+   48k/
+    coloristic.sna
+    MACGallery.sna
+   128k/
+    nada.txt
+</pre>
+El concepto de archivos numéricos de rom (0.rom, 1.rom, 2.rom, 3.rom) sigue la misma base que el emulador del ZX-ESPectrum. El nombre de la carpeta es la que define el título de rom.
+Es obligatorio dejar la carpeta <b>48k/sinclair/0.rom</b>, dado que necesita la rom del 48k para arrancar el emulador.
+Posteriormente debemos copiar el directorio <b>dataFlash</b> en el proyecto <b>ESP32TinyZXSpectrum\ZX-ESPectrum</b> sobreescribiendo la carpeta dataFlash previa. Se recomienda limpiar el proyecto y volver a compilar.<br>
+Esta herramienta es muy simple, y no controla los errores, por lo que se recomienda dejarle los archivos con nombres muy simples y lo más sencillo posible.<br>
+El proyecto en PLATFORM.IO está preparado para 2 MB de Flash. Si necesitamos los 4MB de flash, tendremos que modificar la entrada del archivo <b>platformio.ini</b>
+<pre>board_build.partitions = huge_app.csv</pre>
+En el Arduino IDE, debemos elegir la opción <b>Partition Scheme (Huge APP)</b>.
+
