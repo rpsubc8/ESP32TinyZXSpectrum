@@ -13,8 +13,10 @@
  #include "sna/snaSIPKA48K.h"
  #include "sna/snaMouseTestZxds48K.h"
  //#include "sna/snaArkanoid48K.h" 
+ #include "sna/snaFireKey.h" 
+ #include "sna/snaTritone1.h" 
 
- #define max_list_sna_48 8
+ #define max_list_sna_48 10
 // #define max_list_sna_48 1 
  
  //sna 48K 
@@ -31,7 +33,9 @@
   "AT4openKM",
   //"BrEditorKM",
   "Sipka",
-  "MouseTestZxds"
+  "MouseTestZxds",
+  "FireKey",
+  "Tritone1"
   //"EightOfNoise",
   //"WWTF"
  };
@@ -49,7 +53,9 @@
   gb_sna_AT4OPENKM_48k,
   //gb_sna_BREDITORKM_48k,
   gb_sna_SIPKA_48K_H_48k,
-  gb_sna_mouseTestZxds_48k
+  gb_sna_mouseTestZxds_48k,
+  gb_sna_FireKey_48k,
+  gb_sna_Tritone1_48k
 //  gb_sna_eightOfNoise_48k,
 //  gb_sna_wwtf_48k
  };
