@@ -187,7 +187,7 @@ He creado una herramienta muy básica, para convertir los archivos .rom, .tape, 
   sna/
    48k/
     coloristic.sna
-    MACGallery.sna
+    GDC.sna
    128k/
     nada.txt
 </pre>
