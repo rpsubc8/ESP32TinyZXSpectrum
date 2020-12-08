@@ -187,7 +187,7 @@ I have created a very basic tool, to convert .rom, .tape, .sna, .scr files into 
   sna/
    48k/
     coloristic.sna
-    MACGallery.sna
+    GDC.sna
    128k/
     nothing.txt
 </pre>
