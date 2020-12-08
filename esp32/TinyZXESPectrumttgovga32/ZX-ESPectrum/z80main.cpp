@@ -47,8 +47,11 @@ unsigned char gb_play_tape_on_now=0;
  unsigned char gb_silence_all_channels=0;
 #endif 
 
-volatile unsigned char gbFrameSkipVideoMaxCont = 0;
-unsigned char gbDelayVideo=20;
+#ifdef use_lib_vga_thread
+ volatile unsigned char gbFrameSkipVideoMaxCont = gb_frame_crt_skip;
+#else
+ unsigned char gbDelayVideo=20;
+#endif 
 
 extern byte borderTemp;
 extern byte z80ports_in[128];
@@ -387,34 +390,40 @@ extern "C" void output(uint8_t portLow, uint8_t portHigh, uint8_t data) {
             {
              case 0:
               gb_ay8912_A_frec_fine= gb_ay8912_reg_value;
+              gb_ay8912_A_frec = ((gb_ay8912_A_frec_fine|((gb_ay8912_A_frec_course<<8)&0xF00)))+1;
               //gb_ay8912_A_frec = gb_frecuencia_ini+(26*gb_ay8912_A_frec_fine);
-              gb_ay8912_A_frec = gb_frecuencia_ini+(gb_ay8912_A_frec_fine<<5);
+              //gb_ay8912_A_frec = gb_frecuencia_ini+(gb_ay8912_A_frec_fine<<5);
               //printf("Frec Fine A %d Hz %d\n",gb_ay8912_reg_value,gb_ay8912_A_frec);
               break;
              case 1: 
               //printf("Frec Course A %d\n",gb_ay8912_reg_value);
-              gb_ay8912_A_frec_course= gb_ay8912_reg_value;
+              gb_ay8912_A_frec_course= gb_ay8912_reg_value & 0x0F;
+              gb_ay8912_A_frec = ((gb_ay8912_A_frec_fine|((gb_ay8912_A_frec_course<<8)&0xF00)))+1;
               //fine = n/2^o
               break;
              case 2: 
               gb_ay8912_B_frec_fine= gb_ay8912_reg_value;
+              gb_ay8912_B_frec = ((gb_ay8912_B_frec_fine|((gb_ay8912_B_frec_course<<8)&0xF00)))+1;
               //gb_ay8912_B_frec = gb_frecuencia_ini+(26*gb_ay8912_B_frec_fine);
-              gb_ay8912_B_frec = gb_frecuencia_ini+(gb_ay8912_B_frec_fine<<5);
+              //gb_ay8912_B_frec = gb_frecuencia_ini+(gb_ay8912_B_frec_fine<<5);
               //printf("Frec Fine B %d Hz %d\n",gb_ay8912_reg_value,gb_ay8912_B_frec);
               break;
              case 3: 
               //printf("Frec Course B %d\n",gb_ay8912_reg_value);
-              gb_ay8912_B_frec_course= gb_ay8912_reg_value;
+              gb_ay8912_B_frec_course= gb_ay8912_reg_value & 0x0F;
+              gb_ay8912_B_frec = ((gb_ay8912_B_frec_fine|((gb_ay8912_B_frec_course<<8)&0xF00)))+1;
               break;
              case 4:
               gb_ay8912_C_frec_fine= gb_ay8912_reg_value;
+              gb_ay8912_C_frec = ((gb_ay8912_C_frec_fine|((gb_ay8912_C_frec_course<<8)&0xF00)))+1;
               //gb_ay8912_C_frec = gb_frecuencia_ini+(26*gb_ay8912_C_frec_fine);
-              gb_ay8912_C_frec = gb_frecuencia_ini+(gb_ay8912_C_frec_fine<<5);
+              //gb_ay8912_C_frec = gb_frecuencia_ini+(gb_ay8912_C_frec_fine<<5);
               //printf("Frec Fine C %d Hz %d\n",gb_ay8912_reg_value,gb_ay8912_C_frec);
               break;
              case 5: 
               //printf("Frec Course C %d\n",gb_ay8912_reg_value);
-              gb_ay8912_C_frec_course= gb_ay8912_reg_value;
+              gb_ay8912_C_frec_course= gb_ay8912_reg_value & 0x0F;
+              gb_ay8912_C_frec = ((gb_ay8912_C_frec_fine|((gb_ay8912_C_frec_course<<8)&0xF00)))+1;
               break;
              case 6: gb_ay8912_noise_pitch; break;             
              case 7: 

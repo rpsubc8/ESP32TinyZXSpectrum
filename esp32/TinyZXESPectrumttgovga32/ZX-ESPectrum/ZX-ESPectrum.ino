@@ -68,6 +68,7 @@
 #include "driver/timer.h"
 #include "soc/timer_group_struct.h"
 #include "osd.h"
+#include "gb_globals.h"
 
 extern int gb_screen_xIni;
 extern int gb_screen_yIni;
@@ -75,8 +76,10 @@ extern int gb_screen_yIni;
 #ifdef use_lib_sound_ay8912
  SoundGenerator soundGenerator;
  SineWaveformGenerator gb_sineArray[4];
- int gbVolMixer_before[4]={0,0,0,0};
- int gbFrecMixer_before[4]={0,0,0,0};
+ unsigned char gbVolMixer_before[4]={0,0,0,0}; 
+ short int gbFrecMixer_before[4]={0,0,0,0};
+ unsigned char gbVolMixer_now[4]={0,0,0,0};
+ short int gbFrecMixer_now[4]={0,0,0,0};
 #endif
 
 #ifdef use_lib_resample_speaker
@@ -95,22 +98,28 @@ extern int gb_screen_yIni;
  unsigned long gbTimeVideoNow=0;
 #endif 
 
-//Son 6400, quedan en 200 se repiten 32 veces
-const unsigned char gb_lookup_calcY[200]={
-0x00,0x08,0x10,0x18,0x20,0x28,0x30,0x38,0x01,0x09,0x11,0x19,0x21,0x29,0x31,0x39,
-0x02,0x0A,0x12,0x1A,0x22,0x2A,0x32,0x3A,0x03,0x0B,0x13,0x1B,0x23,0x2B,0x33,0x3B,
-0x04,0x0C,0x14,0x1C,0x24,0x2C,0x34,0x3C,0x05,0x0D,0x15,0x1D,0x25,0x2D,0x35,0x3D,
-0x06,0x0E,0x16,0x1E,0x26,0x2E,0x36,0x3E,0x07,0x0F,0x17,0x1F,0x27,0x2F,0x37,0x3F,
-0x40,0x48,0x50,0x58,0x60,0x68,0x70,0x78,0x41,0x49,0x51,0x59,0x61,0x69,0x71,0x79,
-0x42,0x4A,0x52,0x5A,0x62,0x6A,0x72,0x7A,0x43,0x4B,0x53,0x5B,0x63,0x6B,0x73,0x7B,
-0x44,0x4C,0x54,0x5C,0x64,0x6C,0x74,0x7C,0x45,0x4D,0x55,0x5D,0x65,0x6D,0x75,0x7D,
-0x46,0x4E,0x56,0x5E,0x66,0x6E,0x76,0x7E,0x47,0x4F,0x57,0x5F,0x67,0x6F,0x77,0x7F,
-0x80,0x88,0x90,0x98,0xA0,0xA8,0xB0,0xB8,0x81,0x89,0x91,0x99,0xA1,0xA9,0xB1,0xB9,
-0x82,0x8A,0x92,0x9A,0xA2,0xAA,0xB2,0xBA,0x83,0x8B,0x93,0x9B,0xA3,0xAB,0xB3,0xBB,
-0x84,0x8C,0x94,0x9C,0xA4,0xAC,0xB4,0xBC,0x85,0x8D,0x95,0x9D,0xA5,0xAD,0xB5,0xBD,
-0x86,0x8E,0x96,0x9E,0xA6,0xAE,0xB6,0xBE,0x87,0x8F,0x97,0x9F,0xA7,0xAF,0xB7,0xBF,
-0xC0,0xC8,0xD0,0xD8,0xE0,0xE8,0xF0,0xF8
-};
+#ifdef use_lib_lookup_ram
+ static unsigned char gb_lookup_calcY[200]={
+#else
+ //Son 6400, quedan en 200 se repiten 32 veces
+ const unsigned char gb_lookup_calcY[200]={
+#endif     
+  0x00,0x08,0x10,0x18,0x20,0x28,0x30,0x38,0x01,0x09,0x11,0x19,0x21,0x29,0x31,0x39,
+  0x02,0x0A,0x12,0x1A,0x22,0x2A,0x32,0x3A,0x03,0x0B,0x13,0x1B,0x23,0x2B,0x33,0x3B,
+  0x04,0x0C,0x14,0x1C,0x24,0x2C,0x34,0x3C,0x05,0x0D,0x15,0x1D,0x25,0x2D,0x35,0x3D,
+  0x06,0x0E,0x16,0x1E,0x26,0x2E,0x36,0x3E,0x07,0x0F,0x17,0x1F,0x27,0x2F,0x37,0x3F,
+  0x40,0x48,0x50,0x58,0x60,0x68,0x70,0x78,0x41,0x49,0x51,0x59,0x61,0x69,0x71,0x79,
+  0x42,0x4A,0x52,0x5A,0x62,0x6A,0x72,0x7A,0x43,0x4B,0x53,0x5B,0x63,0x6B,0x73,0x7B,
+  0x44,0x4C,0x54,0x5C,0x64,0x6C,0x74,0x7C,0x45,0x4D,0x55,0x5D,0x65,0x6D,0x75,0x7D,
+  0x46,0x4E,0x56,0x5E,0x66,0x6E,0x76,0x7E,0x47,0x4F,0x57,0x5F,0x67,0x6F,0x77,0x7F,
+  0x80,0x88,0x90,0x98,0xA0,0xA8,0xB0,0xB8,0x81,0x89,0x91,0x99,0xA1,0xA9,0xB1,0xB9,
+  0x82,0x8A,0x92,0x9A,0xA2,0xAA,0xB2,0xBA,0x83,0x8B,0x93,0x9B,0xA3,0xAB,0xB3,0xBB,
+  0x84,0x8C,0x94,0x9C,0xA4,0xAC,0xB4,0xBC,0x85,0x8D,0x95,0x9D,0xA5,0xAD,0xB5,0xBD,
+  0x86,0x8E,0x96,0x9E,0xA6,0xAE,0xB6,0xBE,0x87,0x8F,0x97,0x9F,0xA7,0xAF,0xB7,0xBF,
+  0xC0,0xC8,0xD0,0xD8,0xE0,0xE8,0xF0,0xF8
+ };
+
+
 
 // EXTERN VARS
 extern unsigned char gb_cfg_arch_is48K;
@@ -130,6 +139,19 @@ extern unsigned char gb_cache_zxcolor[8];
 //void load_ram2flash(unsigned char id);
 //JJ void SetMode48K(void);
 //JJ void SetMode128K(void);
+
+volatile unsigned char gb_sdl_blit=0;
+static unsigned long gb_currentTime=0;
+#ifdef use_lib_sound_ay8912
+ static unsigned long gb_sdl_time_sound_before=0;
+#endif 
+static unsigned long gb_keyboardTime;
+static unsigned long gb_time_ini_espera;
+unsigned char gb_run_emulacion = 1; //Ejecuta la emulacion
+unsigned char gb_current_ms_poll_sound = gb_ms_sound;
+unsigned char gb_current_ms_poll_keyboard = gb_ms_keyboard;
+//unsigned char gb_current_frame_crt_skip= gb_frame_crt_skip; //No salta frames
+unsigned char gb_current_delay_emulate_ms= gb_delay_emulate_ms;
 
 
 volatile byte keymap[256];
@@ -219,7 +241,8 @@ VGA14Bit vga;
 #endif
 
 #ifdef use_lib_sound_ay8912
- void sound_cycleFabgl(void);
+ inline void sound_cycleFabgl(void);
+ inline void jj_mixpsg(void);
 #endif
 
 #ifdef use_lib_mouse_kempston
@@ -235,11 +258,14 @@ void setup()
  //DO NOT turn off peripherals to recover some memory
  //esp_bt_controller_deinit(); //Reduzco consumo RAM
  //esp_bt_controller_mem_release(ESP_BT_MODE_BTDM); //Reduzco consumo RAM
-    
     #ifdef use_lib_log_serial
      Serial.begin(115200);         
      Serial.printf("HEAP BEGIN %d\n", ESP.getFreeHeap());
      //JJSerial.printf("PSRAM size: %d\n", ESP.getPsramSize());
+    #endif
+
+    #ifdef use_lib_lookup_ram
+     gb_lookup_calcY[0]= 0; //force ram compiler,not const progmem
     #endif
 
     //SetMode48K();
@@ -353,6 +379,11 @@ void setup()
      Serial.printf("End of setup RAM %d\n",ESP.getFreeHeap());
      //Serial.printf("mask %d bits %d\n",vga.RGBAXMask,vga.SBits);  
     #endif 
+    gb_keyboardTime = millis();
+    #ifdef use_lib_sound_ay8912
+     gb_sdl_time_sound_before = gb_keyboardTime;
+    #endif
+        
 }
 
 
@@ -368,17 +399,70 @@ void setup()
   {
    gb_sineArray[i].setFrequency(0);
    gb_sineArray[i].setVolume(0);
+   gbVolMixer_before[i]= gbVolMixer_now[i]= 0;
+   gbFrecMixer_before[i]= gbFrecMixer_now[i]= 0;
   }
+  gb_ay8912_A_frec= gb_ay8912_B_frec= gb_ay8912_C_frec= 0;
+  gb_ay8912_A_vol= gb_ay8912_B_vol= gb_ay8912_C_vol= 0;
  }
 
- void sound_cycleFabgl()
+
+ inline void sound_cycleFabgl()
  {  
+  //AY8912
+  for (unsigned char i=0;i<3;i++)
+  {
+   if (gbVolMixer_now[i] != gbVolMixer_before[i])
+   {
+    gb_sineArray[i].setVolume((gbVolMixer_now[i]<<2));
+    gbVolMixer_before[i] = gbVolMixer_now[i];
+   }
+   if (gbFrecMixer_now[i] != gbFrecMixer_before[i])
+   {
+    gb_sineArray[i].setFrequency(gbFrecMixer_now[i]);
+    gbFrecMixer_before[i] = gbFrecMixer_now[i];
+   }
+  }
+ }
+ 
+ inline void jj_mixpsg() 
+ {//AY8912  
+  int auxFrec;
+  gbVolMixer_now[0]= gb_ay8912_A_vol;
+  gbVolMixer_now[1]= gb_ay8912_B_vol;
+  gbVolMixer_now[2]= gb_ay8912_C_vol;
+  if (gbVolMixer_now[0] == 0) gbFrecMixer_now[0] = 0;
+  else{
+   gbVolMixer_now[0]=15;
+   auxFrec = gb_ay8912_A_frec;
+   auxFrec = (auxFrec>0)?(62500/auxFrec):0;
+   if (auxFrec>15000) auxFrec=15000;
+   gbFrecMixer_now[0] = auxFrec;
+  }
+  if (gbVolMixer_now[1] == 0) gbFrecMixer_now[1] = 0;
+  else{
+   gbVolMixer_now[1]=15;
+   auxFrec = gb_ay8912_B_frec;
+   auxFrec = (auxFrec>0)?(62500/auxFrec):0;
+   if (auxFrec>15000) auxFrec=15000;   
+   gbFrecMixer_now[1] = auxFrec;
+  }
+  if (gbVolMixer_now[2] == 0) gbFrecMixer_now[2] = 0;
+  else{
+   gbVolMixer_now[2]=15;
+   auxFrec = gb_ay8912_C_frec;
+   auxFrec = (auxFrec>0)?(62500/auxFrec):0;
+   if (auxFrec>15000) auxFrec=15000;   
+   gbFrecMixer_now[2] = auxFrec;
+  }
+  
+ /*
   //AY8912  
-  int auxFrec = gb_ay8912_A_frec + (gb_ay8912_A_frec_course<<2); //*4
-  int auxVol = gb_ay8912_A_vol<<1; //*2
+  int auxFrec = gb_ay8912_A_frec;
+  int auxVol = gb_ay8912_A_vol;
 
   if (auxVol != gbVolMixer_before[0]){
-   gb_sineArray[0].setVolume(auxVol);
+   gb_sineArray[0].setVolume((auxVol<<2));
    gbVolMixer_before[0] = auxVol;
   }
   if (auxFrec != gbFrecMixer_before[0]){
@@ -407,6 +491,7 @@ void setup()
    gb_sineArray[2].setFrequency(auxFrec);
    gbFrecMixer_before[2] = auxFrec;
   }
+  */
 
   #ifdef use_lib_resample_speaker
    gbTimeNow = millis();
@@ -901,7 +986,7 @@ if (skipFrame != 1)
                         #ifdef use_lib_vga_low_memory
                          vga.dotFast((gb_screen_xIni+zx_vidcalc + 52),(gb_screen_yIni+(calc_y + 3)),auxColor);
                         #else                         
-                         #ifdef use_lib_screen_offset
+                         #ifdef use_lib_screen_offset                         
                           ptrVGA[(gb_screen_yIni+(calc_y + 3))][(gb_screen_xIni+zx_vidcalc + 52)^2] = auxColor;
                          #else
                          #endif
@@ -915,6 +1000,8 @@ if (skipFrame != 1)
             }
         }
 }//fin if skipframe
+
+//gb_sdl_blit=1;
 
         xQueueReceive(vidQueue, &param, portMAX_DELAY);
         videoTaskIsRunning = false;
@@ -1044,8 +1131,11 @@ void videoTaskNoThread()
                 }
             }
         }
+        //gb_sdl_blit=1;
      //time_prev = micros()-time_prev;
-     //Serial.printf("Tiempo %d\n",time_prev);             
+     #ifdef use_lib_log_serial
+      //Serial.printf("Tiempo %d\n",time_prev);             
+     #endif
 }
 
 #endif
@@ -1178,21 +1268,48 @@ void loop() {
     sp_int_ctr++;
     halfsec = !(sp_int_ctr % 25);
 
-    #ifdef use_lib_remap_keyboardpc 
-     do_keyboard_remap_pc();
-    #endif 
-    do_keyboard();    
+    gb_currentTime = millis();
+    if ((gb_currentTime-gb_keyboardTime) >= gb_current_ms_poll_keyboard)
+    {
+     gb_keyboardTime = gb_currentTime;         
+     #ifdef use_lib_remap_keyboardpc 
+      do_keyboard_remap_pc();
+     #endif 
+     do_keyboard();
+    }
     do_tinyOSD();
+        
+    if ((gb_current_delay_emulate_ms == 0) || (gb_run_emulacion == 1))
+    {//Ejecutamos emulacion z80    
+     // ts1 = millis();    
+     zx_loop();
+     // ts2 = millis();
+    }
 
-    // ts1 = millis();
-    zx_loop();
-    // ts2 = millis();
+    if (gb_current_delay_emulate_ms != 0)
+    {
+     if (gb_sdl_blit == 1)
+     {
+      gb_sdl_blit= 0;
+      gb_run_emulacion= 0;
+      gb_time_ini_espera = millis();
+     }
+    }
+    
    
     #ifdef use_lib_sound_ay8912
      if (gb_silence_all_channels == 1)
       SilenceAllChannels();
      else 
-      sound_cycleFabgl();     
+     {
+      gb_currentTime = millis();
+      if ((gb_currentTime-gb_sdl_time_sound_before) >= gb_current_ms_poll_sound)
+      {             
+       gb_sdl_time_sound_before= gb_currentTime;
+       jj_mixpsg();
+       sound_cycleFabgl();
+      }
+     }
     #endif 
 
     #ifdef use_lib_mouse_kempston
@@ -1204,15 +1321,22 @@ void loop() {
      while (videoTaskIsRunning)
      {
      }
+     gb_sdl_blit = 1;
     #else
      gbTimeVideoNow = millis();
      if ((gbTimeVideoNow - gbTimeVideoIni) >= gbDelayVideo)     
      {
       gbTimeVideoIni = gbTimeVideoNow;
       videoTaskNoThread();
+      gb_sdl_blit= 1;
      }
     #endif
 
+
+    gb_currentTime = millis();     
+    if (gb_run_emulacion == 0)    
+     if ((gb_currentTime - gb_time_ini_espera) >= (gb_current_delay_emulate_ms))
+      gb_run_emulacion = 1;
 
 
 //videoTaskNoThread(); //Video sin hilos

@@ -15,5 +15,5 @@ void stepULA();
 void do_tinyOSD(void);
 void SDLActivarOSDMainMenu();
 void SDLOSDClear(void);
-void SDLEsperaTeclado(void);
+//void SDLEsperaTeclado(void);
 #endif

@@ -11,6 +11,7 @@
 #include "def/Font.h"
 #include "def/keys.h"
 #include "def/hardware.h"
+#include "gb_globals.h"
 
 const unsigned char gb_const_monoBlue8[8]=
 {//cache de colores optimizado
@@ -118,6 +119,27 @@ const char * gb_speed_menu[max_gb_speed_menu]={
  "16x"
 };
 
+#define max_gb_speed_videoaudio_options_menu 4
+const char * gb_speed_videoaudio_options_menu[max_gb_speed_videoaudio_options_menu]={
+ "Audio poll",
+ "Video delay",
+ "SPEED",
+ "Keyboard poll"
+};
+
+#define max_gb_speed_sound_menu 9
+const char * gb_speed_sound_menu[max_gb_speed_sound_menu]={
+ "0",
+ "1",
+ "2",
+ "3",
+ "4",
+ "5",
+ "6",
+ "7",
+ "8"
+};
+
 #define max_gb_reset_menu 2
 const char * gb_reset_menu[max_gb_reset_menu]={
  "Soft",
@@ -125,13 +147,38 @@ const char * gb_reset_menu[max_gb_reset_menu]={
 };
 
 //****************************
-void SDLEsperaTeclado()
-{
- //SDL_WaitEvent(gb_osd_sdl_event);
-}
+//void SDLEsperaTeclado()
+//{
+// //SDL_WaitEvent(gb_osd_sdl_event);
+//}
 
 #define gb_pos_x_menu 120
 #define gb_pos_y_menu 50
+#define gb_osd_max_rows 10
+
+void OSDMenuRowsDisplayScroll(const char **ptrValue,unsigned char currentId,unsigned char aMax)
+{//Dibuja varias lineas
+ vga.setTextColor(WHITE,BLACK);
+ for (int i=0;i<gb_osd_max_rows;i++)
+ {
+  vga.setCursor(gb_pos_x_menu, gb_pos_y_menu+8+(i<<3));
+  vga.print("                    ");
+ }
+ 
+ for (int i=0;i<gb_osd_max_rows;i++)
+ {
+  if (currentId >= aMax)
+   break;
+  if (i == 0)
+   vga.setTextColor(CYAN,BLUE);
+  else
+   vga.setTextColor(WHITE,BLACK);
+  vga.setCursor(gb_pos_x_menu, gb_pos_y_menu+8+(i<<3));
+  vga.print(ptrValue[currentId]);
+  currentId++;
+ }     
+}
+
 //Maximo 256 elementos
 unsigned char ShowTinyMenu(const char *cadTitle,const char **ptrValue,unsigned char aMax)
 {
@@ -145,9 +192,12 @@ unsigned char ShowTinyMenu(const char *cadTitle,const char **ptrValue,unsigned c
   vga.fillRect(0,0,320,200,BLACK);
   vga.fillRect(0,0,320,200,BLACK);//Repeat Fix visual defect 
  #endif 
+ vga.setTextColor(WHITE,BLACK);
+ vga.setCursor((gb_pos_x_menu-(32)), gb_pos_y_menu-16); 
+ vga.print("Mod ZXESPectrum by Ackerman");
  vga.setTextColor(BLACK,WHITE);
  //SDLClear(gb_osd_sdl_surface);  
- for (int i=0;i<12;i++)
+ for (int i=0;i<20;i++)
  { 
   //SDLprintChar(gb_osd_sdl_surface,' ',gb_pos_x_menu+(i<<3),gb_pos_y_menu,BLACK,WHITE,1);
   vga.setCursor((gb_pos_x_menu+(i*6)), gb_pos_y_menu);
@@ -156,14 +206,14 @@ unsigned char ShowTinyMenu(const char *cadTitle,const char **ptrValue,unsigned c
  //SDLprintText(gb_osd_sdl_surface,cadTitle,gb_pos_x_menu,gb_pos_y_menu,BLACK,WHITE,1);
  vga.setCursor(gb_pos_x_menu,gb_pos_y_menu);
  vga.print(cadTitle);  
- for (int i=0;i<aMax;i++)
- {     
-  //SDLprintText(gb_osd_sdl_surface,ptrValue[i],gb_pos_x_menu,gb_pos_y_menu+8+(i<<3),((i==0)?CYAN:WHITE),((i==0)?BLUE:BLACK),1);  
-  vga.setTextColor(((i==0)?CYAN:WHITE),((i==0)?BLUE:BLACK));
-  vga.setCursor(gb_pos_x_menu,(gb_pos_y_menu+8+(i<<3)));
-  vga.print(ptrValue[i]);
- }
- 
+ //for (int i=0;i<aMax;i++)
+ //{     
+ // //SDLprintText(gb_osd_sdl_surface,ptrValue[i],gb_pos_x_menu,gb_pos_y_menu+8+(i<<3),((i==0)?CYAN:WHITE),((i==0)?BLUE:BLACK),1);  
+ // vga.setTextColor(((i==0)?CYAN:WHITE),((i==0)?BLUE:BLACK));
+ // vga.setCursor(gb_pos_x_menu,(gb_pos_y_menu+8+(i<<3)));
+ // vga.print(ptrValue[i]);
+ //}
+ OSDMenuRowsDisplayScroll(ptrValue,0,aMax);
  //SDL_Flip(gb_osd_sdl_surface); 
  while (salir == 0)
  {
@@ -177,32 +227,13 @@ unsigned char ShowTinyMenu(const char *cadTitle,const char **ptrValue,unsigned c
      //case SDLK_UP:
      if (checkAndCleanKey(KEY_CURSOR_UP))
      {
-      vga.setTextColor(WHITE,BLACK);
-      vga.setCursor(gb_pos_x_menu,gb_pos_y_menu+((aReturn+1)<<3));
-      vga.print(ptrValue[aReturn]);
-      //SDLprintText(gb_osd_sdl_surface,ptrValue[aReturn],gb_pos_x_menu,gb_pos_y_menu+((aReturn+1)<<3),WHITE,BLACK,1);
-      if (aReturn>0)
-       aReturn--;
-      vga.setTextColor(CYAN,BLUE);
-      vga.setCursor(gb_pos_x_menu,gb_pos_y_menu+((aReturn+1)<<3));
-      vga.print(ptrValue[aReturn]);
-      //SDLprintText(gb_osd_sdl_surface,ptrValue[aReturn],gb_pos_x_menu,gb_pos_y_menu+((aReturn+1)<<3),CYAN,BLUE,1);
-      //break;
+      if (aReturn>0) aReturn--;
+      OSDMenuRowsDisplayScroll(ptrValue,aReturn,aMax);
      }
      if (checkAndCleanKey(KEY_CURSOR_DOWN))
-     {
-     //case SDLK_DOWN: 
-      //SDLprintText(gb_osd_sdl_surface,ptrValue[aReturn],gb_pos_x_menu,gb_pos_y_menu+((aReturn+1)<<3),WHITE,BLACK,1);
-      vga.setTextColor(WHITE,BLACK);
-      vga.setCursor(gb_pos_x_menu,gb_pos_y_menu+((aReturn+1)<<3));
-      vga.print(ptrValue[aReturn]);
-      if (aReturn < (aMax-1))
-       aReturn++;
-      vga.setTextColor(CYAN,BLUE);
-      vga.setCursor(gb_pos_x_menu,gb_pos_y_menu+((aReturn+1)<<3));
-      vga.print(ptrValue[aReturn]);
-      //SDLprintText(gb_osd_sdl_surface,ptrValue[aReturn],gb_pos_x_menu,gb_pos_y_menu+((aReturn+1)<<3),CYAN,BLUE,1);
-      //break;
+     {//SDLK_DOWN
+      if (aReturn < (aMax-1)) aReturn++;
+      OSDMenuRowsDisplayScroll(ptrValue,aReturn,aMax);
      }
      if (checkAndCleanKey(KEY_ENTER))
      {
@@ -303,27 +334,51 @@ void ShowTinySCRMenu()
 //Menu velocidad emulador
 void ShowTinySpeedMenu()
 {
- unsigned char aSelNum;
- aSelNum = ShowTinyMenu("SPEED",gb_speed_menu,max_gb_speed_menu);
- #ifdef use_lib_vga_thread
-  switch (aSelNum)
-  {
-   case 0: gbFrameSkipVideoMaxCont = 0; break;
-   case 1: gbFrameSkipVideoMaxCont = 1; break;
-   case 2: gbFrameSkipVideoMaxCont = 2; break;
-   case 3: gbFrameSkipVideoMaxCont = 4; break;
-   case 4: gbFrameSkipVideoMaxCont = 8; break;
-  }
- #else
-switch (aSelNum)
-  {
-   case 0: gbDelayVideo = 20; break;
-   case 1: gbDelayVideo = 25; break;
-   case 2: gbDelayVideo = 30; break;
-   case 3: gbDelayVideo = 40; break;
-   case 4: gbDelayVideo = 50; break;
-  } 
- #endif
+ unsigned char aSelNum,aSelNumSpeed;
+ aSelNum = ShowTinyMenu("SPEED VIDEO AUDIO",gb_speed_videoaudio_options_menu,max_gb_speed_videoaudio_options_menu);
+ if (aSelNum == 255)
+  return;
+ switch (aSelNum)
+ {
+  case 0: aSelNumSpeed= ShowTinyMenu("AUDIO Poll ms",gb_speed_sound_menu,max_gb_speed_sound_menu);
+   if (aSelNumSpeed == 255)
+    return;
+   gb_current_ms_poll_sound= aSelNumSpeed;
+   break;
+  case 1: aSelNumSpeed= ShowTinyMenu("Video DELAY ms",gb_speed_sound_menu,max_gb_speed_sound_menu);
+   if (aSelNumSpeed == 255)
+    return;
+   gb_current_delay_emulate_ms = aSelNumSpeed;
+   break;
+  case 2: //gb_current_frame_crt_skip = ShowTinyMenu("Skip Frame",gb_value_binary_menu,max_gb_value_binary_menu);
+   aSelNumSpeed = ShowTinyMenu("SPEED",gb_speed_menu,max_gb_speed_menu);
+   #ifdef use_lib_vga_thread
+    switch (aSelNumSpeed)
+    {
+     case 0: gbFrameSkipVideoMaxCont = 0; break;
+     case 1: gbFrameSkipVideoMaxCont = 1; break;
+     case 2: gbFrameSkipVideoMaxCont = 2; break;
+     case 3: gbFrameSkipVideoMaxCont = 4; break;
+     case 4: gbFrameSkipVideoMaxCont = 8; break;
+    }
+   #else
+    switch (aSelNumSpeed)
+    {
+     case 0: gbDelayVideo = 20; break;
+     case 1: gbDelayVideo = 25; break;
+     case 2: gbDelayVideo = 30; break;
+     case 3: gbDelayVideo = 40; break;
+     case 4: gbDelayVideo = 50; break;
+    } 
+   #endif
+   break;
+  case 3: aSelNumSpeed= ShowTinyMenu("Keyboard Poll ms",gb_speed_sound_menu,max_gb_speed_sound_menu);
+   if (aSelNumSpeed == 255)
+    return;
+   gb_current_ms_poll_keyboard= aSelNumSpeed;
+   break;
+  default: break;
+ }
 }
 
 //Ajustar pantalla
@@ -442,4 +497,3 @@ void do_tinyOSD()
   gb_silence_all_channels = 0;
  #endif
 }
-

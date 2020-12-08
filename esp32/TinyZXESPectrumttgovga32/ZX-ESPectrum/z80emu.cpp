@@ -16,6 +16,7 @@
 #include "Emulator/z80main.h"
 #include "Disk.h"
 #include "gbConfig.h"
+#include "gb_globals.h"
 
 
 //char gbCadTape[40]="";

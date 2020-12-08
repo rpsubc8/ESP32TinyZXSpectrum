@@ -14,7 +14,17 @@
  #define use_lib_skip_frame
  //#define use_lib_vga320x200
  //#define use_lib_log_serial
+ #define use_lib_lookup_ram
 
+
+ //Leer teclado cada x milisegundos
+ #define gb_ms_keyboard 10
+ //Leer sonido cada x milisegundos
+ #define gb_ms_sound 1
+ //Salta x frames
+ #define gb_frame_crt_skip 0
+ //Milisegundos espera en cada iteracion de emulacion
+ #define gb_delay_emulate_ms 0
 
  
  #ifdef use_lib_resample_speaker
