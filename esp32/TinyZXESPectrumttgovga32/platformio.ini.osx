@@ -15,7 +15,7 @@ upload_port = /dev/cu.SLAB_USBtoUART
 upload_protocol = esptool
 
 monitor_speed = 115200
-board_build.partitions = noota_3g.csv
+board_build.partitions = huge_app.csv
 build_flags =
     -w -O3
 ;    -DBOARD_HAS_PSRAM
