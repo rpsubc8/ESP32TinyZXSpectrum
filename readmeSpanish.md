@@ -143,7 +143,9 @@ Para el caso de los SNA:
  <li><b>3DcoolKm:</b> Herramienta de 3D con soporte de ratón kempston</li>
  <li><b>AT4openKM: </b> Herramienta de dibujo con soporte de ratón kempston</li>
  <li><b>Sipka: </b> Tool para test de ratón kempston. Permite cambiar el icono del ratón al pulsar sobre los botones.</li>
- <li><b>MouseTestZXds: </b> Tool para test del protocolo del ratón kempston.</li> 
+ <li><b>MouseTestZXds: </b> Tool para test del protocolo del ratón kempston.</li>
+ <li><b>FireKey: </b> el mismo juego Fire pero usando el teclado en lugar del ratón. Tiene salida de sonido AY8912 (modo 128K) y altavoz interno (modo 48K).</li>
+ <li><b>Tritone1: </b> Musicdisk que usa altavoz interno.</li>
 </ul>
 <br>
 Para la carga de SCR desde TAP:
