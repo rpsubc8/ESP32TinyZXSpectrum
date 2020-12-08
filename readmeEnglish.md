@@ -95,6 +95,10 @@ The file <b>gbConfig.h</b> options are selected:
  <li><b>use_lib_skip_frame:</b> Allows to skip frames when emulating</li>
  <li><b>use_lib_vga320x200:</b> Experimental video mode for low RAM consumption</li>
  <li><b>use_lib_log_serial:</b> Logs are sent by serial port usb</li>
+ <li><b>gb_ms_keyboard:</b> The number of milliseconds of polling must be specified for the keyboard.</li>
+ <li><b>gb_ms_sound:</b> The number of polling milliseconds must be specified for sound AY8912.</li>
+ <li><b>gb_frame_crt_skip:</b> The number of video frames to be skipped</li>
+ <li><b>gb_delay_emulate_ms:</b> Milliseconds of waiting for each completed frame.</li>
 </ul>
 
 
@@ -140,6 +144,8 @@ In the case of the SNA:
  <li><b>AT4openKM: </b> Drawing tool with kempston mouse support</li>
  <li><b>Sipka: </b> Kempston mouse test tool Allows to change the mouse icon by clicking on the buttons.</li>
  <li><b>MouseTestZXds:</b> Tool for testing the kempston mouse protocol</li>
+ <li><b>FireKey:</b> The same Fire game but using the keyboard instead of the mouse. It has sound output AY8912 (128K mode) and internal speaker (48K mode).</li>
+ <li><b>Tritone1:</b> Musicdisk that uses internal speaker.</li> 
 </ul>
 <br>
 For SCR loading from TAP:
