@@ -89,7 +89,7 @@ extern "C" {
 unsigned char delay_contention(word address, unsigned int tstates);
 
 typedef struct CONTEXT {
-	uint8_t(*readbyte)(uint16_t);
+	uint8_t(*fast_readbyte)(uint16_t);
 	uint16_t(*readword)(uint16_t);
 	void(*writebyte)(uint16_t, uint8_t);
 	void(*writeword)(uint16_t, uint16_t);
@@ -99,7 +99,7 @@ typedef struct CONTEXT {
 
 #define Z80_READ_BYTE(address, x)                               \
 {                                                               \
-	(x) = ((CONTEXT*)context)->readbyte(address);               \
+	(x) = ((CONTEXT*)context)->fast_readbyte(address);               \
 	elapsed_cycles += delay_contention(address,elapsed_cycles); \
 }
 
