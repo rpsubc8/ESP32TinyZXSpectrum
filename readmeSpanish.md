@@ -92,7 +92,7 @@ El archivo <b>gbConfig.h</b> se seleccionan las opciones:
  <li><b>use_lib_vga64colors:</b> Obliga a usar RRGGBB, 6 pines, sin modo de brillo, es decir con 8 colores</li>
  <li><b>use_lib_use_bright:</b> Obliga a usar RRGGBB, 6 pines, con modo brillo, 16 colores</li>
  <li><b>use_lib_vga_low_memory:</b> Modo experimental de bajo consumo de RAM de video. En algún modo de video da problemas.</li>
- <li><b>use_lib_ultrafast_vga:</b> Modo ultrarápido de acceso a video. Puede dar problemas si se combina con el modo de video de bajo consumo de ram.</li> 
+ <li><b>use_lib_ultrafast_vga:</b> Modo rápido (el doble) de acceso a video. Puede dar problemas si se combina con el modo de video de bajo consumo de ram.</li> 
  <li><b>use_lib_vga_thread:</b> Utiliza la salida de video en un hilo. Si se hace en modo polling, no se usará ni el ajuste de pantalla, ni los modos de brillo. El modo polling está pensado para depuración</li>
  <li><b>use_lib_screen_offset:</b> Permite mover a la izquierda y arriba la pantalla.</li>
  <li><b>use_lib_skip_frame:</b> Permite saltarse frames al emular</li>
