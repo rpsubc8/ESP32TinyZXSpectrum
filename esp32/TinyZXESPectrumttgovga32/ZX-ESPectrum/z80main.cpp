@@ -137,19 +137,19 @@ void zx_loop()
 {
  //JJ int32_t result = -1;
  //JJ byte tmp_color = 0;
- unsigned long ini_time,fin_time,aux_timeEmulate,aux_timeInterrupt;
- ini_time=micros();
+ //unsigned long ini_time,fin_time,aux_timeEmulate,aux_timeInterrupt;
+ //ini_time=micros();
 
  _total = Z80Emulate(&_zxCpu, cycles_per_step, &_zxContext);
- fin_time=micros();
- aux_timeEmulate= fin_time-ini_time;
+ //fin_time=micros();
+ //aux_timeEmulate= fin_time-ini_time;
 
- ini_time=micros();
+ //ini_time=micros();
  Z80Interrupt(&_zxCpu, 0xff, &_zxContext);
- fin_time=micros();
- aux_timeInterrupt= fin_time-ini_time;
+ //fin_time=micros();
+ //aux_timeInterrupt= fin_time-ini_time;
     
- #ifdef use_lib_log_serial    
+ #ifdef use_lib_log_serial
   //Serial.printf("Total:%d Z80Emul:%d Z80Int:%d\n",_total,aux_timeEmulate,aux_timeInterrupt);
  #endif 
 

@@ -45,6 +45,13 @@
  //Salida log puerto serie usb
  //#define use_lib_log_serial 
 
+ //Select core rampa069 or jsanchezv
+ #define use_lib_core_rampa069
+ //core José Luis Sanchez zx81
+ //#define use_lib_core_jsanchezv
+ //#define WITH_BREAKPOINT_SUPPORT
+ //#define WITH_EXEC_DONE
+
 
  //Leer teclado cada x milisegundos
  #define gb_ms_keyboard 10

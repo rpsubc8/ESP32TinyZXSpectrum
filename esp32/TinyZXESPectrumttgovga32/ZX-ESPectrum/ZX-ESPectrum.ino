@@ -71,6 +71,11 @@
 #include "osd.h"
 #include "gb_globals.h"
 
+#ifdef use_lib_core_jsanchezv
+ #include "jsanchezv_z80sim.h"
+ //#include "gbPrograma.h"
+#endif
+
 extern int gb_screen_xIni;
 extern int gb_screen_yIni;
 
@@ -255,6 +260,292 @@ int halfsec, sp_int_ctr, evenframe, updateframe;
  void do_keyboard_remap_pc(void);
 #endif 
 
+#ifdef use_lib_core_jsanchezv
+ void loop_jsanchezv(void);
+#endif
+
+#ifdef use_lib_core_jsanchezv
+unsigned char * rom0_jsanchezv;
+unsigned char * ram5_jsanchezv;
+unsigned char * ram2_jsanchezv;
+
+Z80sim::Z80sim(void) : cpu(this)
+{
+
+}
+
+Z80sim::~Z80sim() {}
+
+uint8_t Z80sim::fetchOpcode(uint16_t address) {
+ // 3 clocks to fetch opcode from RAM and 1 execution clock
+ tstates += 4;
+ unsigned char idRomRam = (address>>14);
+ unsigned char aux_fetchOpcode=0; 
+ if (idRomRam == 0)
+  aux_fetchOpcode= rom0_jsanchezv[address];
+ else
+  aux_fetchOpcode = z80Ram[address]; 
+  
+ //printf ("fetchOpcode:%02x add:%d",aux_fetchOpcode,address);
+ return aux_fetchOpcode;
+
+//JJ  #ifdef WITH_BREAKPOINT_SUPPORT
+//JJ   return z80Ram[address];
+//JJ  #else
+//JJ   uint8_t opcode = z80Ram[address];
+//JJ   return (address != 0x0005 ? opcode : breakpoint(address, opcode));
+//JJ  #endif
+}
+
+uint8_t Z80sim::peek8(uint16_t address) {
+ // 3 clocks for read byte from RAM
+ tstates += 3;
+ //JJ return z80Ram[address];    
+ //printf ("peek8 add:%d\n",address);
+ unsigned char idRomRam = (address>>14);
+ //if (idRomRam == 0)
+ // return (rom0_jsanchezv[address]);
+ //else
+ // return (z80Ram[address]);
+  
+ switch(idRomRam)
+ {
+  case 0: return (rom0_jsanchezv[address]);  break;
+  case 1: 
+   //printf ("rram5 add:%d\n",address);
+   return ram5_jsanchezv[(address & 0x3fff)]; 
+   break;
+  case 2:
+   //printf ("rram2 add:%d\n",address); 
+   return ram2_jsanchezv[(address & 0x3fff)]; 
+   break;
+  case 3: 
+   //printf ("rram:%d\n",address); 
+   return (z80Ram[address]);
+   break;
+ }
+}
+
+void Z80sim::poke8(uint16_t address, uint8_t value) {
+ // 3 clocks for write byte to RAM
+ tstates += 3;
+ //JJ z80Ram[address] = value;
+ //printf ("poke8 add:%d\n",address);
+ unsigned char idRomRam = (address>>14);
+ //if (idRomRam != 0)
+ // z80Ram[address] = value;
+  
+ switch(idRomRam)
+ {
+  //case 0: return (rom0_jsanchezv[address]);  break;
+  case 1: 
+   //if (value!=0)
+   // printf ("wram5 add:%d val:%d add:%d\n",address,value,(address & 0x3fff)); 
+   ram5_jsanchezv[(address & 0x3fff)] = value;
+   break;
+  case 2: 
+   //printf ("wram2 add:%d\n",address);
+   ram2_jsanchezv[(address & 0x3fff)] = value; 
+   break;
+  case 3:
+   //printf ("wram:%d\n",address);
+   z80Ram[address] = value; 
+   break;
+ }  
+}
+
+uint16_t Z80sim::peek16(uint16_t address) {
+ //printf ("peek16 add:%d\n",address);
+    // Order matters, first read lsb, then read msb, don't "optimize"
+    uint8_t lsb = peek8(address);
+    uint8_t msb = peek8(address + 1);
+    return (msb << 8) | lsb;
+}
+
+void Z80sim::poke16(uint16_t address, RegisterPair word) {
+ //printf ("poke16 add:%d\n",address);     
+    // Order matters, first write lsb, then write msb, don't "optimize"
+    poke8(address, word.byte8.lo);
+    poke8(address + 1, word.byte8.hi);
+}
+
+uint8_t Z80sim::inPort(uint16_t port) {
+    // 4 clocks for read byte from bus
+ //printf ("inPort port:%d\n",port);    
+    tstates += 3;
+    return z80Ports[port];
+}
+
+void Z80sim::outPort(uint16_t port, uint8_t value) {
+ //printf ("outPort outPort:%d\n",port);         
+    // 4 clocks for write byte to bus
+    tstates += 4;
+    z80Ports[port] = value;
+}
+
+void Z80sim::addressOnBus(uint16_t address, int32_t tstates) {
+ //printf ("addressOnBus:%d\n",address);
+    // Additional clocks to be added on some instructions
+    this->tstates += tstates;
+}
+
+void Z80sim::interruptHandlingTime(int32_t tstates) {
+// printf ("interruptHandlingTime\n");
+    this->tstates += tstates;
+}
+
+bool Z80sim::isActiveINT(void) {
+// printf ("isActiveINT\n");     
+	// Put here the needed logic to trigger an INT
+    return false;
+}
+
+#ifdef WITH_EXEC_DONE
+void Z80sim::execDone(void) {}
+#endif
+
+uint8_t Z80sim::breakpoint(uint16_t address, uint8_t opcode) {
+    // Emulate CP/M Syscall at address 5
+
+#ifdef WITH_BREAKPOINT_SUPPORT
+    if (address != 0x0005)
+         return opcode;
+#endif
+
+    //printf ("cpu.getRegC %d opcode:%d\n",cpu.getRegC(),opcode);
+    switch (cpu.getRegC()) {
+        case 0: // BDOS 0 System Reset
+        {
+            //JJcout << "Z80 reset after " << tstates << " t-states" << endl;
+            //printf ("Z80 reset after %d t-states\n",tstates);
+            finish = true;
+            break;
+        }
+        case 2: // BDOS 2 console char output
+        {
+            //JJ cout << (char) cpu.getRegE();
+            //printf("BDOS 2 %c",(char) cpu.getRegE());
+            break;
+        }
+        case 9: // BDOS 9 console string output (string terminated by "$")
+        {
+         char jj_cad[128]="";
+         int jj_cont_cad=0;
+         memset(jj_cad,0,50);
+         jj_cad[0]='\0';
+         
+            uint16_t strAddr = cpu.getRegDE();
+            while (z80Ram[strAddr] != '$')
+            {
+             //cout << (char) z80Ram[strAddr++];
+             jj_cad[jj_cont_cad]=(char)z80Ram[strAddr];            
+             strAddr++;
+             if (jj_cont_cad>=50)
+              break;
+             if (jj_cont_cad<50)
+              jj_cont_cad++;             
+            }
+            jj_cad[jj_cont_cad]='\0';
+            //printf("BDOS 9 len:%d dat:%s\n",jj_cont_cad,jj_cad);
+            //cout.flush();
+            break;
+        }
+        default:
+        {
+            //cout << "BDOS Call " << cpu.getRegC() << endl;
+            //printf("BDOS Call %c\n",cpu.getRegC());
+            finish = true;
+            //printf("finish\n");
+            //cout << finish << endl;
+        }
+    }
+    // opcode would be modified before the decodeOpcode method
+    return opcode;
+}
+
+void Z80sim::runTestJJ_poll(void)
+{
+ if (!finish) {
+  cpu.execute();
+  //printf("1\n");
+  //printf("gb_cont: %d\n",gb_cont);
+  //gb_cont++;
+ }
+}
+
+void Z80sim::runTestJJ(void)
+{
+ memset(z80Ram,0,sizeof z80Ram);
+ memset(z80Ports,0,sizeof z80Ports);
+// memcpy(&z80Ram[0x100],gb_programa,8590);
+ 
+    cpu.reset();
+    finish = false;
+    
+  //cpu.setRegPC(0x3B5);
+//  memcpy(z80Ram,rom0_jsanchezv,16384);
+ // for (int i=0; i<50;i++)
+ //  printf ("%02x",rom0_jsanchezv[i]);
+ // printf("\n"); 
+
+/*    z80Ram[0] = (uint8_t) 0xC3;
+    z80Ram[1] = 0x00;
+    z80Ram[2] = 0x01; // JP 0x100 CP/M TPA
+    z80Ram[5] = (uint8_t) 0xC9; // Return from BDOS call
+
+    //cpu.setBreakpoint(0x0005, true);
+    #ifdef WITH_BREAKPOINT_SUPPORT
+     cpu.setBreakpoint(true);
+     printf("cpu.setBreakpoint(true)\n");
+    #endif    */
+    //while (!finish) {
+    //    cpu.execute();
+    //} 
+}
+
+/*void Z80sim::runTest(std::ifstream* f) {
+    streampos size;
+    if (!f->is_open()) {
+        cout << "file NOT OPEN" << endl;
+        return;
+    } else cout << "file open" << endl;
+
+    size = f->tellg();
+    cout << "Test size: " << size << endl;
+    f->seekg(0, ios::beg);
+    f->read((char *) &z80Ram[0x100], size);
+    f->close();
+
+#ifdef WITH_BREAKPOINT_SUPPORT
+    cpu.setBreakpoint(true);
+#endif
+
+    cpu.reset();
+    finish = false;
+
+    z80Ram[0] = (uint8_t) 0xC3;
+    z80Ram[1] = 0x00;
+    z80Ram[2] = 0x01; // JP 0x100 CP/M TPA
+    z80Ram[5] = (uint8_t) 0xC9; // Return from BDOS call
+
+    while (!finish) {
+        cpu.execute();
+    }
+}*/
+
+Z80sim sim = Z80sim();
+#endif
+
+
+#ifdef use_lib_core_jsanchezv
+ //Emulacion de jsanchezv()
+ void loop_jsanchezv()
+ {
+  //printf("loop_jsanchezv\n");
+  sim.runTestJJ_poll();
+ }
+#endif
+
 void setup()
 {
  //DO NOT turn off peripherals to recover some memory
@@ -275,15 +566,17 @@ void setup()
  rom1 = (uint8_t *)gb_rom_0_sinclair_48k;
  rom2 = (uint8_t *)gb_rom_0_sinclair_48k;
  rom3 = (uint8_t *)gb_rom_0_sinclair_48k;
-
- ram0 = (byte *)malloc(16384);
- ram1 = (byte *)malloc(16384);
- ram2 = (byte *)malloc(16384);
- ram3 = (byte *)malloc(16384);
- ram4 = (byte *)malloc(16384);
- ram5 = (byte *)malloc(16384);
- ram6 = (byte *)malloc(16384);    
- ram7 = (byte *)malloc(16384);
+ 
+ #ifdef use_lib_core_rampa069
+  ram0 = (byte *)malloc(16384);
+  ram1 = (byte *)malloc(16384);
+  ram2 = (byte *)malloc(16384);
+  ram3 = (byte *)malloc(16384);
+  ram4 = (byte *)malloc(16384);
+  ram5 = (byte *)malloc(16384);
+  ram6 = (byte *)malloc(16384);    
+  ram7 = (byte *)malloc(16384);
+ #endif 
 
  //SDL_Generate_lookup_calcY();
  #ifdef use_lib_log_serial
@@ -382,8 +675,10 @@ void setup()
     memset((void *)z80ports_in,0x1f,32);//Optimice resize code
     
     #ifdef use_lib_vga_thread
-     vidQueue = xQueueCreate(1, sizeof(uint16_t *));
-     xTaskCreatePinnedToCore(&videoTask, "videoTask", 1024 * 4, NULL, 5, &videoTaskHandle, 0);
+     #ifdef use_lib_core_rampa069
+      vidQueue = xQueueCreate(1, sizeof(uint16_t *));
+      xTaskCreatePinnedToCore(&videoTask, "videoTask", 1024 * 4, NULL, 5, &videoTaskHandle, 0);
+     #endif 
     #endif
 
     #ifdef use_lib_sound_ay8912
@@ -862,7 +1157,8 @@ void videoTask(void *unused)
 // }
 //}
 
-#ifdef use_lib_vga_thread
+#ifdef use_lib_core_rampa069
+ #ifdef use_lib_vga_thread
 //Video con hilos
 void videoTask(void *unused)
 {
@@ -1390,7 +1686,7 @@ void videoTaskNoThread()
       //Serial.printf("Tiempo %d\n",time_prev);             
      #endif
 }
-
+ #endif
 #endif
 
 
@@ -1531,13 +1827,17 @@ void loop() {
      do_keyboard();
     }
     do_tinyOSD();
-        
+            
     if ((gb_current_delay_emulate_ms == 0) || (gb_run_emulacion == 1))
     {//Ejecutamos emulacion z80    
-     // ts1 = millis();    
-     zx_loop();
-     // ts2 = millis();
-    }
+     // ts1 = millis();         
+     #ifdef use_lib_core_rampa069        
+      zx_loop();
+     #else
+      loop_jsanchezv();
+     #endif      
+     // ts2 = millis();     
+    }    
 
     if (gb_current_delay_emulate_ms != 0)
     {
@@ -1569,21 +1869,23 @@ void loop() {
      PollMouse();
     #endif 
 
-    #ifdef use_lib_vga_thread
-     xQueueSend(vidQueue, &param, portMAX_DELAY);
-     while (videoTaskIsRunning)
-     {
-     }
-     gb_sdl_blit = 1;
-    #else
-     gbTimeVideoNow = millis();
-     if ((gbTimeVideoNow - gbTimeVideoIni) >= gbDelayVideo)     
-     {
-      gbTimeVideoIni = gbTimeVideoNow;
-      videoTaskNoThread();
-      gb_sdl_blit= 1;      
-     }
-    #endif
+    #ifdef use_lib_core_rampa069
+     #ifdef use_lib_vga_thread
+      xQueueSend(vidQueue, &param, portMAX_DELAY);
+      while (videoTaskIsRunning)
+      {
+      }
+      gb_sdl_blit = 1;
+     #else
+      gbTimeVideoNow = millis();
+      if ((gbTimeVideoNow - gbTimeVideoIni) >= gbDelayVideo)     
+      {
+       gbTimeVideoIni = gbTimeVideoNow;
+       videoTaskNoThread();
+       gb_sdl_blit= 1;      
+      }
+     #endif
+    #endif 
 
 
     gb_currentTime = millis();     
