@@ -1,10 +1,10 @@
-/* z80emu.c
- * Z80 processor emulator.
- *
- * Copyright (c) 2012-2017 Lin Ke-Fong
- *
- * This code is free, do whatever you want with it.
- */
+// z80emu.c
+// Z80 processor emulator.
+//
+// Copyright (c) 2012-2017 Lin Ke-Fong
+//
+// This code is free, do whatever you want with it.
+
 #include "dataFlash/gbtape.h"
 #include "Emulator/z80emu/z80emu.h"
 #include "Arduino.h"
@@ -64,41 +64,35 @@ void Z80EmuSelectTape(unsigned char aux)
 
 #define INDIRECT_HL 0x06
 
-/* Condition codes are encoded using 2 or 3 bits.  The xor table is needed for
- * negated conditions, it is used along with the and table.
- */
+// Condition codes are encoded using 2 or 3 bits.  The xor table is needed for
+// negated conditions, it is used along with the and table.
 
-static const int XOR_CONDITION_TABLE[8] = {
-
-    Z80_Z_FLAG, 0, Z80_C_FLAG, 0, Z80_P_FLAG, 0, Z80_S_FLAG, 0,
-
+//JJ static const int XOR_CONDITION_TABLE[8] = {
+static const unsigned char XOR_CONDITION_TABLE[8] = {    
+ Z80_Z_FLAG, 0, Z80_C_FLAG, 0, Z80_P_FLAG, 0, Z80_S_FLAG, 0,
 };
 
-static const int AND_CONDITION_TABLE[8] = {
-
-    Z80_Z_FLAG, Z80_Z_FLAG, Z80_C_FLAG, Z80_C_FLAG, Z80_P_FLAG, Z80_P_FLAG, Z80_S_FLAG, Z80_S_FLAG,
-
+//JJ static const int AND_CONDITION_TABLE[8] = {
+static const unsigned char AND_CONDITION_TABLE[8] = {
+ Z80_Z_FLAG, Z80_Z_FLAG, Z80_C_FLAG, Z80_C_FLAG, Z80_P_FLAG, Z80_P_FLAG, Z80_S_FLAG, Z80_S_FLAG,
 };
 
 /* RST instruction restart addresses, encoded by Y() bits of the opcode. */
 
-static const int RST_TABLE[8] = {
-
-    0x00, 0x08, 0x10, 0x18, 0x20, 0x28, 0x30, 0x38,
-
+//JJ static const int RST_TABLE[8] = {
+static const unsigned char RST_TABLE[8] = {    
+  0x00, 0x08, 0x10, 0x18, 0x20, 0x28, 0x30, 0x38,
 };
 
-/* There is an overflow if the xor of the carry out and the carry of the most
- * significant bit is not zero.
- */
+// There is an overflow if the xor of the carry out and the carry of the most
+// significant bit is not zero. 
 
-static const int OVERFLOW_TABLE[4] = {
-
+//JJ static const int OVERFLOW_TABLE[4] = {
+static const unsigned char OVERFLOW_TABLE[4] = {    
     0,
     Z80_V_FLAG,
     Z80_V_FLAG,
     0,
-
 };
 
 unsigned long ts1;
@@ -359,8 +353,13 @@ static int emulate(Z80_STATE *state, int opcode, int elapsed_cycles, int number_
         void **registers;
         int instruction;
 
-if (InterceptRoutineROM(&pc,state) == 1)
- return 0;
+        #ifdef use_lib_tape_rom_intercept
+         if (pc == 0x056B)
+         {
+          if (InterceptRoutineROM(&pc,state) == 1)
+           return 0;
+         }
+        #endif 
 
         Z80_FETCH_BYTE(pc, opcode);
         pc++;
@@ -369,7 +368,17 @@ if (InterceptRoutineROM(&pc,state) == 1)
 
         registers = state->register_table;
         // if (opcode != 0xdb)
-        delayMicroseconds((elapsed_cycles - last_cycles) / 5);
+        switch (gb_current_delay_emulate_div_microsec)
+        {
+         default: break;
+         case 2: delayMicroseconds((elapsed_cycles - last_cycles)>>1); break;
+         case 4: delayMicroseconds((elapsed_cycles - last_cycles)>>2); break;
+         case 5: delayMicroseconds((elapsed_cycles - last_cycles) / 5); break;
+         case 8: delayMicroseconds((elapsed_cycles - last_cycles)>>3); break;
+         case 16: delayMicroseconds((elapsed_cycles - last_cycles)>>4); break;         
+         case 32: delayMicroseconds((elapsed_cycles - last_cycles)>>5); break;
+         case 64: delayMicroseconds((elapsed_cycles - last_cycles)>>6); break;
+        }        
         // delayMicroseconds(1);
         last_cycles = elapsed_cycles;
 
@@ -381,137 +390,102 @@ if (InterceptRoutineROM(&pc,state) == 1)
         elapsed_cycles += 4;
         r++;
         switch (instruction) {
-
-            /* 8-bit load group. */
-
+            //8-bit load group
         case LD_R_R: {
-
             R(Y(opcode)) = R(Z(opcode));
             break;
         }
 
         case LD_R_N: {
-
             READ_N(R(Y(opcode)));
             break;
         }
 
         case LD_R_INDIRECT_HL: {
-
             if (registers == state->register_table) {
-
                 READ_BYTE(HL, R(Y(opcode)));
-
             } else {
-
                 int d;
-
                 READ_D(d);
                 d += HL_IX_IY;
                 READ_BYTE(d, S(Y(opcode)));
-
                 elapsed_cycles += 5;
             }
             break;
         }
 
         case LD_INDIRECT_HL_R: {
-
             if (registers == state->register_table) {
-
                 WRITE_BYTE(HL, R(Z(opcode)));
-
             } else {
-
                 int d;
-
                 READ_D(d);
                 d += HL_IX_IY;
                 WRITE_BYTE(d, S(Z(opcode)));
-
                 elapsed_cycles += 5;
             }
             break;
         }
 
         case LD_INDIRECT_HL_N: {
-
             int n;
-
             if (registers == state->register_table) {
-
                 READ_N(n);
                 WRITE_BYTE(HL, n);
-
             } else {
-
                 int d;
-
                 READ_D(d);
                 d += HL_IX_IY;
                 READ_N(n);
                 WRITE_BYTE(d, n);
-
                 elapsed_cycles += 2;
             }
-
             break;
         }
 
         case LD_A_INDIRECT_BC: {
-
             READ_BYTE(BC, A);
             break;
         }
 
         case LD_A_INDIRECT_DE: {
-
             READ_BYTE(DE, A);
             break;
         }
 
         case LD_A_INDIRECT_NN: {
-
             int nn;
-
             READ_NN(nn);
             READ_BYTE(nn, A);
             break;
         }
 
         case LD_INDIRECT_BC_A: {
-
             WRITE_BYTE(BC, A);
             break;
         }
 
         case LD_INDIRECT_DE_A: {
-
             WRITE_BYTE(DE, A);
             break;
         }
 
         case LD_INDIRECT_NN_A: {
-
             int nn;
-
             READ_NN(nn);
             WRITE_BYTE(nn, A);
             break;
         }
 
         case LD_A_I_LD_A_R: {
-
             int a, f;
-
             a = opcode == OPCODE_LD_A_I ? state->i : (state->r & 0x80) | (r & 0x7f);
             f = SZYX_FLAGS_TABLE[a];
 
-            /* Note: On a real processor, if an interrupt
-             * occurs during the execution of either
-             * "LD A, I" or "LD A, R", the parity flag is
-             * reset. That can never happen here.
-             */
+            // Note: On a real processor, if an interrupt
+            // occurs during the execution of either
+            // "LD A, I" or "LD A, R", the parity flag is
+            // reset. That can never happen here.             
 
             f |= state->iff2 << Z80_P_FLAG_SHIFT;
             f |= F & Z80_C_FLAG;
@@ -524,35 +498,26 @@ if (InterceptRoutineROM(&pc,state) == 1)
         }
 
         case LD_I_A_LD_R_A: {
-
             if (opcode == OPCODE_LD_I_A)
-
                 state->i = A;
-
             else {
-
                 state->r = A;
                 r = A & 0x7f;
             }
-
             elapsed_cycles += 9;
-
             break;
         }
 
-            /* 16-bit load group. */
+            //16-bit load group.
 
         case LD_RR_NN: {
-
             READ_NN(RR(P(opcode)));
             elapsed_cycles += 6;
             break;
         }
 
         case LD_HL_INDIRECT_NN: {
-
             int nn;
-
             READ_NN(nn);
             READ_WORD(nn, HL_IX_IY);
             elapsed_cycles += 12;
@@ -560,9 +525,7 @@ if (InterceptRoutineROM(&pc,state) == 1)
         }
 
         case LD_RR_INDIRECT_NN: {
-
             int nn;
-
             READ_NN(nn);
             READ_WORD(nn, RR(P(opcode)));
             elapsed_cycles += 26;
@@ -570,59 +533,49 @@ if (InterceptRoutineROM(&pc,state) == 1)
         }
 
         case LD_INDIRECT_NN_HL: {
-
             int nn;
-
             READ_NN(nn);
             WRITE_WORD(nn, HL_IX_IY);
             break;
         }
 
         case LD_INDIRECT_NN_RR: {
-
             int nn;
-
             READ_NN(nn);
             WRITE_WORD(nn, RR(P(opcode)));
             break;
         }
 
         case LD_SP_HL: {
-
             SP = HL_IX_IY;
             elapsed_cycles += 2;
             break;
         }
 
         case PUSH_SS: {
-
             PUSH(SS(P(opcode)));
             // elapsed_cycles++;
             break;
         }
 
         case POP_SS: {
-
             POP(SS(P(opcode)));
             break;
         }
 
-            /* Exchange, block transfer and search group. */
+            //Exchange, block transfer and search group.
 
         case EX_DE_HL: {
-
             EXCHANGE(DE, HL);
             break;
         }
 
         case EX_AF_AF_PRIME: {
-
             EXCHANGE(AF, state->alternates[Z80_AF]);
             break;
         }
 
         case EXX: {
-
             EXCHANGE(BC, state->alternates[Z80_BC]);
             EXCHANGE(DE, state->alternates[Z80_DE]);
             EXCHANGE(HL, state->alternates[Z80_HL]);
@@ -630,22 +583,16 @@ if (InterceptRoutineROM(&pc,state) == 1)
         }
 
         case EX_INDIRECT_SP_HL: {
-
             int t;
-
             READ_WORD(SP, t);
             WRITE_WORD(SP, HL_IX_IY);
             HL_IX_IY = t;
-
             elapsed_cycles += 3;
-
             break;
         }
 
         case LDI_LDD: {
-
             int n, f, d;
-
             elapsed_cycles++;
             elapsed_cycles += delay_contention(DE, elapsed_cycles);
             elapsed_cycles++;
@@ -1175,16 +1122,15 @@ if (InterceptRoutineROM(&pc,state) == 1)
             break;
         }
 
-            /* General-purpose arithmetic and CPU control group. */
+            //General-purpose arithmetic and CPU control group.
 
         case DAA: {
 
             int a, c, d;
 
-            /* The following algorithm is from
-             * comp.sys.sinclair's FAQ.
-             */
-
+            // The following algorithm is from
+            // comp.sys.sinclair's FAQ.
+        
             a = A;
             if (a > 0x99 || (F & Z80_C_FLAG)) {
 

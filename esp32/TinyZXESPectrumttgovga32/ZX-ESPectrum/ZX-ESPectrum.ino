@@ -39,11 +39,12 @@
 
 #ifdef use_lib_sound_ay8912
  #include "fabgl.h" //Para fabgl
- #include "fabutils.h" //Para fabgl
+ #include "fabutils.h" //Para fabgl 
 #endif 
 
 #ifdef use_lib_mouse_kempston
  #include "fabgl.h" //Para fabgl
+ #include "WiFiGeneric.h"; //Fix WiFiGeneric.h No such file or directory
  //#include "fabutils.h" //Para fabgl
  //#include <mouse.h>
 #endif
@@ -152,6 +153,7 @@ unsigned char gb_current_ms_poll_sound = gb_ms_sound;
 unsigned char gb_current_ms_poll_keyboard = gb_ms_keyboard;
 //unsigned char gb_current_frame_crt_skip= gb_frame_crt_skip; //No salta frames
 unsigned char gb_current_delay_emulate_ms= gb_delay_emulate_ms;
+unsigned char gb_current_delay_emulate_div_microsec= gb_delay_emulate_div_microsec;
 
 
 volatile byte keymap[256];
@@ -172,7 +174,7 @@ static uint8_t * gb_local_cache_ram[8] =
  ram0,ram1,ram2,ram3,ram4,ram5,ram6,ram7
 };
 
-uint8_t local_fast_readbyte(uint16_t addr)
+/*uint8_t local_fast_readbyte(uint16_t addr)
 {
   switch (addr) 
   {
@@ -190,7 +192,7 @@ uint8_t local_fast_readbyte(uint16_t addr)
         // Serial.printf("Address: %x Returned address %x  Bank: %x\n",addr,addr-0xc000,bank_latch);
         break;
   }    
-}
+}*/
 
 void swap_flash(word *a, word *b);
 
@@ -220,25 +222,25 @@ int halfsec, sp_int_ctr, evenframe, updateframe;
 #endif
 
 // SETUP *************************************
-#ifdef COLOR_3B
+#ifdef use_lib_vga8colors
  #ifdef use_lib_vga_low_memory
   VGA3BitI vga;
- #else  
+ #else
   VGA3Bit vga;
+ #endif
+#else
+ #ifdef use_lib_vga64colors
+  #ifdef use_lib_vga_low_memory
+   VGA6BitI vga;
+  #else
+   VGA6Bit vga;
+  #endif  
  #endif
 #endif
 
-#ifdef COLOR_6B
- #ifdef use_lib_vga_low_memory
-  VGA6BitI vga;
- #else
-  VGA6Bit vga;
- #endif 
-#endif
-
-#ifdef COLOR_14B
-VGA14Bit vga;
-#endif
+//JJ #ifdef COLOR_14B
+//JJ VGA14Bit vga;
+//JJ #endif
 
 #ifdef use_lib_sound_ay8912
  inline void sound_cycleFabgl(void);
@@ -258,50 +260,58 @@ void setup()
  //DO NOT turn off peripherals to recover some memory
  //esp_bt_controller_deinit(); //Reduzco consumo RAM
  //esp_bt_controller_mem_release(ESP_BT_MODE_BTDM); //Reduzco consumo RAM
-    #ifdef use_lib_log_serial
-     Serial.begin(115200);         
-     Serial.printf("HEAP BEGIN %d\n", ESP.getFreeHeap());
-     //JJSerial.printf("PSRAM size: %d\n", ESP.getPsramSize());
-    #endif
+ #ifdef use_lib_log_serial
+  Serial.begin(115200);         
+  Serial.printf("HEAP BEGIN %d\n", ESP.getFreeHeap());
+  //JJSerial.printf("PSRAM size: %d\n", ESP.getPsramSize());
+ #endif
 
-    #ifdef use_lib_lookup_ram
-     gb_lookup_calcY[0]= 0; //force ram compiler,not const progmem
-    #endif
+ #ifdef use_lib_lookup_ram
+  gb_lookup_calcY[0]= 0; //force ram compiler,not const progmem
+ #endif
 
-    //SetMode48K();
-    rom0 = (uint8_t *)gb_rom_0_sinclair_48k;    
-    rom1 = (uint8_t *)gb_rom_0_sinclair_48k;
-    rom2 = (uint8_t *)gb_rom_0_sinclair_48k;
-    rom3 = (uint8_t *)gb_rom_0_sinclair_48k;
+ //SetMode48K();
+ rom0 = (uint8_t *)gb_rom_0_sinclair_48k;    
+ rom1 = (uint8_t *)gb_rom_0_sinclair_48k;
+ rom2 = (uint8_t *)gb_rom_0_sinclair_48k;
+ rom3 = (uint8_t *)gb_rom_0_sinclair_48k;
 
-    ram0 = (byte *)malloc(16384);
-    ram1 = (byte *)malloc(16384);
-    ram2 = (byte *)malloc(16384);
-    ram3 = (byte *)malloc(16384);
-    ram4 = (byte *)malloc(16384);
-    ram5 = (byte *)malloc(16384);
-    ram6 = (byte *)malloc(16384);    
-    ram7 = (byte *)malloc(16384);
+ ram0 = (byte *)malloc(16384);
+ ram1 = (byte *)malloc(16384);
+ ram2 = (byte *)malloc(16384);
+ ram3 = (byte *)malloc(16384);
+ ram4 = (byte *)malloc(16384);
+ ram5 = (byte *)malloc(16384);
+ ram6 = (byte *)malloc(16384);    
+ ram7 = (byte *)malloc(16384);
 
-    //SDL_Generate_lookup_calcY();
-    #ifdef use_lib_log_serial
-     Serial.printf("HEAP AFTER RAM %d\n", ESP.getFreeHeap());
-    #endif 
+ //SDL_Generate_lookup_calcY();
+ #ifdef use_lib_log_serial
+  Serial.printf("HEAP AFTER RAM %d\n", ESP.getFreeHeap());
+ #endif 
 
-#ifdef COLOR_3B
-   #ifndef use_lib_vga320x200
-    vga.init(vga.MODE360x200, RED_PIN_3B, GRE_PIN_3B, BLU_PIN_3B, HSYNC_PIN, VSYNC_PIN);    
+ #ifdef use_lib_vga8colors
+  #ifndef use_lib_vga320x200
+   #ifdef use_lib_vga320x240
+    vga.init(vga.MODE320x240, RED_PIN_3B, GRE_PIN_3B, BLU_PIN_3B, HSYNC_PIN, VSYNC_PIN);        
    #else
-    vga.init(vga.MODE320x200, RED_PIN_3B, GRE_PIN_3B, BLU_PIN_3B, HSYNC_PIN, VSYNC_PIN);    
-   #endif     
-#endif
+    vga.init(vga.MODE360x200, RED_PIN_3B, GRE_PIN_3B, BLU_PIN_3B, HSYNC_PIN, VSYNC_PIN);    
+   #endif 
+  #else   
+   vga.init(vga.MODE320x200, RED_PIN_3B, GRE_PIN_3B, BLU_PIN_3B, HSYNC_PIN, VSYNC_PIN);       
+  #endif     
+ #endif
 
 #ifdef COLOR_6B
    const int redPins[] = {RED_PINS_6B};
    const int grePins[] = {GRE_PINS_6B};
    const int bluPins[] = {BLU_PINS_6B};
    #ifndef use_lib_vga320x200
-    vga.init(vga.MODE360x200, redPins, grePins, bluPins, HSYNC_PIN, VSYNC_PIN);
+    #ifdef use_lib_vga320x240
+     vga.init(vga.MODE320x240, redPins, grePins, bluPins, HSYNC_PIN, VSYNC_PIN);
+    #else   
+     vga.init(vga.MODE360x200, redPins, grePins, bluPins, HSYNC_PIN, VSYNC_PIN);
+    #endif
    #else
     vga.init(vga.MODE320x200, redPins, grePins, bluPins, HSYNC_PIN, VSYNC_PIN);
    #endif 
@@ -313,16 +323,38 @@ void setup()
     const int bluPins[] = {BLU_PINS_14B};
     vga.init(vga.MODE360x200, redPins, grePins, bluPins, HSYNC_PIN, VSYNC_PIN);
 #endif
-
+    
     #ifdef use_lib_log_serial
      Serial.printf("HEAP after vga  %d \n", ESP.getFreeHeap());
     #endif
     vga.setFont(Font6x8);
-    vga.clear(BLACK);
+    vga.clear(BLACK);    
+    #ifdef use_lib_vga320x240
+     vga.clear(BLACK);
+     vga.fillRect(0,0,320,240,BLACK);
+     vga.fillRect(0,0,320,240,BLACK);//Repeat Fix visual defect   
+    #else     
+     #ifdef use_lib_vga320x200
+      vga.clear(BLACK);
+      vga.fillRect(0,0,320,200,BLACK);
+      vga.fillRect(0,0,320,200,BLACK);//Repeat Fix visual defect 
+     #else      
+      #ifdef use_lib_vga360x200
+       vga.clear(BLACK);
+       vga.fillRect(0,0,360,200,BLACK);
+       vga.fillRect(0,0,360,200,BLACK);//Repeat Fix visual defect 
+      #endif
+     #endif 
+    #endif 
+    vTaskDelay(2);
 
     #ifndef use_lib_resample_speaker
      pinMode(SPEAKER_PIN, OUTPUT);
-     digitalWrite(SPEAKER_PIN, LOW);
+     #ifdef use_lib_ultrafast_speaker
+      REG_WRITE(GPIO_OUT_W1TC_REG , BIT25); //LOW clear
+     #else 
+      digitalWrite(SPEAKER_PIN, LOW);
+     #endif 
     #endif 
     //JJ pinMode(EAR_PIN, INPUT);
     //JJ pinMode(MIC_PIN, OUTPUT);
@@ -343,6 +375,7 @@ void setup()
 
     // START Z80
     //JJ Serial.println(MSG_Z80_RESET);
+    ReloadLocalCacheROMram(); //Recargo punteros RAM ROM
     zx_setup();
 
     // make sure keyboard ports are FF
@@ -839,7 +872,9 @@ void videoTask(void *unused)
     unsigned char color_attrib, flash;
     //int pixel_map;//, bright;
     int zx_vidcalc, calc_y;
-    unsigned char ** ptrVGA;    
+    #ifdef use_lib_ultrafast_vga
+     unsigned char ** ptrVGA;
+    #endif
 
     word zx_fore_color, zx_back_color, tmp_color;    
 
@@ -852,11 +887,12 @@ void videoTask(void *unused)
     #endif
 
     videoTaskIsRunning = true;
-    uint16_t *param;    
-    #define gbvgaMask8Colores 0x3F
-    #define gbvgaBits8Colores 0x40 
-    
-    ptrVGA = vga.backBuffer;
+    uint16_t *param;
+    #ifdef use_lib_ultrafast_vga
+     #define gbvgaMask8Colores 0x3F
+     #define gbvgaBits8Colores 0x40
+     ptrVGA = vga.backBuffer;
+    #endif 
     
     while (1) 
     {        
@@ -898,22 +934,68 @@ if (skipFrame != 1)
         //time_prev = micros();     
         for (int vga_lin = 0; vga_lin < 200; vga_lin++)        
         {
-            #ifdef use_lib_vgafast
-             auxColor = (gb_cache_zxcolor[borderTemp]);
+            #ifdef use_lib_ultrafast_vga             
+             #ifdef use_lib_vga_low_memory
+              //Modo bajo y rapido
+              #ifdef use_lib_vga8colors
+               auxColor = (gb_cache_zxcolor[borderTemp]); //8 colores seguro bajo
+              #else
+               auxColor = (gb_cache_zxcolor[borderTemp] & gbvgaMask8Colores)|gbvgaBits8Colores; //Modo bajo
+              #endif 
+             #else
+              //Modo alto y rapido 
+              auxColor = (gb_cache_zxcolor[borderTemp] & gbvgaMask8Colores)|gbvgaBits8Colores; //Modo bajo
+             #endif 
             #else
-             auxColor = (gb_cache_zxcolor[borderTemp] & gbvgaMask8Colores)|gbvgaBits8Colores;
+             //Modo lento
+             auxColor = (gb_cache_zxcolor[borderTemp]);
             #endif
+            
             if (vga_lin < 3 || vga_lin > 194)
             {
                 #ifdef use_lib_screen_offset
                 if ((gb_screen_yIni+vga_lin)>=0)
                 #endif
                 {                                    
+                 #if defined(use_lib_vga320x200) || defined(use_lib_vga320x240)                    
+                  for (int bor = 0; bor < 296; bor++)
+                 #else
                   for (int bor = 32; bor < 328; bor++)
-                  {
+                 #endif
+                  {                      
                     //vga.backBuffer[vga_lin][bor^2] = auxColor;
                     //vga.backBuffer[(gb_screen_yIni+vga_lin)][(gb_screen_xIni+bor)^2] = auxColor;
-                    #ifdef use_lib_vga_low_memory
+                    #ifdef use_lib_ultrafast_vga
+                     #ifdef use_lib_vga_low_memory
+                      //Modo bajo y rapido
+                      #ifdef use_lib_vga8colors
+                       vga.dotFast((gb_screen_xIni+bor),(gb_screen_yIni+vga_lin),auxColor); //8 colores seguro bajo
+                      #else
+                       #ifdef use_lib_screen_offset
+                        ptrVGA[(gb_screen_yIni+vga_lin)][(gb_screen_xIni+bor)] = auxColor;
+                       #else
+                        ptrVGA[vga_lin][bor] = auxColor;                      
+                       #endif
+                      #endif 
+                     #else
+                      //Modo alto y rapido 
+                      #ifdef use_lib_screen_offset
+                       ptrVGA[(gb_screen_yIni+vga_lin)][(gb_screen_xIni+bor)^2] = auxColor;
+                      #else
+                       ptrVGA[vga_lin][bor^2] = auxColor;
+                      #endif
+                     #endif
+                    #else
+                     //Modo lento  
+                     #ifdef use_lib_screen_offset
+                      vga.dotFast((gb_screen_xIni+bor),(gb_screen_yIni+vga_lin),auxColor);
+                     #else
+                      vga.dotFast(bor,vga_lin,auxColor);
+                     #endif
+                    #endif 
+
+
+/*                    #ifdef use_lib_vga_low_memory
                      vga.dotFast((gb_screen_xIni+bor),(gb_screen_yIni+vga_lin),auxColor);
                     #else
                      #ifdef use_lib_screen_offset
@@ -922,18 +1004,62 @@ if (skipFrame != 1)
                       ptrVGA[vga_lin][bor^2] = auxColor;
                      #endif
                     #endif
+                    vga.dotFast((gb_screen_xIni+bor),(gb_screen_yIni+vga_lin),auxColor);
+                    */
                   }
                 }
             }
             else            
             {
+               #if defined(use_lib_vga320x200) || defined (use_lib_vga320x240)
+                for (int bor = 0; bor < 20; bor++)
+               #else
                 for (int bor = 32; bor < 52; bor++)
+               #endif 
                 {
                     //vga.backBuffer[vga_lin][bor^2] = auxColor;
                     //vga.backBuffer[vga_lin][(bor+276)^2] = auxColor;
                     //vga.backBuffer[(gb_screen_yIni+vga_lin)][(gb_screen_xIni+bor)^2] = auxColor;
                     //vga.backBuffer[(gb_screen_yIni+vga_lin)][(gb_screen_xIni+bor+276)^2] = auxColor;
-                    #ifdef use_lib_vga_low_memory
+                  #ifdef use_lib_ultrafast_vga
+                   #ifdef use_lib_vga_low_memory
+                    //Modo bajo y rapido
+                    #ifdef use_lib_vga8colors
+                     vga.dotFast((gb_screen_xIni+bor),(gb_screen_yIni+vga_lin),auxColor);
+                     vga.dotFast((gb_screen_xIni+bor+276),(gb_screen_yIni+vga_lin),auxColor);                    
+                    #else
+                     #ifdef use_lib_screen_offset
+                      ptrVGA[(gb_screen_yIni+vga_lin)][(gb_screen_xIni+bor)] = auxColor;
+                      ptrVGA[(gb_screen_yIni+vga_lin)][(gb_screen_xIni+bor+276)] = auxColor;
+                     #else
+                      ptrVGA[vga_lin][bor] = auxColor;
+                      ptrVGA[vga_lin][(bor+276)] = auxColor;
+                     #endif
+                    #endif
+                   #else
+                    //Modo alto y rapido
+                    #ifdef use_lib_screen_offset
+                     ptrVGA[(gb_screen_yIni+vga_lin)][(gb_screen_xIni+bor)^2] = auxColor;
+                     ptrVGA[(gb_screen_yIni+vga_lin)][(gb_screen_xIni+bor+276)^2] = auxColor;
+                    #else
+                     ptrVGA[vga_lin][bor^2] = auxColor;
+                     ptrVGA[vga_lin][(bor+276)^2] = auxColor;
+                    #endif                    
+                   #endif
+                  #else
+                   //Modo lento
+                   #ifdef use_lib_screen_offset
+                    vga.dotFast((gb_screen_xIni+bor),(gb_screen_yIni+vga_lin),auxColor);
+                    vga.dotFast((gb_screen_xIni+bor+276),(gb_screen_yIni+vga_lin),auxColor);
+                   #else
+                    vga.dotFast(bor,vga_lin,auxColor);
+                    vga.dotFast((bor+276),vga_lin,auxColor);
+                   #endif
+                  #endif
+
+
+
+                    /*#ifdef use_lib_vga_low_memory
                      vga.dotFast((gb_screen_xIni+bor),(gb_screen_yIni+vga_lin),auxColor);
                      vga.dotFast((gb_screen_xIni+bor+276),(gb_screen_yIni+vga_lin),auxColor);
                     #else
@@ -944,7 +1070,8 @@ if (skipFrame != 1)
                       ptrVGA[vga_lin][bor^2] = auxColor;
                       ptrVGA[vga_lin][(bor+276)^2] = auxColor;
                      #endif
-                    #endif
+                    #endif                    
+                   vga.dotFast((gb_screen_xIni+bor),(gb_screen_yIni+vga_lin),auxColor);*/
                 }
                 byte_offset = ((vga_lin - 3)<<5); //optimizado (vga_lin - 3) * 32
                 for (unsigned char ff = 0; ff < 32; ff++) // foreach byte in line
@@ -976,7 +1103,68 @@ if (skipFrame != 1)
                         {
                          swap_flash(&zx_fore_color, &zx_back_color);
                         }
-                        #ifdef use_lib_vga_low_memory
+                        #ifdef use_lib_ultrafast_vga
+                         #ifdef use_lib_vga_low_memory
+                          //Modo bajo y rapido
+                          #ifdef use_lib_vga8colors
+                           auxColor = ((gb_ptr_ram_video[byte_offset] & bitpos) != 0)? zx_fore_color:zx_back_color; //8 colores seguro bajo
+                           #if defined(use_lib_vga320x240) || defined(use_lib_vga320x200)
+                            vga.dotFast((gb_screen_xIni+zx_vidcalc + 20),(gb_screen_yIni+(calc_y + 3)),auxColor);
+                           #else
+                            vga.dotFast((gb_screen_xIni+zx_vidcalc + 52),(gb_screen_yIni+(calc_y + 3)),auxColor);
+                           #endif 
+                          #else
+                           auxColor = ((gb_ptr_ram_video[byte_offset] & bitpos) != 0)? ((zx_fore_color & gbvgaMask8Colores)|gbvgaBits8Colores):((zx_back_color & gbvgaMask8Colores)|gbvgaBits8Colores); //Modo bajo
+                           #ifdef use_lib_screen_offset                         
+                            #if defined(use_lib_vga320x240) || defined(use_lib_vga320x200)
+                             ptrVGA[(gb_screen_yIni+(calc_y + 3))][(gb_screen_xIni+zx_vidcalc + 20)] = auxColor;
+                            #else
+                             ptrVGA[(gb_screen_yIni+(calc_y + 3))][(gb_screen_xIni+zx_vidcalc + 52)] = auxColor;
+                            #endif
+                           #else
+                            #if defined(use_lib_vga320x240) || defined(use_lib_vga320x200)
+                             ptrVGA[(calc_y + 3)][(zx_vidcalc + 20)] = auxColor;
+                            #else
+                             ptrVGA[(calc_y + 3)][(zx_vidcalc + 52)] = auxColor;
+                            #endif
+                           #endif
+                          #endif
+                         #else 
+                          //Modo alto y rapido
+                          auxColor = ((gb_ptr_ram_video[byte_offset] & bitpos) != 0)? ((zx_fore_color & gbvgaMask8Colores)|gbvgaBits8Colores):((zx_back_color & gbvgaMask8Colores)|gbvgaBits8Colores);
+                          #ifdef use_lib_screen_offset
+                           #if defined(use_lib_vga320x240) || defined(use_lib_vga320x200)
+                            ptrVGA[(gb_screen_yIni+(calc_y + 3))][(gb_screen_xIni+zx_vidcalc + 20)^2] = auxColor;
+                           #else
+                            ptrVGA[(gb_screen_yIni+(calc_y + 3))][(gb_screen_xIni+zx_vidcalc + 52)^2] = auxColor;
+                           #endif 
+                          #else                          
+                           #if defined(use_lib_vga320x240) || defined(use_lib_vga320x200)
+                            ptrVGA[(calc_y + 3)][(zx_vidcalc + 20)^2] = auxColor;
+                           #else
+                            ptrVGA[(calc_y + 3)][(zx_vidcalc + 52)^2] = auxColor;
+                           #endif 
+                          #endif
+                         #endif
+                        #else
+                         //Modo lento
+                         auxColor = ((gb_ptr_ram_video[byte_offset] & bitpos) != 0)? zx_fore_color:zx_back_color; //8 colores seguro bajo
+                         #ifdef use_lib_screen_offset
+                          #if defined(use_lib_vga320x240) || defined(use_lib_vga320x200)
+                           vga.dotFast((gb_screen_xIni+zx_vidcalc + 20),(gb_screen_yIni+(calc_y + 3)),auxColor);
+                          #else
+                           vga.dotFast((gb_screen_xIni+zx_vidcalc + 52),(gb_screen_yIni+(calc_y + 3)),auxColor);
+                          #endif
+                         #else
+                          #if defined(use_lib_vga320x240) || defined(use_lib_vga320x200)
+                           vga.dotFast((zx_vidcalc + 20),(calc_y + 3),auxColor);
+                          #else
+                           vga.dotFast((zx_vidcalc + 52),(calc_y + 3),auxColor);
+                          #endif 
+                         #endif
+                        #endif                         
+                           
+                        /*#ifdef use_lib_vga_low_memory
                          auxColor = ((gb_ptr_ram_video[byte_offset] & bitpos) != 0)? zx_fore_color:zx_back_color;
                         #else
                          auxColor = ((gb_ptr_ram_video[byte_offset] & bitpos) != 0)? ((zx_fore_color & gbvgaMask8Colores)|gbvgaBits8Colores):((zx_back_color & gbvgaMask8Colores)|gbvgaBits8Colores);
@@ -992,6 +1180,9 @@ if (skipFrame != 1)
                          #endif
                           ptrVGA[(calc_y + 3)][(zx_vidcalc + 52)^2] = auxColor;
                         #endif
+                        auxColor = ((gb_ptr_ram_video[byte_offset] & bitpos) != 0)? zx_fore_color:zx_back_color;
+                        vga.dotFast((gb_screen_xIni+zx_vidcalc + 52),(gb_screen_yIni+(calc_y + 3)),auxColor);*/
+
                         zx_vidcalc++;
                         bitpos = (bitpos>>1);
                     }
@@ -1032,14 +1223,14 @@ void videoTaskNoThread()
     unsigned char auxColor;
     unsigned char * gb_ptr_ram_1800_video;
     unsigned char * gb_ptr_ram_video;
-    unsigned char bitpos;   
-    unsigned char ** ptrVGA; 
+    unsigned char bitpos;
+    #ifdef use_lib_ultrafast_vga
+     unsigned char ** ptrVGA;
+     #define gbvgaMask8Colores 0x3F
+     #define gbvgaBits8Colores 0x40
+     ptrVGA = vga.backBuffer;
+    #endif
 
-    #define gbvgaMask8Colores 0x3F
-    #define gbvgaBits8Colores 0x40    
-    
-
-    ptrVGA = vga.backBuffer;
     if (!video_latch){
      gb_ptr_ram_1800_video = &ram5[0x1800];
      gb_ptr_ram_video = ram5;
@@ -1051,43 +1242,78 @@ void videoTaskNoThread()
 
         //time_prev = micros();     
         for (int vga_lin = 0; vga_lin < 200; vga_lin++)        
-        {
-            #ifdef use_lib_vga_low_memory
-             auxColor = (gb_cache_zxcolor[borderTemp]);
+        {            
+            #ifdef use_lib_ultrafast_vga
+             #ifdef use_lib_vga_low_memory
+              //Modo bajo y rapido
+              #ifdef use_lib_vga8colors
+               auxColor = (gb_cache_zxcolor[borderTemp]); //8 colores seguro bajo
+              #else               
+               auxColor = (gb_cache_zxcolor[borderTemp] & gbvgaMask8Colores)|gbvgaBits8Colores; //Modo bajo
+              #endif 
+             #else
+              //Modo alto y rapido 
+              auxColor = (gb_cache_zxcolor[borderTemp] & gbvgaMask8Colores)|gbvgaBits8Colores;
+             #endif 
             #else
-             auxColor = (gb_cache_zxcolor[borderTemp] & gbvgaMask8Colores)|gbvgaBits8Colores;
+             //Modo lento
+             auxColor = (gb_cache_zxcolor[borderTemp]);
             #endif
-        
+                
             if (vga_lin < 3 || vga_lin > 194)
             {
-                #ifndef use_lib_vga320x200
-                 for (int bor = 32; bor < 328; bor++)
-                #else
+                #if defined(use_lib_vga320x200) || defined(use_lib_vga320x240)                 
                  for (int bor = 0; bor < 296; bor++)
+                #else 
+                 for (int bor = 32; bor < 328; bor++)                
                 #endif
-                {
-                  #ifdef use_lib_vga_low_memory
-                   vga.dotFast(bor,vga_lin,auxColor);
+                {                    
+                  #ifdef use_lib_ultrafast_vga
+                   #ifdef use_lib_vga_low_memory
+                    //Modo bajo y rapido
+                    #ifdef use_lib_vga8colors
+                     vga.dotFast(bor,vga_lin,auxColor); //8 colores seguro bajo
+                    #else 
+                     ptrVGA[vga_lin][bor] = auxColor; //Modo bajo
+                    #endif 
+                   #else
+                    //Modo alto y rapido
+                    ptrVGA[vga_lin][bor^2] = auxColor;
+                   #endif
                   #else
-                   ptrVGA[vga_lin][bor^2] = auxColor;
+                   //Modo lento                   
+                   vga.dotFast(bor,vga_lin,auxColor);
                   #endif
                 }                
             }
             else            
             {
-                #ifndef use_lib_vga320x200
-                 for (int bor = 32; bor < 52; bor++)
-                #else
+                #if defined(use_lib_vga320x200) || defined (use_lib_vga320x240)                 
                  for (int bor = 0; bor < 20; bor++)
-                #endif
-                {
-                    #ifdef use_lib_vga_low_memory
-                     vga.dotFast(bor,vga_lin,auxColor);
-                     vga.dotFast((bor+276),vga_lin,auxColor);
-                    #else
-                     ptrVGA[vga_lin][bor^2] = auxColor;
-                     ptrVGA[vga_lin][(bor+276)^2] = auxColor;
-                    #endif
+                #else
+                 for (int bor = 32; bor < 52; bor++)
+                #endif               
+                {                    
+                 #ifdef use_lib_ultrafast_vga
+                  #ifdef use_lib_vga_low_memory
+                   //Modo bajo y rapido
+                   #ifdef use_lib_vga8colors
+                    vga.dotFast(bor,vga_lin,auxColor); //8 colores seguro bajo
+                    vga.dotFast((bor+276),vga_lin,auxColor);
+                   #else 
+                    ptrVGA[vga_lin][bor] = auxColor; //Modo bajo
+                    ptrVGA[vga_lin][(bor+276)] = auxColor;
+                   #endif
+                  #else
+                   //Modo alto y rapido
+                   ptrVGA[vga_lin][bor^2] = auxColor;
+                   ptrVGA[vga_lin][(bor+276)^2] = auxColor;
+                  #endif
+                 #else
+                  //Modo lento
+                  vga.dotFast(bor,vga_lin,auxColor); //8 colores seguro bajo
+                  vga.dotFast((bor+276),vga_lin,auxColor);
+                 #endif
                 }
                 byte_offset = ((vga_lin - 3)<<5); //optimizado (vga_lin - 3) * 32
                 for (unsigned char ff = 0; ff < 32; ff++) // foreach byte in line
@@ -1106,24 +1332,51 @@ void videoTaskNoThread()
                         {
                          swap_flash(&zx_fore_color, &zx_back_color);
                         }
-                        #ifdef use_lib_vga_low_memory
-                         auxColor = ((gb_ptr_ram_video[byte_offset] & bitpos) != 0)? zx_fore_color : zx_back_color;
-                        #else
+                        #ifdef use_lib_ultrafast_vga
                          auxColor = ((gb_ptr_ram_video[byte_offset] & bitpos) != 0)? ((zx_fore_color & gbvgaMask8Colores)|gbvgaBits8Colores):((zx_back_color & gbvgaMask8Colores)|gbvgaBits8Colores);
-                        #endif
-                        #ifndef use_lib_vga320x200
-                         #ifdef use_lib_vga_low_memory
-                          vga.dotFast((zx_vidcalc + 52),(calc_y + 3),auxColor);
-                         #else
-                          ptrVGA[(calc_y + 3)][(zx_vidcalc + 52)^2] = auxColor;
-                         #endif
                         #else
-                         #ifdef use_lib_vga_low_memory                         
-                         vga.dotFast((zx_vidcalc + 20),(calc_y + 3),auxColor);
-                         #else
-                          ptrVGA[(calc_y + 3)][(zx_vidcalc + 20)^2] = auxColor;
-                         #endif
+                         auxColor = ((gb_ptr_ram_video[byte_offset] & bitpos) != 0)? zx_fore_color : zx_back_color;
                         #endif
+
+                        
+                        #if defined(use_lib_vga320x240) || defined(use_lib_vga320x200)
+                         //320x240
+                         #ifdef use_lib_ultrafast_vga
+                          #ifdef use_lib_vga_low_memory
+                           //Modo bajo y rapido
+                           #ifdef use_lib_vga8colors
+                            vga.dotFast((zx_vidcalc + 20),(calc_y + 3),auxColor);
+                           #else 
+                            ptrVGA[(calc_y + 3)][(zx_vidcalc + 20)] = auxColor;
+                           #endif
+                          #else
+                           //Modo alto y rapido  
+                           ptrVGA[(calc_y + 3)][(zx_vidcalc + 20)^2] = auxColor;
+                          #endif                            
+                         #else
+                          //Modo lento
+                          vga.dotFast((zx_vidcalc + 20),(calc_y + 3),auxColor);
+                         #endif                         
+                        #else
+                         //360x200
+                         #ifdef use_lib_ultrafast_vga
+                          #ifdef use_lib_vga_low_memory
+                           //Modo bajo y rapido
+                           #ifdef use_lib_vga8colors
+                            vga.dotFast((zx_vidcalc + 52),(calc_y + 3),auxColor); //8 colores seguro bajo
+                           #else
+                            ptrVGA[(calc_y + 3)][(zx_vidcalc + 52)] = auxColor;  //Modo bajo
+                           #endif
+                          #else
+                           //Modo alto y rapido
+                           ptrVGA[(calc_y + 3)][(zx_vidcalc + 52)^2] = auxColor;
+                          #endif                           
+                         #else
+                          //Modo lento 
+                          vga.dotFast((zx_vidcalc + 52),(calc_y + 3),auxColor);
+                         #endif
+                        #endif 
+
                         zx_vidcalc++;
                         bitpos = (bitpos>>1);
                     }
@@ -1328,7 +1581,7 @@ void loop() {
      {
       gbTimeVideoIni = gbTimeVideoNow;
       videoTaskNoThread();
-      gb_sdl_blit= 1;
+      gb_sdl_blit= 1;      
      }
     #endif
 

@@ -9,6 +9,7 @@
 #include "Emulator/clock.h"
 #include "Emulator/z80Input.h"
 #include "Emulator/z80main.h"
+#include "gb_globals.h"
 
 #define RAM_AVAILABLE 0xC000
 
@@ -77,8 +78,8 @@ static uint8_t * gb_local_cache_ram[8] =
 };
 
 extern "C" {
-uint8_t readbyte(uint16_t addr);
-uint8_t fast_readbyte(uint16_t addr);
+//JJ uint8_t readbyte(uint16_t addr);
+inline uint8_t fast_readbyte(uint16_t addr);
 uint16_t readword(uint16_t addr);
 void writebyte(uint16_t addr, uint8_t data);
 void writeword(uint16_t addr, uint16_t data);
@@ -86,8 +87,27 @@ uint8_t input(uint8_t portLow, uint8_t portHigh);
 void output(uint8_t portLow, uint8_t portHigh, uint8_t data);
 }
 
-void zx_setup() {
-    _zxContext.readbyte = readbyte;
+
+void ReloadLocalCacheROMram()
+{
+ gb_local_cache_rom[0]=rom0;
+ gb_local_cache_rom[1]=rom1;
+ gb_local_cache_rom[2]=rom2;
+ gb_local_cache_rom[3]=rom3;
+
+ gb_local_cache_ram[0]=ram0;
+ gb_local_cache_ram[1]=ram1;
+ gb_local_cache_ram[2]=ram2;
+ gb_local_cache_ram[3]=ram3;
+ gb_local_cache_ram[4]=ram4;
+ gb_local_cache_ram[5]=ram5;
+ gb_local_cache_ram[6]=ram6;
+ gb_local_cache_ram[7]=ram7;  
+}
+
+void zx_setup()
+{
+    _zxContext.fast_readbyte = fast_readbyte;
     _zxContext.readword = readword;
     _zxContext.writeword = writeword;
     _zxContext.writebyte = writebyte;
@@ -100,7 +120,7 @@ void zx_setup() {
 void zx_reset() {
     memset(z80ports_in, 0x1F, 128);
     borderTemp = 7;
-    bank_latch = 0;
+    bank_latch = 0; gb_ptr_IdRomRam[3]=0;
     video_latch = 0;
     rom_latch = 0;
     paging_lock = 0;
@@ -112,22 +132,54 @@ void zx_reset() {
     Z80Reset(&_zxCpu);
 }
 
-int32_t zx_loop() {
-    int32_t result = -1;
-    byte tmp_color = 0;
+//JJ int32_t 
+void zx_loop() 
+{
+ //JJ int32_t result = -1;
+ //JJ byte tmp_color = 0;
+ unsigned long ini_time,fin_time,aux_timeEmulate,aux_timeInterrupt;
+ ini_time=micros();
 
-    _total = Z80Emulate(&_zxCpu, cycles_per_step, &_zxContext);
-    Z80Interrupt(&_zxCpu, 0xff, &_zxContext);
-  //  Serial.println(_total);
+ _total = Z80Emulate(&_zxCpu, cycles_per_step, &_zxContext);
+ fin_time=micros();
+ aux_timeEmulate= fin_time-ini_time;
 
-    return result;
+ ini_time=micros();
+ Z80Interrupt(&_zxCpu, 0xff, &_zxContext);
+ fin_time=micros();
+ aux_timeInterrupt= fin_time-ini_time;
+    
+ #ifdef use_lib_log_serial    
+  //Serial.printf("Total:%d Z80Emul:%d Z80Int:%d\n",_total,aux_timeEmulate,aux_timeInterrupt);
+ #endif 
+
+ //JJ return result;
 }
 
+unsigned char gb_ptr_IdRomRam[4]={
+ 0,5,2,0
+}; //El ultimo es bank_latch
 
 //Lectura rapida
-extern "C" uint8_t fast_readbyte(uint16_t addr)
+extern "C" inline uint8_t fast_readbyte(uint16_t addr)
 {
-  switch (addr) 
+
+  unsigned char idRomRam = (addr>>14);
+  if (idRomRam == 0)
+   return (gb_local_cache_rom[rom_in_use][addr]);
+  else
+   return (gb_local_cache_ram[(gb_ptr_IdRomRam[idRomRam])][(addr & 0x3fff)]);
+
+  /*unsigned char idRomRam = (addr>>14);
+  switch(idRomRam)
+  {
+   case 0: return (gb_local_cache_rom[rom_in_use][addr]);  break;
+   case 1: return ram5[(addr & 0x3fff)]; break;
+   case 2: return ram2[(addr & 0x3fff)]; break;
+   case 3: return (gb_local_cache_ram[bank_latch][(addr & 0x3fff)]); break;
+  }*/
+
+  /*switch (addr) 
   {
     case 0x0000 ... 0x3fff:
         return (gb_local_cache_rom[rom_in_use][addr]);
@@ -142,63 +194,94 @@ extern "C" uint8_t fast_readbyte(uint16_t addr)
         return (gb_local_cache_ram[bank_latch][(addr- 0xc000)]);        
         // Serial.printf("Address: %x Returned address %x  Bank: %x\n",addr,addr-0xc000,bank_latch);
         break;
-  }    
+  }    */
 }
 
-extern "C" uint8_t readbyte(uint16_t addr) {
-    switch (addr) {
-    case 0x0000 ... 0x3fff:
-        switch (rom_in_use) {
-        case 0:
-            return rom0[addr];
-        case 1:
-            return rom1[addr];
-        case 2:
-            return rom2[addr];
-        case 3:
-            return rom3[addr];
-        }
-    case 0x4000 ... 0x7fff:
-        return ram5[addr - 0x4000];
-        break;
-    case 0x8000 ... 0xbfff:
-        return ram2[addr - 0x8000];
-        break;
-    case 0xc000 ... 0xffff:
-        switch (bank_latch) {
-        case 0:
-            return ram0[addr - 0xc000];
-            break;
-        case 1:
-            return ram1[addr - 0xc000];
-            break;
-        case 2:
-            return ram2[addr - 0xc000];
-            break;
-        case 3:
-            return ram3[addr - 0xc000];
-            break;
-        case 4:
-            return ram4[addr - 0xc000];
-            break;
-        case 5:
-            return ram5[addr - 0xc000];
-            break;
-        case 6:            
-            return ram6[addr - 0xc000]; //JJ            
-            break;
-        case 7:            
-            return ram7[addr - 0xc000]; //JJ            
-            break;
-        }
-        // Serial.printf("Address: %x Returned address %x  Bank: %x\n",addr,addr-0xc000,bank_latch);
-        break;
-    }
-}
+//extern "C" uint8_t readbyte(uint16_t addr) {
+//    switch (addr) {
+//    case 0x0000 ... 0x3fff:
+//        switch (rom_in_use) {
+//        case 0:
+//            return rom0[addr];
+//        case 1:
+//            return rom1[addr];
+//        case 2:
+//            return rom2[addr];
+//        case 3:
+//            return rom3[addr];
+//        }
+//    case 0x4000 ... 0x7fff:
+//        return ram5[addr - 0x4000];
+//        break;
+//    case 0x8000 ... 0xbfff:
+//        return ram2[addr - 0x8000];
+//        break;
+//    case 0xc000 ... 0xffff:
+//        switch (bank_latch) {
+//        case 0:
+//            return ram0[addr - 0xc000];
+//            break;
+//        case 1:
+//            return ram1[addr - 0xc000];
+//            break;
+//        case 2:
+//            return ram2[addr - 0xc000];
+//            break;
+//        case 3:
+//            return ram3[addr - 0xc000];
+//            break;
+//        case 4:
+//            return ram4[addr - 0xc000];
+//            break;
+//        case 5:
+//            return ram5[addr - 0xc000];
+//            break;
+//        case 6:            
+//            return ram6[addr - 0xc000]; //JJ            
+//            break;
+//        case 7:            
+//            return ram7[addr - 0xc000]; //JJ            
+//            break;
+//        }
+//        // Serial.printf("Address: %x Returned address %x  Bank: %x\n",addr,addr-0xc000,bank_latch);
+//        break;
+//    }
+//}
 
-extern "C" uint16_t readword(uint16_t addr) { return ((readbyte(addr + 1) << 8) | readbyte(addr)); }
+extern "C" uint16_t readword(uint16_t addr) { return ((fast_readbyte(addr + 1) << 8) | fast_readbyte(addr)); }
 
 extern "C" void writebyte(uint16_t addr, uint8_t data) {
+   //Modo rapido
+  unsigned char idRomRam = (addr>>14);
+  if (idRomRam != 0)
+   gb_local_cache_ram[(gb_ptr_IdRomRam[idRomRam])][(addr & 0x3fff)] = data;  
+
+  /*unsigned char idRomRam = (addr>>14);
+  switch(idRomRam)
+  {
+   case 0: return;
+   case 1: ram5[(addr & 0x3fff)] = data; break;
+   case 2: ram2[(addr & 0x3fff)] = data; break;   
+   case 3: gb_local_cache_ram[bank_latch][(addr & 0x3fff)] = data; break;
+  }
+  return;*/
+
+  /* switch (addr) 
+   {
+    case 0x0000 ... 0x3fff:
+        return;
+    case 0x4000 ... 0x7fff:
+        ram5[addr - 0x4000] = data;
+        break;
+    case 0x8000 ... 0xbfff:
+        ram2[addr - 0x8000] = data;
+        break;
+    case 0xc000 ... 0xffff:
+        gb_local_cache_ram[bank_latch][(addr- 0xc000)] = data;
+        break;
+   }
+   return;*/
+
 
     //  if (addr >= (uint16_t)0x4000 && addr <= (uint16_t)0x7FFF)
     //  {
@@ -208,7 +291,7 @@ extern "C" void writebyte(uint16_t addr, uint8_t data) {
     // if (addr >= 0x8000)
     //   Serial.printf("Address: %x  Bank: %x\n",addr,bank_latch);
 
-    switch (addr) {
+/*    switch (addr) {
     case 0x0000 ... 0x3fff:
         return;
     case 0x4000 ... 0x7fff:
@@ -247,7 +330,7 @@ extern "C" void writebyte(uint16_t addr, uint8_t data) {
         // Serial.println("plin");
         break;
     }
-    return;
+    return;*/
 }
 
 extern "C" void writeword(uint16_t addr, uint16_t data) {
@@ -340,7 +423,14 @@ extern "C" void output(uint8_t portLow, uint8_t portHigh, uint8_t data) {
 
         #ifndef use_lib_redirect_tapes_speaker                 
          #ifndef use_lib_resample_speaker
-          digitalWrite(SPEAKER_PIN, bitRead(data, 4)); // speaker
+          #ifdef use_lib_ultrafast_speaker
+           if (bitRead(data, 4))
+            REG_WRITE(GPIO_OUT_W1TS_REG , BIT25); //High Set
+           else 
+            REG_WRITE(GPIO_OUT_W1TC_REG , BIT25); //High Set           
+          #else
+           digitalWrite(SPEAKER_PIN, bitRead(data, 4)); // speaker
+          #endif 
          #endif
          #ifdef use_lib_resample_speaker
          gbSoundSpeaker = bitRead(data, 4);
@@ -354,7 +444,11 @@ extern "C" void output(uint8_t portLow, uint8_t portHigh, uint8_t data) {
         //JJ digitalWrite(MIC_PIN, bitRead(data, 3)); // tape_out
         #ifdef use_lib_redirect_tapes_speaker         
          #ifndef use_lib_resample_speaker
-          digitalWrite(SPEAKER_PIN,(bitRead(data, 4) | bitRead(data, 3))); //redirection save tape          
+          #ifdef use_lib_ultrafast_speaker           
+           REG_WRITE((bitRead(data, 4) | bitRead(data, 3))?GPIO_OUT_W1TS_REG:GPIO_OUT_W1TC_REG , BIT25); //High Set                   
+          #else
+           digitalWrite(SPEAKER_PIN,(bitRead(data, 4) | bitRead(data, 3))); //redirection save tape          
+          #endif 
          #endif
          #ifdef use_lib_resample_speaker
           gbSoundSpeaker = (bitRead(data, 4) | bitRead(data, 3));
@@ -457,7 +551,7 @@ extern "C" void output(uint8_t portLow, uint8_t portHigh, uint8_t data) {
                 paging_lock = bitRead(tmp_data, 5);
                 rom_latch = bitRead(tmp_data, 4);
                 video_latch = bitRead(tmp_data, 3);
-                bank_latch = tmp_data & 0x7;
+                bank_latch = tmp_data & 0x7; gb_ptr_IdRomRam[3]= bank_latch;
                 // rom_in_use=0;
                 bitWrite(rom_in_use, 1, sp3_rom);
                 bitWrite(rom_in_use, 0, rom_latch);

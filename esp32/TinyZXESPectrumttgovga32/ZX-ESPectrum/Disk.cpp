@@ -10,6 +10,7 @@
 #include "def/types.h"
 #include "osd.h"
 #include "gbConfig.h"
+#include "gb_globals.h";
 
 //void IRAM_ATTR kb_interruptHandler(void);
 //void zx_reset();
@@ -184,7 +185,7 @@ void load_tape2Flash(unsigned char id)
     {
         rom_latch = 0;
         rom_in_use = 0;
-        bank_latch = 0;
+        bank_latch = 0; gb_ptr_IdRomRam[3]= 0;
         paging_lock = 1;
     }   
    
@@ -227,7 +228,7 @@ void load_ram2Flash(unsigned char id)
     {
         rom_latch = 0;
         rom_in_use = 0;
-        bank_latch = 0;
+        bank_latch = 0; gb_ptr_IdRomRam[3]=0;
         paging_lock = 1;
     }
     //if (sna_size < 50000 && cfg_arch != "48K") 
@@ -236,10 +237,10 @@ void load_ram2Flash(unsigned char id)
         rom_in_use = 1;
         rom_latch = 1;
         paging_lock = 1;
-        bank_latch = 0;
+        bank_latch = 0; gb_ptr_IdRomRam[3]=0;
         video_latch = 0;
         paging_lock = 1;
-        bank_latch = 0;
+        bank_latch = 0; gb_ptr_IdRomRam[3]=0;
         video_latch = 0;
     }
     size_read = 0;
@@ -339,9 +340,9 @@ void load_ram2Flash(unsigned char id)
 
         byte tmp_byte;
         for (int a = 0xc000; a < 0xffff; a++) {
-            bank_latch = 0;
-            tmp_byte = readbyte(a);
-            bank_latch = tmp_port & 0x07;
+            bank_latch = 0; gb_ptr_IdRomRam[3]=0;
+            tmp_byte = fast_readbyte(a);
+            bank_latch = tmp_port & 0x07; gb_ptr_IdRomRam[3]=bank_latch;
             writebyte(a, tmp_byte);
         }
 
@@ -349,7 +350,7 @@ void load_ram2Flash(unsigned char id)
         byte tmp_latch = tmp_port & 0x7;
         for (int page = 0; page < 8; page++) {
             if (page != tmp_latch && page != 2 && page != 5) {
-                bank_latch = page;
+                bank_latch = page; gb_ptr_IdRomRam[3]= page;
                 #ifdef use_lib_log_serial
                  Serial.printf("Page %d actual_latch: %d\n", page, bank_latch);
                 #endif 
@@ -364,7 +365,7 @@ void load_ram2Flash(unsigned char id)
         video_latch = bitRead(tmp_port, 3);
         rom_latch = bitRead(tmp_port, 4);
         paging_lock = bitRead(tmp_port, 5);
-        bank_latch = tmp_latch;
+        bank_latch = tmp_latch; gb_ptr_IdRomRam[3]= tmp_latch;
         rom_in_use = rom_latch;
     }
     //JJ lhandle.close();
@@ -393,6 +394,7 @@ void load_rom2flash(unsigned char is48k,unsigned char id)
   if (id < max_list_rom_48)
   {  
    rom0= (uint8_t*)gb_list_roms_48k_data[id];
+   ReloadLocalCacheROMram(); //Recargo punteros rom ram
    //SetMode48K();
   }
  }
@@ -404,6 +406,7 @@ void load_rom2flash(unsigned char is48k,unsigned char id)
    rom1= (uint8_t*)gb_list_roms_128k_data[id][1];
    rom2= (uint8_t*)gb_list_roms_128k_data[id][2];
    rom3= (uint8_t*)gb_list_roms_128k_data[id][3];
+   ReloadLocalCacheROMram(); //Recargo punteros rom ram
   //SetMode128K();
   }
  }

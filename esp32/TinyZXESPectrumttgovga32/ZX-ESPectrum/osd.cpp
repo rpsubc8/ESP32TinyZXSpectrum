@@ -90,6 +90,17 @@ const char * gb_osd_screen_values[max_gb_osd_screen_values]={
  "0"
 };
 
+#define max_gb_osd_speed_div_emulate 8
+const char * gb_osd_speed_div_emulate[max_gb_osd_speed_div_emulate]={
+ "5",
+ "2",
+ "4",
+ "8",
+ "16",
+ "32",
+ "64",
+ "0"
+};
 
 #define max_gb_main_menu 9
 const char * gb_main_menu[max_gb_main_menu]={
@@ -119,12 +130,13 @@ const char * gb_speed_menu[max_gb_speed_menu]={
  "16x"
 };
 
-#define max_gb_speed_videoaudio_options_menu 4
+#define max_gb_speed_videoaudio_options_menu 5
 const char * gb_speed_videoaudio_options_menu[max_gb_speed_videoaudio_options_menu]={
  "Audio poll",
  "Video delay",
- "SPEED",
- "Keyboard poll"
+ "Video speed",
+ "Keyboard poll",
+ "Div Delay Emul"
 };
 
 #define max_gb_speed_sound_menu 9
@@ -152,7 +164,11 @@ const char * gb_reset_menu[max_gb_reset_menu]={
 // //SDL_WaitEvent(gb_osd_sdl_event);
 //}
 
-#define gb_pos_x_menu 120
+#ifdef use_lib_vga360x200
+ #define gb_pos_x_menu 120
+#else
+ #define gb_pos_x_menu 80
+#endif 
 #define gb_pos_y_menu 50
 #define gb_osd_max_rows 10
 
@@ -183,15 +199,25 @@ void OSDMenuRowsDisplayScroll(const char **ptrValue,unsigned char currentId,unsi
 unsigned char ShowTinyMenu(const char *cadTitle,const char **ptrValue,unsigned char aMax)
 {
  unsigned char aReturn=0;
- unsigned char salir=0; 
- #ifndef use_lib_vga320x200
-  vga.fillRect(0,0,360,200,BLACK);
-  vga.fillRect(0,0,360,200,BLACK);//Repeat Fix visual defect 
- #else
+ unsigned char salir=0;  
+ #ifdef use_lib_vga320x240
   vga.clear(BLACK);
-  vga.fillRect(0,0,320,200,BLACK);
-  vga.fillRect(0,0,320,200,BLACK);//Repeat Fix visual defect 
- #endif 
+  vga.fillRect(0,0,320,240,BLACK);
+  vga.fillRect(0,0,320,240,BLACK);//Repeat Fix visual defect   
+ #else
+  #ifdef use_lib_vga320x200
+   vga.clear(BLACK);
+   vga.fillRect(0,0,320,200,BLACK);
+   vga.fillRect(0,0,320,200,BLACK);//Repeat Fix visual defect 
+  #else
+   #ifdef use_lib_vga360x200
+    vga.clear(BLACK);
+    vga.fillRect(0,0,360,200,BLACK);
+    vga.fillRect(0,0,360,200,BLACK);//Repeat Fix visual defect 
+   #endif
+  #endif  
+ #endif
+ vTaskDelay(2);
  vga.setTextColor(WHITE,BLACK);
  vga.setCursor((gb_pos_x_menu-(32)), gb_pos_y_menu-16); 
  vga.print("Mod ZXESPectrum by Ackerman");
@@ -277,7 +303,8 @@ void ShowTinySNAMenu()
   //cfg_arch = "128K";
   //gb_cfg_arch_is48K = 0;
   changeSna2Flash(aSelNum);
- }         
+ }
+ vTaskDelay(2);
 }
 
 //Menu ROM
@@ -377,6 +404,19 @@ void ShowTinySpeedMenu()
     return;
    gb_current_ms_poll_keyboard= aSelNumSpeed;
    break;
+  case 4: aSelNumSpeed= ShowTinyMenu("Delay Div Emul",gb_osd_speed_div_emulate,max_gb_osd_speed_div_emulate);
+   switch (aSelNumSpeed)
+   {
+    case 0: gb_current_delay_emulate_div_microsec= 5; break;
+    case 1: gb_current_delay_emulate_div_microsec= 2; break;
+    case 2: gb_current_delay_emulate_div_microsec= 4; break;    
+    case 3: gb_current_delay_emulate_div_microsec= 8; break;
+    case 4: gb_current_delay_emulate_div_microsec= 16; break;    
+    case 5: gb_current_delay_emulate_div_microsec= 32; break;
+    case 6: gb_current_delay_emulate_div_microsec= 64; break;
+    case 7: gb_current_delay_emulate_div_microsec= 0; break;
+   }
+   break;   
   default: break;
  }
 }
