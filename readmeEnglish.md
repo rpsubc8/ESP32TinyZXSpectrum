@@ -15,7 +15,7 @@ I have made several modifications:
  <li>Optimization of the video routine</li>
  <li>Support for wireless mode</li>
  <li>Kempston mouse emulation with fabgl</li>
- <li>Emulation of AY8912</li>
+ <li>Emulation of AY8912 with fabgl</li>
  <li>Redirecting tape recording pulses to the speaker</li>
  <li>Resample option in speaker mode and mix with AY8912 (unstable)</li>
  <li>Possibility to choose brightness mode and 8 color modes in compilation.</li>
@@ -23,10 +23,12 @@ I have made several modifications:
  <li>Screen adjustment X, Y</li>
  <li>R, G, B color scale, green phosphorous screen style</li>
  <li>Emulation video speed menu</li>
+ <li>Time division emulation speed menu (5 by default)</li>
  <li>Support for reading SCR files</li>
  <li>Support for loading screen files into TAP files</li>
  <li>Load BASIC from TAP (tape intercept routine)</li>
  <li>Created Windows port under SDL</li>
+ <li>Video modes 360x200, 320x240, 320x200</li>
 </ul>
 
 <br>
@@ -35,8 +37,8 @@ Required:
  <ul>
   <li>Visual Studio 1.48.1 PLATFORM 2.2.0</li>
   <li>Arduino IDE 1.8.11</li>
-  <li>Arduino fabgl bookstore 0.9.0</li>
-  <li>Arduino bitluni bookcase 0.3.3</li>
+  <li>Arduino fabgl bookstore 0.9.0 (included in PLATFORM project). The Arduino IDE has to be installed.</li>
+  <li>Arduino bitluni bookcase 0.3.3 (included in project)</li>
  </ul>
  
 
@@ -47,7 +49,7 @@ Then the working directory <b>TinyZXESPectrumttgovga32</b> will be selected.
 We must modify the file <b>platformio.ini</b> the option <b>upload_port</b> to select the COM port where we have our TTGO VGA32 board.
 <center><img src='https://raw.githubusercontent.com/rpsubc8/ESP32TinyZXSpectrum/main/preview/previewPlatformIO.gif'></center>
 Then we will proceed to compile and upload to the board. No partitions are used, so we must upload all the compiled binary.
-Everything is prepared so we don't have to install the bitluni libraries. However, if we need the sound and mouse options, we will need to install the libraries of <b>fabgl</b>.
+Everything is prepared so we don't have to install the bitluni libraries. However, if we need the sound and mouse options, we will need the <b>fabgl</b> library, which can be found within the project on PLATFORM.
 
 
 <br>
@@ -88,17 +90,23 @@ The file <b>gbConfig.h</b> options are selected:
  <li><b>use_lib_resample_speaker:</b> The speaker output is emulated as a sine wave on channel 1. The fabgl library 0.9.0 is required.</li>
  <li><b>use_lib_redirect_tapes_speaker:</b> Redirects the tone output from the tape to the speaker.</li>
  <li><b>use_lib_vga8colors:</b> Force RGB, only 3 pins and no brightness mode, 8 colors</li>
+ <li><b>use_lib_vga64colors:</b> Forced to use RRGGBB, 6-pin, no brightness mode, i.e. with 8 colors</li>
  <li><b>use_lib_use_bright:</b> Force to use RRGGBB, 6 pins, with brightness mode, 16 colors</li>
- <li><b>use_lib_vga_low_memory:</b> Experimental mode with low video RAM consumption</li>
+ <li><b>use_lib_vga_low_memory:</b> Experimental mode with low video RAM consumption. In some video mode it gives problems.</li>
+ <li><b>use_lib_ultrafast_vga:</b>Fast mode (double) access to video. May give problems if combined with low ram video mode.</li>
  <li><b>use_lib_vga_thread:</b> Use the video output in a thread. If it is done in polling mode, neither the screen adjustment nor the brightness modes will be used. The polling mode is intended for debugging</li>
  <li><b>use_lib_screen_offset:</b> Allows to move to the left and up the screen.</li>
  <li><b>use_lib_skip_frame:</b> Allows to skip frames when emulating</li>
- <li><b>use_lib_vga320x200:</b> Experimental video mode for low RAM consumption</li>
+ <li><b>use_lib_vga320x200:</b> Experimental video mode for low RAM consumption.</li> 
+ <li><b>use_lib_vga320x240:</b> Experimental video mode for low RAM consumption.</li>
  <li><b>use_lib_log_serial:</b> Logs are sent by serial port usb</li>
  <li><b>gb_ms_keyboard:</b> The number of milliseconds of polling must be specified for the keyboard.</li>
  <li><b>gb_ms_sound:</b> The number of polling milliseconds must be specified for sound AY8912.</li>
  <li><b>gb_frame_crt_skip:</b> The number of video frames to be skipped</li>
  <li><b>gb_delay_emulate_ms:</b> Milliseconds of waiting for each completed frame.</li>
+ <li><b>gb_delay_emulate_div_microsec:</b> The timeout division in microseconds of emulation is specified (default 5). The higher value, the faster the emulation goes. The value 0, eliminates the wait, that is, it is the fastest.</li>
+ <li><b>use_lib_tape_rom_intercept:</b> Controls the 0x056B tape reading routine.</li>
+ <li><b>use_lib_ultrafast_speaker:</b> Fast mode of audio I/O pin activation.</li> 
 </ul>
 
 
