@@ -15,7 +15,7 @@ He realizado varias modificaciones:
  <li>Optimización de la rutina de video</li>
  <li>Soporte para modo sin hilos</li> 
  <li>Emulación de ratón Kempston con fabgl</li>  
- <li>Emulación de AY8912</li>
+ <li>Emulación de AY8912 con fabgl</li>
  <li>Redirección de los pulsos de grabación de cinta al altavoz</li>
  <li>Opción de resampleo en modo speaker y mezcla con AY8912 (inestable)</li>
  <li>Posibilidad de elegir modo brillo y modos de 8 colores en compilación.</li>
@@ -23,10 +23,12 @@ He realizado varias modificaciones:
  <li>Ajuste de pantalla X, Y</li>
  <li>Escala de colores R, G, B, al estilo de las pantallas de fósforo verde</li>
  <li>Menú de velocidad de video de emulación</li>
+ <li>Menú de velocidad de emulación por división de tiempo (5 por defecto).</li>
  <li>Soporte para leer archivos SCR</li>
  <li>Soporte para cargar archivos screen dentro de ficheros .TAP</li>
  <li>Carga de BASIC desde .TAP (intercepción de rutina de cinta)</li> 
- <li>Creado port de Windows bajo SDL</li>  
+ <li>Creado port de Windows bajo SDL</li>
+ <li>Modos de video 360x200, 320x240, 320x200</li>  
 </ul>
 
 <br>
@@ -35,8 +37,8 @@ Se requiere:
  <ul>
   <li>Visual Studio 1.48.1 PLATFORMIO 2.2.0</li>
   <li>Arduino IDE 1.8.11</li>
-  <li>Librería Arduino fabgl 0.9.0</li>
-  <li>Librería Arduino bitluni 0.3.3</li>
+  <li>Librería Arduino fabgl 0.9.0 (incluida en proyecto PLATFORMIO). El el Arduino IDE se tiene que instalar.</li>
+  <li>Librería Arduino bitluni 0.3.3 (incluida en proyecto)</li>
  </ul>
  
 
@@ -47,7 +49,7 @@ Luego se seleccionará el directorio de trabajo <b>TinyZXESPectrumttgovga32</b>.
 Debemos modificar el fichero <b>platformio.ini</b> la opción <b>upload_port</b> para seleccionar el puerto COM donde tenemos nuestra placa TTGO VGA32.
 <center><img src='https://raw.githubusercontent.com/rpsubc8/ESP32TinyZXSpectrum/main/preview/previewPlatformIO.gif'></center>
 Luego procederemos a compilar y subir a la placa. No se usa particiones, así que debemos subir todo el binario compilado.
-Está todo preparado para no tener que instalar las librerias de bitluni. Sin embargo, si necesitamos las opciones de sonido y ratón, necesitaremos instalar las librerias de <b>fabgl</b>.
+Está todo preparado para no tener que instalar las librerias de bitluni. Sin embargo, si necesitamos las opciones de sonido y ratón, necesitaremos la librería <b>fabgl</b>, que seen cuentra dentro del proyecto en PLATFORMIO.
 
 
 <br>
@@ -87,17 +89,23 @@ El archivo <b>gbConfig.h</b> se seleccionan las opciones:
  <li><b>use_lib_resample_speaker:</b> La salida del speaker se emula como onda senoidal en el canal 1. Está aún en un estado muy experimental. Se requiere la librería fabgl 0.9.0</li>
  <li><b>use_lib_redirect_tapes_speaker:</b> Redirige la salida de tonos de la cinta al altavoz.</li>
  <li><b>use_lib_vga8colors:</b> Obliga a usar RGB, sólo 3 pines y sin modo de brillo, 8 colores</li>
+ <li><b>use_lib_vga64colors:</b> Obliga a usar RRGGBB, 6 pines, sin modo de brillo, es decir con 8 colores</li>
  <li><b>use_lib_use_bright:</b> Obliga a usar RRGGBB, 6 pines, con modo brillo, 16 colores</li>
- <li><b>use_lib_vga_low_memory:</b> Modo experimental de bajo consumo de RAM de video</li>
+ <li><b>use_lib_vga_low_memory:</b> Modo experimental de bajo consumo de RAM de video. En algún modo de video da problemas.</li>
+ <li><b>use_lib_ultrafast_vga:</b> Modo ultrarápido de acceso a video. Puede dar problemas si se combina con el modo de video de bajo consumo de ram.</li> 
  <li><b>use_lib_vga_thread:</b> Utiliza la salida de video en un hilo. Si se hace en modo polling, no se usará ni el ajuste de pantalla, ni los modos de brillo. El modo polling está pensado para depuración</li>
  <li><b>use_lib_screen_offset:</b> Permite mover a la izquierda y arriba la pantalla.</li>
  <li><b>use_lib_skip_frame:</b> Permite saltarse frames al emular</li>
  <li><b>use_lib_vga320x200:</b> Modo experimental de video para bajo consumo de RAM</li>
+ <li><b>use_lib_vga320x240:</b> Modo experimental de video para bajo consumo de RAM</li>
  <li><b>use_lib_log_serial:</b> Se envian logs por puerto serie usb</li>
  <li><b>gb_ms_keyboard:</b> Se debe especificar el número de milisegundos de polling para el teclado.</li>
  <li><b>gb_ms_sound:</b> Se debe especificar el número de milisegundos de polling para el sonido AY8912.</li>
  <li><b>gb_frame_crt_skip:</b> El número de frames de video que deben saltarse.</li>
  <li><b>gb_delay_emulate_ms:</b> Milisegundos de espera por cada frame completado.</li>
+ <li><b>gb_delay_emulate_div_microsec:</b> Se especifica la división de espera de tiempo en microsegundos de emulación (por defecto 5). A valor más alto, más rápido va la emulación. El valor 0, elimina la espera, es decir, es lo más rápido.</li> 
+ <li><b>use_lib_tape_rom_intercept:</b> Controla la rutina 0x056B de leer cintas.</li>
+ <li><b>use_lib_ultrafast_speaker:</b> Modo rápido de activación de pin E/S audio.</li>
 </ul>
 
 
