@@ -40,6 +40,8 @@ Se requiere:
   <li>Librería Arduino fabgl 0.9.0 (incluida en proyecto PLATFORMIO). El el Arduino IDE se tiene que instalar.</li>
   <li>Librería Arduino bitluni 0.3.3 (incluida en proyecto)</li>
  </ul>
+ <center><img src='https://raw.githubusercontent.com/rpsubc8/ESP32TinyZXSpectrum/main/preview/ttgovga32v12.jpg'></center>
+<br>
  
 
 <h1>PlatformIO</h1>
