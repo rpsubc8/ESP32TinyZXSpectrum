@@ -40,6 +40,8 @@ Required:
   <li>Arduino fabgl bookstore 0.9.0 (included in PLATFORM project). The Arduino IDE has to be installed.</li>
   <li>Arduino bitluni bookcase 0.3.3 (included in project)</li>
  </ul>
+ <center><img src='https://raw.githubusercontent.com/rpsubc8/ESP32TinyZXSpectrum/main/preview/ttgovga32v12.jpg'></center>
+<br> 
  
 
 <h1>PlatformIO</h1>
