@@ -96,6 +96,7 @@ El archivo <b>gbConfig.h</b> se seleccionan las opciones:
  <li><b>use_lib_vga_thread:</b> Utiliza la salida de video en un hilo. Si se hace en modo polling, no se usará ni el ajuste de pantalla, ni los modos de brillo. El modo polling está pensado para depuración</li>
  <li><b>use_lib_screen_offset:</b> Permite mover a la izquierda y arriba la pantalla.</li>
  <li><b>use_lib_skip_frame:</b> Permite saltarse frames al emular</li>
+ <li><b>use_lib_vga360x200:</b> Modo de video normal</li>
  <li><b>use_lib_vga320x200:</b> Modo experimental de video para bajo consumo de RAM</li>
  <li><b>use_lib_vga320x240:</b> Modo experimental de video para bajo consumo de RAM</li>
  <li><b>use_lib_log_serial:</b> Se envian logs por puerto serie usb</li>
