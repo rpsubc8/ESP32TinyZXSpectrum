@@ -265,16 +265,24 @@ int halfsec, sp_int_ctr, evenframe, updateframe;
 #endif
 
 #ifdef use_lib_core_jsanchezv
-unsigned char * rom0_jsanchezv;
-unsigned char * ram5_jsanchezv;
-unsigned char * ram2_jsanchezv;
+ unsigned char * rom0_jsanchezv;
+ unsigned char * ram5_jsanchezv;
+ unsigned char * ram2_jsanchezv;
+ static unsigned char * gb_ram_z80Ram_jsanchezv;
+ static unsigned char * gb_ram_z80Ports_jsanchezv;
 
-Z80sim::Z80sim(void) : cpu(this)
-{
+ Z80sim::Z80sim(void) : cpu(this)
+ {
 
-}
+ }
 
-Z80sim::~Z80sim() {}
+ Z80sim::~Z80sim() {}
+
+ void Z80sim::AssignPtrRamPort(unsigned char *ptrRam,unsigned char *ptrPort)
+ {
+  z80Ram = ptrRam;
+  z80Ports = ptrPort;
+ }
 
 uint8_t Z80sim::fetchOpcode(uint16_t address) {
  // 3 clocks to fetch opcode from RAM and 1 execution clock
@@ -576,7 +584,13 @@ void setup()
   ram5 = (byte *)malloc(16384);
   ram6 = (byte *)malloc(16384);    
   ram7 = (byte *)malloc(16384);
- #endif 
+ #else
+  #ifdef use_lib_core_jsanchezv    
+   gb_ram_z80Ram_jsanchezv = (unsigned char *)malloc(0x10000);
+   gb_ram_z80Ports_jsanchezv = (unsigned char *)malloc(0x10000);
+   sim.AssignPtrRamPort(gb_ram_z80Ram_jsanchezv,gb_ram_z80Ports_jsanchezv);
+  #endif
+ #endif
 
  //SDL_Generate_lookup_calcY();
  #ifdef use_lib_log_serial

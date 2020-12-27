@@ -19,14 +19,15 @@ private:
     //uint8_t z80Ports[0x10000];
     //JJ unsigned char z80Ram[0x10000];
     //JJ unsigned char z80Ports[0x10000];
-    unsigned char z80Ram[0x10000];
-    unsigned char z80Ports[0x4000]; //No hay memoria
+    unsigned char * z80Ram;
+    unsigned char * z80Ports;
     bool finish;
 
 public:
     Z80sim(void);
     //JJ virtual ~Z80sim() override;
     virtual ~Z80sim();
+    void AssignPtrRamPort(unsigned char *ptrRam,unsigned char *ptrPort);
 
     //JJ uint8_t fetchOpcode(uint16_t address) override;
     //JJ uint8_t peek8(uint16_t address) override;
