@@ -97,6 +97,7 @@ The file <b>gbConfig.h</b> options are selected:
  <li><b>use_lib_vga_thread:</b> Use the video output in a thread. If it is done in polling mode, neither the screen adjustment nor the brightness modes will be used. The polling mode is intended for debugging</li>
  <li><b>use_lib_screen_offset:</b> Allows to move to the left and up the screen.</li>
  <li><b>use_lib_skip_frame:</b> Allows to skip frames when emulating</li>
+ <li><b>use_lib_vga360x200:</b> Normal video mode</li>
  <li><b>use_lib_vga320x200:</b> Experimental video mode for low RAM consumption.</li> 
  <li><b>use_lib_vga320x240:</b> Experimental video mode for low RAM consumption.</li>
  <li><b>use_lib_log_serial:</b> Logs are sent by serial port usb</li>
