@@ -293,16 +293,16 @@ void ShowTinySNAMenu()
   aSelNum = ShowTinyMenu("48K SNA",gb_list_sna_48k_title,max_list_sna_48);                
   //strcpy(cfg_arch,"48K");
   //cfg_arch = "48K";
-  //gb_cfg_arch_is48K = 1;
-  changeSna2Flash(aSelNum);
+  gb_cfg_arch_is48K = 1;  
+  changeSna2Flash(aSelNum,1); //SNA 48K
  }
  else
  {
-  aSelNum = ShowTinyMenu("128K SNA",gb_list_sna_48k_title,max_list_sna_48);                
+  aSelNum = ShowTinyMenu("128K SNA",gb_list_sna_128k_title,max_list_sna_128);                
   //strcpy(cfg_arch,"128K");
   //cfg_arch = "128K";
-  //gb_cfg_arch_is48K = 0;
-  changeSna2Flash(aSelNum);
+  gb_cfg_arch_is48K = 0;
+  changeSna2Flash(aSelNum,0); //SNA 128K 
  }
  vTaskDelay(2);
 }

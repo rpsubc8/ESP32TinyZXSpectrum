@@ -9,7 +9,7 @@
 // SNA Management
 
 void changeSna(String sna_filename);
-void changeSna2Flash(unsigned char id);
+void changeSna2Flash(unsigned char id,unsigned char isSNA48K);
 // ULA
 void stepULA();
 void do_tinyOSD(void);
