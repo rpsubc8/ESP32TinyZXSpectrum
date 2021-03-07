@@ -16,7 +16,10 @@
  #include "sna/snaFireKey.h" 
  #include "sna/snaTritone1.h" 
 
+
  #define max_list_sna_48 10
+ 
+ //#define max_list_sna_48 2
 // #define max_list_sna_48 1 
  
  //sna 48K 
@@ -59,4 +62,38 @@
 //  gb_sna_eightOfNoise_48k,
 //  gb_sna_wwtf_48k
  };
+
+
+ //#include "sna/snaMusic2tap128.h"
+ #include "sna/snaMusicDemo128.h"
+ 
+ //#include "sna/snaAbadia128K.h"
+ //#include "sna/snaRobocop128K.h"
+ //#include "sna/snaRobocop2128K.h"
+
+ //#define max_list_sna_128 5
+ #define max_list_sna_128 1
+
+
+ //sna 128K
+ //Titulos
+ static const char * gb_list_sna_128k_title[max_list_sna_128]={
+  "MusicDemo128"
+  //"Music2tap128",
+  //"MusicDemo128",
+  //"Abadia",
+  //"Robocop",
+  //"Robocop2"
+ };
+
+ //Datos 128K
+ static const unsigned char * gb_list_sna_128k_data[max_list_sna_128]={
+  gb_sna_MusicDemo128_128k
+  //gb_sna_Music2tap128_128k,
+  //gb_sna_MusicDemo128_128k,
+  //gb_sna_abadia_128k,
+  //gb_sna_robocop_128k,
+  //gb_sna_robocop2_128k
+ };
+
 #endif 
