@@ -253,4 +253,5 @@ The 128K SNA format:
  ------------------------------------------------------------------------
  Total: 131103 bytes
 </pre>
+The id of the cached bank (bank n) corresponds to the 3 least significant bits of the port (0x7ffd & 0x07).
 After the 49183 byte of the SNA, go the 8 banks of 16384 bytes, eliminating bank 5, 2 and the currently cached one (bank n).
