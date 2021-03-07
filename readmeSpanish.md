@@ -253,5 +253,6 @@ El formato SNA de 128K:
  ------------------------------------------------------------------------
  Total: 131103 bytes
 </pre>
+El id del banco cacheado (bank n) se corresponde con los 3 bits menos significativos del puerto (0x7ffd & 0x07).
 Después del byte 49183 del SNA, van los 8 bancos de 16384 bytes, eliminando el banco 5, 2 y el actualmente cacheado (banco n).
  
