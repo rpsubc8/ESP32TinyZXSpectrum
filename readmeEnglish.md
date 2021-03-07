@@ -215,3 +215,42 @@ This tool is very simple, and does not control errors, so it is recommended to l
 The project in PLATFORM.IO is prepared for 2 MB of Flash. If we need the 4MB of flash, we will have to modify the entry in the file <b>platform.ini</b>
 <pre>board_build.partitions = huge_app.csv</pre>
 In the Arduino IDE, we must choose the option <b>Partition Scheme (Huge APP)</b>.
+
+
+<br><br>
+<h1>SNA format</h1>.
+48K (49179 bytes) and 128K (131103 bytes) SNA format is supported, compatible with FUSE emulator SNAs.
+The 48K SNA format:
+<pre>
+ Offset Size Description
+ ------------------------------------------------------------------------
+ 0 1 byte I
+ 1 8 word HL',DE',BC',AF',IX
+ 9 10 word HL,DE,BC,IY,IX
+ 19 1 byte Interrupt (bit 2 contains IFF2, 1=EI/0=DI)
+ 20 1 byte R
+ 21 4 words AF,SP
+ 25 1 byte IntMode (0=IM0/1=IM1/2=IM2)
+ 26 1 byte BorderColor (0..7, not used by Spectrum 1.7)
+ 27 49152 bytes RAM dump 16384..65535
+ ------------------------------------------------------------------------
+ Total: 49179 bytes
+</pre>
+
+The 128K SNA format:
+<pre>
+ Offset Size Description
+ ------------------------------------------------------------------------
+ 0 27 bytes SNA header (see above)
+ 27 16Kb bytes RAM bank 5 }
+ 16411 16Kb bytes RAM bank 2 } - as standard 48Kb SNA file
+ 32795 16Kb bytes RAM bank n / (currently paged bank)
+ 49179 2 word PC
+ 49181 1 byte port 0x7ffd setting
+ 49182 1 byte TR-DOS rom paged (1) or not (0)
+ 49183 16Kb bytes remaining RAM banks in ascending order
+ ...
+ ------------------------------------------------------------------------
+ Total: 131103 bytes
+</pre>
+After the 49183 byte of the SNA, go the 8 banks of 16384 bytes, eliminating bank 5, 2 and the currently cached one (bank n).
