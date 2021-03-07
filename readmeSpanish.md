@@ -222,7 +222,7 @@ En el Arduino IDE, debemos elegir la opción <b>Partition Scheme (Huge APP)</b>.
 Está soportado el formato SNA de 48K (49179 bytes) y 128K (131103 bytes), compatible con los SNA del emulador FUSE.
 El formato SNA de 48K:
 <pre>
- Offset   Pos    Descripcion
+ Offset   Size   Description
  ------------------------------------------------------------------------
  0        1      byte   I
  1        8      word   HL',DE',BC',AF'
