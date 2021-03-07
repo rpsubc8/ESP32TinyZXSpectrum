@@ -218,7 +218,7 @@ In the Arduino IDE, we must choose the option <b>Partition Scheme (Huge APP)</b>
 
 
 <br><br>
-<h1>SNA format</h1>.
+<h1>SNA format.</h1>
 The 48K (49179 bytes) and 128K (131103 bytes) SNA format is supported, compatible with FUSE emulator SNAs.
 The 48K SNA format:
 <pre>
