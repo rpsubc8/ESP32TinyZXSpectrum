@@ -1,6 +1,14 @@
 #ifndef MEMORY_H
  #define MEMORY_H
  #include <Arduino.h>
+ 
+ #include "gbConfig.h"
+ #ifdef use_lib_core_jsanchezv
+  extern byte * rom0_jsanchezv;
+  extern byte * rom1_jsanchezv;
+  extern byte * rom2_jsanchezv;
+  extern byte * rom3_jsanchezv;
+ #endif 
 
  extern byte *rom0;
  extern byte *rom1;
@@ -19,4 +27,8 @@
  extern byte rom_latch, bank_latch, video_latch, paging_lock;
  extern byte sp3_mode, sp3_rom, rom_in_use;
  extern volatile boolean writeScreen;
+
+ #ifdef use_lib_core_jsanchezv
+  void ReloadLocalCacheROMram_jsanchezv(void);
+ #endif 
 #endif
