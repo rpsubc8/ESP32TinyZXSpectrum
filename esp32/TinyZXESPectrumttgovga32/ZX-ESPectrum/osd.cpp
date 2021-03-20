@@ -13,6 +13,11 @@
 #include "def/hardware.h"
 #include "gb_globals.h"
 
+#ifdef use_lib_core_jsanchezv
+ #include "Emulator/Memory.h"
+ #include "jsanchezv_z80sim.h"
+#endif 
+
 const unsigned char gb_const_monoBlue8[8]=
 {//cache de colores optimizado
  0,16,32,36,48,56,60,62
@@ -330,8 +335,14 @@ void ShowTinyROMMenu()
   load_rom2flash(0,aSelNum);  
  }
  vTaskDelay(2);
- //SDL_Delay(2);
- zx_reset();     
+ #ifdef use_lib_core_jsanchezv
+  ReloadLocalCacheROMram_jsanchezv();
+  gb_ptrSim->ResetCPU();
+  //gb_core_reset_jsanchezv= 1;//core jose luis
+ #else 
+  //SDL_Delay(2);
+  zx_reset();     
+ #endif 
 }
 
 //Menu TAPE

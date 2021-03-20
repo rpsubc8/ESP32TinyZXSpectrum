@@ -19,8 +19,8 @@ private:
     //uint8_t z80Ports[0x10000];
     //JJ unsigned char z80Ram[0x10000];
     //JJ unsigned char z80Ports[0x10000];
-    unsigned char * z80Ram;
-    unsigned char * z80Ports;
+    //JJunsigned char * z80Ram;
+    //JJunsigned char * z80Ports;
     bool finish;
 
 public:
@@ -66,6 +66,8 @@ public:
     void runTest(std::ifstream* f);
     void runTestJJ(void);
     void runTestJJ_poll(void);
+    void load_ram2Flash_jsanchezv(unsigned char id,unsigned char isSNA48K);
+    void ResetCPU(void);
 };
 #endif // Z80SIM_H
 

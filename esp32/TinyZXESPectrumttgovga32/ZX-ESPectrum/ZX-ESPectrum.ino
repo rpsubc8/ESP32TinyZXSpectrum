@@ -73,6 +73,7 @@
 
 #ifdef use_lib_core_jsanchezv
  #include "jsanchezv_z80sim.h"
+ #include "Emulator/Memory.h"
  //#include "gbPrograma.h"
 #endif
 
@@ -199,6 +200,8 @@ static uint8_t * gb_local_cache_ram[8] =
   }    
 }*/
 
+void videoTask(void *unused);
+
 void swap_flash(word *a, word *b);
 
 // GLOBALS
@@ -265,11 +268,417 @@ int halfsec, sp_int_ctr, evenframe, updateframe;
 #endif
 
 #ifdef use_lib_core_jsanchezv
- unsigned char * rom0_jsanchezv;
- unsigned char * ram5_jsanchezv;
+ unsigned char bank_latch_jsanchezv=0;
+ unsigned char video_latch_jsanchezv = 0;
+ unsigned char rom_latch_jsanchezv = 0;
+ unsigned char paging_lock_jsanchezv = 0;
+ unsigned char rom_in_use_jsanchezv=0;
+ unsigned char sp3_rom_jsanchezv = 0;
+ unsigned char sp3_mode_jsanchezv = 0;
+
+ //unsigned char * rom0_jsanchezv;
+ //unsigned char * rom1_jsanchezv;
+ //unsigned char * rom2_jsanchezv;
+ //unsigned char * rom3_jsanchezv;
+ unsigned char * ram0_jsanchezv;
+ unsigned char * ram1_jsanchezv;
  unsigned char * ram2_jsanchezv;
- static unsigned char * gb_ram_z80Ram_jsanchezv;
- static unsigned char * gb_ram_z80Ports_jsanchezv;
+ unsigned char * ram3_jsanchezv;
+ unsigned char * ram4_jsanchezv;
+ unsigned char * ram5_jsanchezv;
+ unsigned char * ram6_jsanchezv;
+ unsigned char * ram7_jsanchezv;
+
+ unsigned char * z80Ports_jsanchezv;
+ unsigned char flashing_jsanchezv=0;
+ int halfsec_jsanchezv=0;
+ int sp_int_ctr_jsanchezv=0;
+ unsigned char zx_data_jsanchezv=0;
+ unsigned char borderTemp_jsanchezv=7;
+ unsigned int cont_state_video_jsanchezv=0;
+ unsigned char vsync_jsanchezv=0;
+
+ int gbSDLVideoTimeBefore;
+
+ //static unsigned char * gb_ram_z80Ram_jsanchezv;
+ //static unsigned char * gb_ram_z80Ports_jsanchezv;
+ //Medicion tiempos
+ static unsigned long gb_time_state_jsanchez_ini;
+ static unsigned long gb_fps_jsanchezv=0;
+ static unsigned long gb_fps_time_ini_jsanchezv=0;
+ static unsigned long gb_fps_ini_jsanchezv=0;
+ static unsigned long antes_jsanchezv=0;
+
+ unsigned char gb_ptr_IdRomRam_jsanchezv[4]={
+  0,5,2,0
+ }; //El ultimo es bank_latch
+ 
+ uint8_t * gb_local_cache_ram_jsanchezv[8] =
+ {
+  ram0_jsanchezv,ram1_jsanchezv,ram2_jsanchezv,ram3_jsanchezv,ram4_jsanchezv,ram5_jsanchezv,ram6_jsanchezv,ram7_jsanchezv 
+ }; 
+
+ uint8_t * gb_local_cache_rom_jsanchezv[4] = {
+  rom0,rom1,rom2,rom3
+ }; 
+
+
+void videoTaskNoThread_jsanchezv()
+{
+    //8300 microsegundos
+    //7680 microsegundos quitando desplazamiento y skip frame
+    //7500 micros 320x200 8 colores ultrafast
+
+    //unsigned long time_prev;    
+    int byte_offset;
+    unsigned char color_attrib, flash;
+    //int pixel_map;//, bright;
+    int zx_vidcalc, calc_y;    
+
+    word zx_fore_color, zx_back_color, tmp_color;    
+
+    unsigned char auxColor;
+    unsigned char * gb_ptr_ram_1800_video;
+    unsigned char * gb_ptr_ram_video;
+    unsigned char bitpos;
+    #ifdef use_lib_ultrafast_vga
+     unsigned char ** ptrVGA;
+     #define gbvgaMask8Colores 0x3F
+     #define gbvgaBits8Colores 0x40
+     ptrVGA = vga.backBuffer;
+    #endif
+
+    if (!video_latch_jsanchezv){
+     gb_ptr_ram_1800_video = &ram5_jsanchezv[0x1800];
+     gb_ptr_ram_video = ram5_jsanchezv;
+    }
+    else{
+     gb_ptr_ram_1800_video = &ram7_jsanchezv[0x1800];
+     gb_ptr_ram_video = ram7_jsanchezv;  
+    }    
+
+        //time_prev = micros();     
+        for (int vga_lin = 0; vga_lin < 200; vga_lin++)        
+        {            
+            #ifdef use_lib_ultrafast_vga
+             #ifdef use_lib_vga_low_memory
+              //Modo bajo y rapido
+              #ifdef use_lib_vga8colors
+               auxColor = (gb_cache_zxcolor[borderTemp_jsanchezv]); //8 colores seguro bajo
+              #else               
+               auxColor = (gb_cache_zxcolor[borderTemp_jsanchezv] & gbvgaMask8Colores)|gbvgaBits8Colores; //Modo bajo
+              #endif 
+             #else
+              //Modo alto y rapido 
+              auxColor = (gb_cache_zxcolor[borderTemp_jsanchezv] & gbvgaMask8Colores)|gbvgaBits8Colores;
+              //auxColor = gb_cache_zxcolor[borderTemp_jsanchezv]; //Directo
+             #endif 
+            #else
+             //Modo lento
+             auxColor = (gb_cache_zxcolor[borderTemp_jsanchezv]);
+            #endif
+                
+            if (vga_lin < 3 || vga_lin > 194)
+            {
+                #if defined(use_lib_vga320x200) || defined(use_lib_vga320x240)                 
+                 for (int bor = 0; bor < 296; bor++)
+                #else 
+                 for (int bor = 32; bor < 328; bor++)                
+                #endif
+                {                    
+                  #ifdef use_lib_ultrafast_vga
+                   #ifdef use_lib_vga_low_memory
+                    //Modo bajo y rapido
+                    #ifdef use_lib_vga8colors
+                     vga.dotFast(bor,vga_lin,auxColor); //8 colores seguro bajo
+                    #else 
+                     ptrVGA[vga_lin][bor] = auxColor; //Modo bajo
+                    #endif 
+                   #else
+                    //Modo alto y rapido
+                    ptrVGA[vga_lin][bor^2] = auxColor;
+                   #endif
+                  #else
+                   //Modo lento                   
+                   vga.dotFast(bor,vga_lin,auxColor);
+                  #endif
+                }                
+            }
+            else            
+            {
+                #if defined(use_lib_vga320x200) || defined (use_lib_vga320x240)                 
+                 for (int bor = 0; bor < 20; bor++)
+                #else
+                 for (int bor = 32; bor < 52; bor++)
+                #endif               
+                {                    
+                 #ifdef use_lib_ultrafast_vga
+                  #ifdef use_lib_vga_low_memory
+                   //Modo bajo y rapido
+                   #ifdef use_lib_vga8colors
+                    vga.dotFast(bor,vga_lin,auxColor); //8 colores seguro bajo
+                    vga.dotFast((bor+276),vga_lin,auxColor);
+                   #else 
+                    ptrVGA[vga_lin][bor] = auxColor; //Modo bajo
+                    ptrVGA[vga_lin][(bor+276)] = auxColor;
+                   #endif
+                  #else
+                   //Modo alto y rapido
+                   ptrVGA[vga_lin][bor^2] = auxColor;
+                   ptrVGA[vga_lin][(bor+276)^2] = auxColor;
+                  #endif
+                 #else
+                  //Modo lento
+                  vga.dotFast(bor,vga_lin,auxColor); //8 colores seguro bajo
+                  vga.dotFast((bor+276),vga_lin,auxColor);
+                 #endif
+                }
+                byte_offset = ((vga_lin - 3)<<5); //optimizado (vga_lin - 3) * 32
+                for (unsigned char ff = 0; ff < 32; ff++) // foreach byte in line
+                {                    
+                    //calc_y = calcY(byte_offset);                    
+                    calc_y = gb_lookup_calcY[(byte_offset>>5)];
+                    color_attrib = gb_ptr_ram_1800_video[(((calc_y >> 3) << 5) + ff)]; // get 1 of 768 attrib values                    
+                    zx_vidcalc = (ff << 3);
+                    bitpos = 0x80;
+                    for (unsigned char i = 0; i < 8; i++) // foreach pixel within a byte
+                    {
+                        flash = (color_attrib & 0B10000000) >> 7;
+                        zx_fore_color = gb_cache_zxcolor[(color_attrib & 0B00000111)]; //falta brillo
+                        zx_back_color = gb_cache_zxcolor[((color_attrib & 0B00111000) >> 3)];//falta brillo
+                        if (flash && flashing_jsanchezv)
+                        {
+                         swap_flash(&zx_fore_color, &zx_back_color);
+                        }
+                        #ifdef use_lib_ultrafast_vga
+                         auxColor = ((gb_ptr_ram_video[byte_offset] & bitpos) != 0)? ((zx_fore_color & gbvgaMask8Colores)|gbvgaBits8Colores):((zx_back_color & gbvgaMask8Colores)|gbvgaBits8Colores);
+                         //auxColor = ((gb_ptr_ram_video[byte_offset] & bitpos) != 0)? gb_cache_zxcolor[zx_fore_color]:gb_cache_zxcolor[zx_back_color];
+                        #else
+                         auxColor = ((gb_ptr_ram_video[byte_offset] & bitpos) != 0)? zx_fore_color : zx_back_color;
+                        #endif
+
+                        
+                        #if defined(use_lib_vga320x240) || defined(use_lib_vga320x200)
+                         //320x240
+                         #ifdef use_lib_ultrafast_vga
+                          #ifdef use_lib_vga_low_memory
+                           //Modo bajo y rapido
+                           #ifdef use_lib_vga8colors
+                            vga.dotFast((zx_vidcalc + 20),(calc_y + 3),auxColor);
+                           #else 
+                            ptrVGA[(calc_y + 3)][(zx_vidcalc + 20)] = auxColor;
+                           #endif
+                          #else
+                           //Modo alto y rapido  
+                           ptrVGA[(calc_y + 3)][(zx_vidcalc + 20)^2] = auxColor;
+                          #endif                            
+                         #else
+                          //Modo lento
+                          vga.dotFast((zx_vidcalc + 20),(calc_y + 3),auxColor);
+                         #endif                         
+                        #else
+                         //360x200
+                         #ifdef use_lib_ultrafast_vga
+                          #ifdef use_lib_vga_low_memory
+                           //Modo bajo y rapido
+                           #ifdef use_lib_vga8colors
+                            vga.dotFast((zx_vidcalc + 52),(calc_y + 3),auxColor); //8 colores seguro bajo
+                           #else
+                            ptrVGA[(calc_y + 3)][(zx_vidcalc + 52)] = auxColor;  //Modo bajo
+                           #endif
+                          #else
+                           //Modo alto y rapido
+                           ptrVGA[(calc_y + 3)][(zx_vidcalc + 52)^2] = auxColor;
+                          #endif                           
+                         #else
+                          //Modo lento 
+                          vga.dotFast((zx_vidcalc + 52),(calc_y + 3),auxColor);
+                         #endif
+                        #endif 
+
+                        zx_vidcalc++;
+                        bitpos = (bitpos>>1);
+                    }
+                    byte_offset++;
+                }
+            }
+        }
+        //gb_sdl_blit=1;
+     //time_prev = micros()-time_prev;
+     #ifdef use_lib_log_serial
+      //Serial.printf("Tiempo %d\n",time_prev);             
+     #endif
+}
+
+
+ void keyboard_do_jsanchezv()
+ {
+    byte kempston = 0;
+
+    bitWrite(z80Ports_jsanchezv[0], 0, keymap[0x12]);
+    bitWrite(z80Ports_jsanchezv[0], 1, keymap[0x1a]);
+    bitWrite(z80Ports_jsanchezv[0], 2, keymap[0x22]);
+    bitWrite(z80Ports_jsanchezv[0], 3, keymap[0x21]);
+    bitWrite(z80Ports_jsanchezv[0], 4, keymap[0x2a]);
+
+    bitWrite(z80Ports_jsanchezv[1], 0, keymap[0x1c]);
+    bitWrite(z80Ports_jsanchezv[1], 1, keymap[0x1b]);
+    bitWrite(z80Ports_jsanchezv[1], 2, keymap[0x23]);
+    bitWrite(z80Ports_jsanchezv[1], 3, keymap[0x2b]);
+    bitWrite(z80Ports_jsanchezv[1], 4, keymap[0x34]);
+
+    bitWrite(z80Ports_jsanchezv[2], 0, keymap[0x15]);
+    bitWrite(z80Ports_jsanchezv[2], 1, keymap[0x1d]);
+    bitWrite(z80Ports_jsanchezv[2], 2, keymap[0x24]);
+    bitWrite(z80Ports_jsanchezv[2], 3, keymap[0x2d]);
+    bitWrite(z80Ports_jsanchezv[2], 4, keymap[0x2c]);
+
+    bitWrite(z80Ports_jsanchezv[3], 0, keymap[0x16]);
+    bitWrite(z80Ports_jsanchezv[3], 1, keymap[0x1e]);
+    bitWrite(z80Ports_jsanchezv[3], 2, keymap[0x26]);
+    bitWrite(z80Ports_jsanchezv[3], 3, keymap[0x25]);
+    bitWrite(z80Ports_jsanchezv[3], 4, keymap[0x2e]);
+
+    bitWrite(z80Ports_jsanchezv[4], 0, keymap[0x45]);
+    bitWrite(z80Ports_jsanchezv[4], 1, keymap[0x46]);
+    bitWrite(z80Ports_jsanchezv[4], 2, keymap[0x3e]);
+    bitWrite(z80Ports_jsanchezv[4], 3, keymap[0x3d]);
+    bitWrite(z80Ports_jsanchezv[4], 4, keymap[0x36]);
+
+    bitWrite(z80Ports_jsanchezv[5], 0, keymap[0x4d]);
+    bitWrite(z80Ports_jsanchezv[5], 1, keymap[0x44]);
+    bitWrite(z80Ports_jsanchezv[5], 2, keymap[0x43]);
+    bitWrite(z80Ports_jsanchezv[5], 3, keymap[0x3c]);
+    bitWrite(z80Ports_jsanchezv[5], 4, keymap[0x35]);
+
+    bitWrite(z80Ports_jsanchezv[6], 0, keymap[0x5a]);
+    bitWrite(z80Ports_jsanchezv[6], 1, keymap[0x4b]);
+    bitWrite(z80Ports_jsanchezv[6], 2, keymap[0x42]);
+    bitWrite(z80Ports_jsanchezv[6], 3, keymap[0x3b]);
+    bitWrite(z80Ports_jsanchezv[6], 4, keymap[0x33]);
+
+    bitWrite(z80Ports_jsanchezv[7], 0, keymap[0x29]);
+    bitWrite(z80Ports_jsanchezv[7], 1, keymap[0x14]);
+    bitWrite(z80Ports_jsanchezv[7], 2, keymap[0x3a]);
+    bitWrite(z80Ports_jsanchezv[7], 3, keymap[0x31]);
+    bitWrite(z80Ports_jsanchezv[7], 4, keymap[0x32]);
+
+    //Serial.printf("Teclado %d %d\n",keymap[KEY_CURSOR_UP],keymap[KEY_CURSOR_DOWN]);
+    // Kempston joystick
+    z80Ports_jsanchezv[0x1f] = 0;
+    bitWrite(z80Ports_jsanchezv[0x1f], 0, !keymap[KEY_CURSOR_RIGHT]);
+    bitWrite(z80Ports_jsanchezv[0x1f], 1, !keymap[KEY_CURSOR_LEFT]);
+    bitWrite(z80Ports_jsanchezv[0x1f], 2, !keymap[KEY_CURSOR_DOWN]);
+    bitWrite(z80Ports_jsanchezv[0x1f], 3, !keymap[KEY_CURSOR_UP]);
+    bitWrite(z80Ports_jsanchezv[0x1f], 4, !keymap[KEY_ALT_GR]);          
+ }
+              
+ void AsignarRom_jsanchezv()
+ {
+  rom0_jsanchezv= (uint8_t *)gb_list_roms_48k_data[2];//gb_rom_0_diag_48k;
+  rom1_jsanchezv= (uint8_t *)gb_list_roms_48k_data[0];
+  rom2_jsanchezv= (uint8_t *)gb_list_roms_48k_data[0];
+  rom3_jsanchezv= (uint8_t *)gb_list_roms_48k_data[0];
+ }
+
+
+ void PreparaVGAColoresMascara()
+ {
+    for (unsigned i=0;i<8;i++)
+    {
+      gb_cache_zxcolor[i]= (gb_cache_zxcolor[i] & vga.RGBAXMask)|vga.SBits;
+    }  
+ }
+
+ //Lee SNA desde flash core jsanchez
+ void Z80sim::load_ram2Flash_jsanchezv(unsigned char id,unsigned char isSNA48K)
+ {
+    int contBuffer=0; 
+    uint16_t size_read;
+    byte sp_h, sp_l;
+    uint16_t retaddr; 
+	bool auxIFF2=false;
+	unsigned char auxSwap; 
+
+    memset(ram0_jsanchezv,0,0x4000);
+    memset(ram1_jsanchezv,0,0x4000);
+    memset(ram2_jsanchezv,0,0x4000);
+    memset(ram3_jsanchezv,0,0x4000);
+    memset(ram4_jsanchezv,0,0x4000);
+    memset(ram5_jsanchezv,0,0x4000);
+    memset(ram6_jsanchezv,0,0x4000);
+    memset(ram7_jsanchezv,0,0x4000);
+
+    //ResetSound();
+    
+    if (id >= max_list_sna_48)
+     return;
+    
+    cpu.reset(); //zx_reset();    
+
+    //if (gb_cfg_arch_is48K == 1)
+    {
+        rom_latch_jsanchezv = 0;
+        rom_in_use_jsanchezv = 0;
+        bank_latch_jsanchezv = 0; //gb_ptr_IdRomRam[3] = 0; 
+        paging_lock_jsanchezv = 1;
+    }
+    size_read = 0;
+    // Read in the registers        
+    cpu.setRegI(gb_list_sna_48k_data[id][0]);
+    cpu.setRegLx(gb_list_sna_48k_data[id][1]);
+    cpu.setRegHx(gb_list_sna_48k_data[id][2]);
+    cpu.setRegEx(gb_list_sna_48k_data[id][3]);
+    cpu.setRegDx(gb_list_sna_48k_data[id][4]);
+    cpu.setRegCx(gb_list_sna_48k_data[id][5]);
+    cpu.setRegBx(gb_list_sna_48k_data[id][6]);
+    cpu.setRegFx(gb_list_sna_48k_data[id][7]);
+    cpu.setRegAx(gb_list_sna_48k_data[id][8]);
+
+    cpu.setRegL(gb_list_sna_48k_data[id][9]);
+    cpu.setRegH(gb_list_sna_48k_data[id][10]);
+    cpu.setRegE(gb_list_sna_48k_data[id][11]);
+    cpu.setRegD(gb_list_sna_48k_data[id][12]);
+    cpu.setRegC(gb_list_sna_48k_data[id][13]);
+    cpu.setRegB(gb_list_sna_48k_data[id][14]);    
+
+    sp_l= gb_list_sna_48k_data[id][15];
+    sp_h= gb_list_sna_48k_data[id][16];    
+    cpu.setRegIY(sp_l + sp_h * 0x100);
+    sp_l= gb_list_sna_48k_data[id][17];
+    sp_h= gb_list_sna_48k_data[id][18];
+    cpu.setRegIX(sp_l + sp_h * 0x100);
+    byte inter = gb_list_sna_48k_data[id][19];//lhandle.read();
+    auxIFF2 = (inter & 0x04) ? true : false;
+    cpu.setIFF2(auxIFF2);
+    cpu.setRegR(gb_list_sna_48k_data[id][20]);
+    cpu.setFlags(gb_list_sna_48k_data[id][21]);
+    cpu.setRegA(gb_list_sna_48k_data[id][22]);
+    sp_l = gb_list_sna_48k_data[id][23];//lhandle.read();
+    sp_h = gb_list_sna_48k_data[id][24];//lhandle.read();
+    cpu.setRegSP(sp_l + sp_h * 0x100);
+
+    byte bordercol = gb_list_sna_48k_data[id][26];//lhandle.read();
+    borderTemp_jsanchezv = bordercol;
+    cpu.setIFF1(auxIFF2);
+
+    uint16_t thestack = cpu.getRegSP();
+    uint16_t buf_p = 0x4000;
+    contBuffer = 27;
+    while (contBuffer< 50000)        
+    {
+     //JJ writebyte(buf_p, lhandle.read());
+     poke8(buf_p, gb_list_sna_48k_data[id][contBuffer]);
+     contBuffer++;
+     buf_p++;
+    }    
+    retaddr = peek16(thestack);    
+    unsigned short int auxSP = cpu.getRegSP();
+    auxSP++;
+    auxSP++;
+    cpu.setRegSP(auxSP);
+    cpu.setRegPC(retaddr);    
+ }
 
  Z80sim::Z80sim(void) : cpu(this)
  {
@@ -278,24 +687,25 @@ int halfsec, sp_int_ctr, evenframe, updateframe;
 
  Z80sim::~Z80sim() {}
 
- void Z80sim::AssignPtrRamPort(unsigned char *ptrRam,unsigned char *ptrPort)
- {
-  z80Ram = ptrRam;
-  z80Ports = ptrPort;
- }
+ //void Z80sim::AssignPtrRamPort(unsigned char *ptrRam,unsigned char *ptrPort)
+ //{
+ // z80Ram = ptrRam;
+ // z80Ports = ptrPort;
+ //}
 
 uint8_t Z80sim::fetchOpcode(uint16_t address) {
  // 3 clocks to fetch opcode from RAM and 1 execution clock
  tstates += 4;
- unsigned char idRomRam = (address>>14);
- unsigned char aux_fetchOpcode=0; 
- if (idRomRam == 0)
-  aux_fetchOpcode= rom0_jsanchezv[address];
- else
-  aux_fetchOpcode = z80Ram[address]; 
-  
+ return peek8(address);
+ //unsigned char idRomRam = (address>>14);
+ //unsigned char aux_fetchOpcode=0; 
+ //if (idRomRam == 0)
+ // aux_fetchOpcode= rom0_jsanchezv[address];
+ //else
+ // aux_fetchOpcode = z80Ram[address]; 
+ // 
  //printf ("fetchOpcode:%02x add:%d",aux_fetchOpcode,address);
- return aux_fetchOpcode;
+ //return aux_fetchOpcode;
 
 //JJ  #ifdef WITH_BREAKPOINT_SUPPORT
 //JJ   return z80Ram[address];
@@ -308,58 +718,66 @@ uint8_t Z80sim::fetchOpcode(uint16_t address) {
 uint8_t Z80sim::peek8(uint16_t address) {
  // 3 clocks for read byte from RAM
  tstates += 3;
+ unsigned char idRomRam = (address>>14);
+ if (idRomRam == 0)
+  return (gb_local_cache_rom_jsanchezv[rom_in_use_jsanchezv][address]);
+ else
+  return (gb_local_cache_ram_jsanchezv[(gb_ptr_IdRomRam_jsanchezv[idRomRam])][(address & 0x3fff)]);     
  //JJ return z80Ram[address];    
  //printf ("peek8 add:%d\n",address);
- unsigned char idRomRam = (address>>14);
+ //unsigned char idRomRam = (address>>14);
  //if (idRomRam == 0)
  // return (rom0_jsanchezv[address]);
  //else
  // return (z80Ram[address]);
   
- switch(idRomRam)
- {
-  case 0: return (rom0_jsanchezv[address]);  break;
-  case 1: 
-   //printf ("rram5 add:%d\n",address);
-   return ram5_jsanchezv[(address & 0x3fff)]; 
-   break;
-  case 2:
-   //printf ("rram2 add:%d\n",address); 
-   return ram2_jsanchezv[(address & 0x3fff)]; 
-   break;
-  case 3: 
-   //printf ("rram:%d\n",address); 
-   return (z80Ram[address]);
-   break;
- }
+// switch(idRomRam)
+// {
+//  case 0: return (rom0_jsanchezv[address]);  break;
+//  case 1: 
+//   //printf ("rram5 add:%d\n",address);
+//   return ram5_jsanchezv[(address & 0x3fff)]; 
+//   break;
+//  case 2:
+//   //printf ("rram2 add:%d\n",address); 
+//   return ram2_jsanchezv[(address & 0x3fff)]; 
+//   break;
+//  case 3: 
+//   //printf ("rram:%d\n",address); 
+//   return (z80Ram[address]);
+//   break;
+// }
 }
 
 void Z80sim::poke8(uint16_t address, uint8_t value) {
  // 3 clocks for write byte to RAM
  tstates += 3;
+ unsigned char idRomRam = (address>>14);
+ if (idRomRam != 0)
+  gb_local_cache_ram_jsanchezv[(gb_ptr_IdRomRam_jsanchezv[idRomRam])][(address & 0x3fff)] = value;   
  //JJ z80Ram[address] = value;
  //printf ("poke8 add:%d\n",address);
- unsigned char idRomRam = (address>>14);
+ //unsigned char idRomRam = (address>>14);
  //if (idRomRam != 0)
  // z80Ram[address] = value;
   
- switch(idRomRam)
- {
-  //case 0: return (rom0_jsanchezv[address]);  break;
-  case 1: 
-   //if (value!=0)
-   // printf ("wram5 add:%d val:%d add:%d\n",address,value,(address & 0x3fff)); 
-   ram5_jsanchezv[(address & 0x3fff)] = value;
-   break;
-  case 2: 
-   //printf ("wram2 add:%d\n",address);
-   ram2_jsanchezv[(address & 0x3fff)] = value; 
-   break;
-  case 3:
-   //printf ("wram:%d\n",address);
-   z80Ram[address] = value; 
-   break;
- }  
+ //switch(idRomRam)
+ //{
+ // //case 0: return (rom0_jsanchezv[address]);  break;
+ // case 1: 
+ //  //if (value!=0)
+ //  // printf ("wram5 add:%d val:%d add:%d\n",address,value,(address & 0x3fff)); 
+ //  ram5_jsanchezv[(address & 0x3fff)] = value;
+ //  break;
+ // case 2: 
+ //  //printf ("wram2 add:%d\n",address);
+ //  ram2_jsanchezv[(address & 0x3fff)] = value; 
+ //  break;
+ // case 3:
+ //  //printf ("wram:%d\n",address);
+ //  z80Ram[address] = value; 
+ //  break;
+ //}  
 }
 
 uint16_t Z80sim::peek16(uint16_t address) {
@@ -381,14 +799,105 @@ uint8_t Z80sim::inPort(uint16_t port) {
     // 4 clocks for read byte from bus
  //printf ("inPort port:%d\n",port);    
     tstates += 3;
-    return z80Ports[port];
+ int16_t kbdarrno = 0;
+ unsigned portLow= port & 0xFF;
+ unsigned portHigh= (port>>8) & 0xFF;
+
+ 
+ if (
+     (portLow == 0xDF)
+     && 
+     ((portHigh == 0xFA)||(portHigh == 0xFB)||(portHigh == 0xFF))
+    )
+    {
+     //printf("Kempston H:%x L:%x %d %d %d\n",portHigh,portLow,gb_z80_mouse_x,gb_z80_mouse_y,gb_z80_mouseBtn);
+     switch (portHigh)
+     {
+      case 0xFB: break;
+      case 0xFF: break;
+      case 0xFA: break;
+      case 0xFE: break; //Detect mouse OK
+      default: return 0xFF;
+     }
+    }
+    
+ 
+ if (portLow == 0xFE)
+ {
+  uint8_t result = 0xFF;
+  if (~(portHigh | 0xFE)&0xFF) result &= (z80Ports_jsanchezv[0]); //JJ teclado
+  if (~(portHigh | 0xFD)&0xFF) result &= (z80Ports_jsanchezv[1]);
+  if (~(portHigh | 0xFB)&0xFF) result &= (z80Ports_jsanchezv[2]);
+  if (~(portHigh | 0xF7)&0xFF) result &= (z80Ports_jsanchezv[3]);
+  if (~(portHigh | 0xEF)&0xFF) result &= (z80Ports_jsanchezv[4]);
+  if (~(portHigh | 0xDF)&0xFF) result &= (z80Ports_jsanchezv[5]);
+  if (~(portHigh | 0xBF)&0xFF) result &= (z80Ports_jsanchezv[6]);
+  if (~(portHigh | 0x7F)&0xFF) result &= (z80Ports_jsanchezv[7]);
+  return result;
+ }
+ // Kempston
+ if (portLow == 0x1F) {
+  return z80Ports_jsanchezv[31];
+ } 
+ 
+ uint8_t data = zx_data_jsanchezv;
+ data |= (0xe0); /* Set bits 5-7 - as reset above */
+ data &= ~0x40;
+ // Serial.printf("Port %x%x  Data %x\n", portHigh,portLow,data);;
+ return data;
 }
 
 void Z80sim::outPort(uint16_t port, uint8_t value) {
  //printf ("outPort outPort:%d\n",port);         
     // 4 clocks for write byte to bus
     tstates += 4;
-    z80Ports[port] = value;
+ 
+ unsigned char tmp_data = value;
+ unsigned portLow= port & 0xFF;
+ unsigned portHigh= ((port>>8) & 0xFF);
+    
+ tstates += 4;
+ //JJ z80Ports[port] = value;
+ 
+ switch (portLow)
+ {
+  case 0xFE:
+   bitWrite(borderTemp_jsanchezv, 0, bitRead(value, 0));
+   bitWrite(borderTemp_jsanchezv, 1, bitRead(value, 1));
+   bitWrite(borderTemp_jsanchezv, 2, bitRead(value, 2));
+   gbSoundSpeaker= (bitRead(value, 4) | bitRead(value, 3));//mic and spk
+   z80Ports_jsanchezv[0x20] = value;
+   break;
+   
+  case 0xFD:
+   switch (portHigh)
+   {
+    case 0x7F:
+     //cambio banco
+     if (!paging_lock_jsanchezv)
+     {
+      paging_lock_jsanchezv = bitRead(tmp_data, 5);
+      rom_latch_jsanchezv = bitRead(tmp_data, 4);
+      video_latch_jsanchezv = bitRead(tmp_data, 3);
+      bank_latch_jsanchezv = tmp_data & 0x7;
+      // rom_in_use=0;
+      bitWrite(rom_in_use_jsanchezv, 1, sp3_rom_jsanchezv);
+      bitWrite(rom_in_use_jsanchezv, 0, rom_latch_jsanchezv);
+     }
+    
+    
+     break;
+    
+    case 0x1F:
+     sp3_mode_jsanchezv = bitRead(value, 0);
+     sp3_rom_jsanchezv = bitRead(value, 2);
+     bitWrite(rom_in_use_jsanchezv, 1, sp3_rom_jsanchezv);
+     bitWrite(rom_in_use_jsanchezv, 0, rom_latch_jsanchezv);
+     // Serial.printf("1FFD data: %x mode: %x rom bits: %x ROM chip: %x\n",data,sp3_mode,sp3_rom, rom_in_use);
+     break;        
+   }       
+   break;
+ }//fin switch
 }
 
 void Z80sim::addressOnBus(uint16_t address, int32_t tstates) {
@@ -443,10 +952,10 @@ uint8_t Z80sim::breakpoint(uint16_t address, uint8_t opcode) {
          jj_cad[0]='\0';
          
             uint16_t strAddr = cpu.getRegDE();
-            while (z80Ram[strAddr] != '$')
+            while (peek8(strAddr) != '$')
             {
              //cout << (char) z80Ram[strAddr++];
-             jj_cad[jj_cont_cad]=(char)z80Ram[strAddr];            
+             jj_cad[jj_cont_cad]=(char)peek8(strAddr);
              strAddr++;
              if (jj_cont_cad>=50)
               break;
@@ -471,24 +980,87 @@ uint8_t Z80sim::breakpoint(uint16_t address, uint8_t opcode) {
     return opcode;
 }
 
+void Z80sim::ResetCPU()
+{
+ cpu.reset();
+  
+ bank_latch_jsanchezv=0;
+ video_latch_jsanchezv = 0;
+ rom_latch_jsanchezv = 0;
+ paging_lock_jsanchezv = 0;
+ rom_in_use_jsanchezv= 0;
+ sp3_rom_jsanchezv = 0;
+ sp3_mode_jsanchezv = 0;
+ borderTemp_jsanchezv=7;  
+ //printf ("Reset desde ResetCPU\n");
+ //fflush(stdout); 
+}
+
+
 void Z80sim::runTestJJ_poll(void)
 {
- if (!finish) {
   cpu.execute();
+  if ((this->tstates - gb_time_state_jsanchez_ini)>69887)
+  {
+   gb_time_state_jsanchez_ini= this->tstates;
+   //vsync_jsanchezv= 1;
+   gb_fps_jsanchezv++;
+   //unsigned long ahora_jsanchezv= micros();
+   //Serial.printf("CPU %d\n",(ahora_jsanchezv-antes_jsanchezv));
+   //antes_jsanchezv= ahora_jsanchezv;
+  }
+
+ //if (!finish) {
+ // cpu.execute();
   //printf("1\n");
   //printf("gb_cont: %d\n",gb_cont);
   //gb_cont++;
- }
+// }
 }
 
 void Z80sim::runTestJJ(void)
 {
- memset(z80Ram,0,sizeof z80Ram);
- memset(z80Ports,0,sizeof z80Ports);
+  ram0_jsanchezv = (unsigned char *)malloc(0x4000);
+  ram1_jsanchezv = (unsigned char *)malloc(0x4000);
+  ram2_jsanchezv = (unsigned char *)malloc(0x4000);
+  ram3_jsanchezv = (unsigned char *)malloc(0x4000);
+  ram4_jsanchezv = (unsigned char *)malloc(0x4000);
+  ram5_jsanchezv = (unsigned char *)malloc(0x4000);
+  ram6_jsanchezv = (unsigned char *)malloc(0x4000);
+  ram7_jsanchezv = (unsigned char *)malloc(0x4000);
+  
+  z80Ports_jsanchezv = (unsigned char *)malloc(256);
+  memset(z80Ports_jsanchezv, 0x1F, 256);   
+
+  memset(ram0_jsanchezv,0,0x4000);
+  memset(ram1_jsanchezv,0,0x4000);
+  memset(ram2_jsanchezv,0,0x4000);
+  memset(ram3_jsanchezv,0,0x4000);
+  memset(ram4_jsanchezv,0,0x4000);
+  memset(ram5_jsanchezv,0,0x4000);
+  memset(ram6_jsanchezv,0,0x4000); 
+  memset(ram7_jsanchezv,0,0x4000);
+
+  AsignarRom_jsanchezv(); 
+  ReloadLocalCacheROMram_jsanchezv();
+  bank_latch_jsanchezv=0;
+  video_latch_jsanchezv = 0;
+  rom_latch_jsanchezv = 0;
+  paging_lock_jsanchezv = 0;
+  rom_in_use_jsanchezv= 0;
+  sp3_rom_jsanchezv = 0;
+  sp3_mode_jsanchezv = 0;
+  borderTemp_jsanchezv=7;  
+
+  cpu.reset();
+  gb_time_state_jsanchez_ini = this->tstates;
+
+ //memset(z80Ram,0,sizeof z80Ram);
+ //memset(z80Ports,0,sizeof z80Ports);
 // memcpy(&z80Ram[0x100],gb_programa,8590);
  
-    cpu.reset();
-    finish = false;
+//    cpu.reset();
+//    finish = false;
     
   //cpu.setRegPC(0x3B5);
 //  memcpy(z80Ram,rom0_jsanchezv,16384);
@@ -542,6 +1114,7 @@ void Z80sim::runTestJJ(void)
 }*/
 
 Z80sim sim = Z80sim();
+Z80sim * gb_ptrSim= &sim;
 #endif
 
 
@@ -585,10 +1158,11 @@ void setup()
   ram6 = (byte *)malloc(16384);    
   ram7 = (byte *)malloc(16384);
  #else
-  #ifdef use_lib_core_jsanchezv    
-   gb_ram_z80Ram_jsanchezv = (unsigned char *)malloc(0x10000);
-   gb_ram_z80Ports_jsanchezv = (unsigned char *)malloc(0x10000);
-   sim.AssignPtrRamPort(gb_ram_z80Ram_jsanchezv,gb_ram_z80Ports_jsanchezv);
+  #ifdef use_lib_core_jsanchezv       
+   //gb_ram_z80Ram_jsanchezv = (unsigned char *)malloc(0x10000);
+   //gb_ram_z80Ports_jsanchezv = (unsigned char *)malloc(0x10000);
+   //sim.AssignPtrRamPort(gb_ram_z80Ram_jsanchezv,gb_ram_z80Ports_jsanchezv);
+   sim.runTestJJ();   
   #endif
  #endif
 
@@ -655,6 +1229,10 @@ void setup()
     #endif 
     vTaskDelay(2);
 
+    #ifdef use_lib_core_jsanchezv
+     //PreparaVGAColoresMascara();
+    #endif 
+
     #ifndef use_lib_resample_speaker
      pinMode(SPEAKER_PIN, OUTPUT);
      #ifdef use_lib_ultrafast_speaker
@@ -682,16 +1260,18 @@ void setup()
 
     // START Z80
     //JJ Serial.println(MSG_Z80_RESET);
-    ReloadLocalCacheROMram(); //Recargo punteros RAM ROM
-    zx_setup();
-
-    // make sure keyboard ports are FF
-    memset((void *)z80ports_in,0x1f,32);//Optimice resize code
+    #ifdef use_lib_core_rampa069
+     ReloadLocalCacheROMram(); //Recargo punteros RAM ROM
+     zx_setup();     
+     // make sure keyboard ports are FF
+     memset((void *)z80ports_in,0x1f,32);//Optimice resize code
+    #endif 
     
     #ifdef use_lib_vga_thread
      #ifdef use_lib_core_rampa069
       vidQueue = xQueueCreate(1, sizeof(uint16_t *));
       xTaskCreatePinnedToCore(&videoTask, "videoTask", 1024 * 4, NULL, 5, &videoTaskHandle, 0);
+     #else            
      #endif 
     #endif
 
@@ -767,6 +1347,8 @@ void setup()
   }
  }
  
+ //#define BASE_FREQ 108900
+ #define BASE_FREQ 62500
  inline void jj_mixpsg() 
  {//AY8912  
   int auxFrec;
@@ -777,7 +1359,7 @@ void setup()
   else{
    gbVolMixer_now[0]=15;
    auxFrec = gb_ay8912_A_frec;
-   auxFrec = (auxFrec>0)?(62500/auxFrec):0;
+   auxFrec = (auxFrec>0)?(BASE_FREQ/auxFrec):0;
    if (auxFrec>15000) auxFrec=15000;
    gbFrecMixer_now[0] = auxFrec;
   }
@@ -785,7 +1367,7 @@ void setup()
   else{
    gbVolMixer_now[1]=15;
    auxFrec = gb_ay8912_B_frec;
-   auxFrec = (auxFrec>0)?(62500/auxFrec):0;
+   auxFrec = (auxFrec>0)?(BASE_FREQ/auxFrec):0;
    if (auxFrec>15000) auxFrec=15000;   
    gbFrecMixer_now[1] = auxFrec;
   }
@@ -793,7 +1375,7 @@ void setup()
   else{
    gbVolMixer_now[2]=15;
    auxFrec = gb_ay8912_C_frec;
-   auxFrec = (auxFrec>0)?(62500/auxFrec):0;
+   auxFrec = (auxFrec>0)?(BASE_FREQ/auxFrec):0;
    if (auxFrec>15000) auxFrec=15000;   
    gbFrecMixer_now[2] = auxFrec;
   }
@@ -1838,7 +2420,11 @@ void loop() {
      #ifdef use_lib_remap_keyboardpc 
       do_keyboard_remap_pc();
      #endif 
-     do_keyboard();
+     #ifdef use_lib_core_rampa069      
+      do_keyboard();
+     #else
+      keyboard_do_jsanchezv();
+     #endif 
     }
     do_tinyOSD();
             
@@ -1849,6 +2435,7 @@ void loop() {
       zx_loop();
      #else
       loop_jsanchezv();
+      do_tinyOSD();
      #endif      
      // ts2 = millis();     
     }    
@@ -1908,6 +2495,24 @@ void loop() {
       gb_run_emulacion = 1;
 
 
+    #ifdef use_lib_core_jsanchezv
+     if ((gb_currentTime - gbSDLVideoTimeBefore) >= 50)
+     {
+      gbSDLVideoTimeBefore= gb_currentTime;      
+      videoTaskNoThread_jsanchezv();
+     }
+    #endif
+
+    #ifdef use_lib_core_jsanchezv       
+     //if ((gb_currentTime - gb_fps_time_ini_jsanchezv )>1000)
+     //{//Medir fps core jose luis
+     // gb_fps_time_ini_jsanchezv= gb_currentTime;
+     // unsigned long aux_fps= gb_fps_jsanchezv-gb_fps_ini_jsanchezv;
+     // gb_fps_ini_jsanchezv = gb_fps_jsanchezv;     
+     // Serial.printf ("fps %d\n",aux_fps);      
+	 //}
+    #endif
+
 //videoTaskNoThread(); //Video sin hilos
 
     
@@ -1916,8 +2521,11 @@ void loop() {
     //    last_ts = ts2 - ts1;
     //}
 
+   #ifdef use_lib_core_rampa069
     TIMERG0.wdt_wprotect = TIMG_WDT_WKEY_VALUE;
     TIMERG0.wdt_feed = 1;
     TIMERG0.wdt_wprotect = 0;
     vTaskDelay(0); // important to avoid task watchdog timeouts - change this to slow down emu
+   #else 
+   #endif 
 }

@@ -510,9 +510,9 @@ void load_ram2Flash(unsigned char id,unsigned char isSNA48K)
     _zxCpu.pc = retaddr;
     //JJSerial.printf("%s SNA: %u\n", MSG_FREE_HEAP_AFTER, ESP.getFreeHeap());
     #ifdef use_lib_log_serial
-    Serial.printf("Ret address: %x Stack: %x AF: %x Border: %x sna_size: %d rom: %d bank: %x\n", retaddr,
-                  _zxCpu.registers.word[Z80_SP], _zxCpu.registers.word[Z80_AF], borderTemp, sna_size, rom_in_use,
-                  bank_latch);
+    //Serial.printf("Ret address: %x Stack: %x AF: %x Border: %x sna_size: %d rom: %d bank: %x\n", retaddr,
+    //              _zxCpu.registers.word[Z80_SP], _zxCpu.registers.word[Z80_AF], borderTemp, sna_size, rom_in_use,
+    //              bank_latch);
     #endif                  
     KB_INT_START;
 }
@@ -530,8 +530,12 @@ void load_rom2flash(unsigned char is48k,unsigned char id)
  {//Para 48K
   if (id < max_list_rom_48)
   {  
-   rom0= (uint8_t*)gb_list_roms_48k_data[id];
-   ReloadLocalCacheROMram(); //Recargo punteros rom ram
+   #ifdef use_lib_core_jsanchezv
+    rom0_jsanchezv= (uint8_t*)gb_list_roms_48k_data[id];
+   #else      
+    rom0= (uint8_t*)gb_list_roms_48k_data[id];    
+    ReloadLocalCacheROMram(); //Recargo punteros rom ram
+   #endif 
    //SetMode48K();
   }
  }
@@ -539,12 +543,19 @@ void load_rom2flash(unsigned char is48k,unsigned char id)
  {//128k
   if (id < max_list_rom_128)
   {
-   rom0= (uint8_t*)gb_list_roms_128k_data[id][0];
-   rom1= (uint8_t*)gb_list_roms_128k_data[id][1];
-   rom2= (uint8_t*)gb_list_roms_128k_data[id][2];
-   rom3= (uint8_t*)gb_list_roms_128k_data[id][3];
-   ReloadLocalCacheROMram(); //Recargo punteros rom ram
-  //SetMode128K();
+   #ifdef use_lib_core_jsanchezv      
+    rom0_jsanchezv= (uint8_t*)gb_list_roms_128k_data[id][0];
+    rom1_jsanchezv= (uint8_t*)gb_list_roms_128k_data[id][1];
+    rom2_jsanchezv= (uint8_t*)gb_list_roms_128k_data[id][2];
+    rom3_jsanchezv= (uint8_t*)gb_list_roms_128k_data[id][3];   
+   #else
+    rom0= (uint8_t*)gb_list_roms_128k_data[id][0];
+    rom1= (uint8_t*)gb_list_roms_128k_data[id][1];
+    rom2= (uint8_t*)gb_list_roms_128k_data[id][2];
+    rom3= (uint8_t*)gb_list_roms_128k_data[id][3];
+    ReloadLocalCacheROMram(); //Recargo punteros rom ram   
+   #endif
+   //SetMode128K();
   }
  }
  KB_INT_START;
