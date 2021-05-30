@@ -4,7 +4,7 @@ Fork of David Crespo's emulator with the support of WII <a href='https://github.
 <center><img src='https://raw.githubusercontent.com/rpsubc8/ESP32TinyZXSpectrum/main/preview/previewZx128k.gif'></center>
 I have made several modifications:
 <ul>
- <li>PSRAM is not used, it works in ESP32 with 520 KB of RAM (TTGO VGA32)</li>
+ <li>PSRAM is not used, it works in ESP32 with 520 KB of RAM (TTGO VGA32 v1.2)</li>
  <li>Supports 128K,+2,+3 and +3e modes without lack of PSRAM</li>
  <li>Removed the control support WII</li>
  <li>Replacement of the OSD with a low resource OSD</li>
@@ -35,6 +35,7 @@ I have made several modifications:
 <h1>Requirements</h1>
 Required:
  <ul>
+  <li>TTGO VGA32 v1.2</li>
   <li>Visual Studio 1.48.1 PLATFORM 2.2.0</li>
   <li>Arduino IDE 1.8.11</li>
   <li>Arduino fabgl bookstore 0.9.0 (included in PLATFORM project). The Arduino IDE has to be installed.</li>
