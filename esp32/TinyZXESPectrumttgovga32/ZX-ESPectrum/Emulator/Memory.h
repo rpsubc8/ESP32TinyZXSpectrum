@@ -2,7 +2,7 @@
  #define MEMORY_H
  #include <Arduino.h>
  
- #include "gbConfig.h"
+ #include "../gbConfig.h"
  #ifdef use_lib_core_jsanchezv
   extern byte * rom0_jsanchezv;
   extern byte * rom1_jsanchezv;
