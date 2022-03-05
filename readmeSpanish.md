@@ -59,7 +59,7 @@ Luego procederemos a compilar y subir a la placa. No se usa particiones, así qu
 <br><br>
 <h1>Arduino IDE</h1>
 Todo el proyecto es compatible con la estructura de Arduino 1.8.11.
-Tan sólo tenemos que abrir el <b>ZX-ESPectrum.ino</b> del directorio <b>ZXESPectrum</b>.
+Tan sólo tenemos que abrir el <b>ZXESPectrum.ino</b> del directorio <b>ZXESPectrum</b>.
 <center><img src='https://raw.githubusercontent.com/rpsubc8/ESP32TinyZXSpectrum/main/preview/previewArduinoIDEpreferences.gif'></center>
 Debemos instalar las extensiones de spressif en el gestor de urls adicionales de tarjetas <b>https://dl.espressif.com/dl/package_esp32_index.json</b>
 Ya está preparado el proyecto, de forma que no se necesita ninguna librería de bitluni ni fabgl. Debemos desactivar la opción de PSRAM, y en caso de superar 1 MB de binario, seleccionar 4 MB de partición a la hora de subir. Aunque el código no use PSRAM, si la opción está activa y nuestro ESP32 no dispone de ella, se generará una excepción y reinicio del mismo en modo bucle.
