@@ -115,7 +115,7 @@ El archivo <b>gbConfig.h</b> se seleccionan las opciones:
  <li><b>use_lib_cpu_adjust_mask_instructions: </b> Aplica una mascara de reajuste de tiempo para los 20000 microsegundos de cada frame. Si la mascara es 0x03, se aplica la máscara binaria 00000011, es decir, cada 4 intrucciones.</li>
  <li><b>use_lib_core_linkefong: </b> Permite elegir el core de Lin Ke-Fong. Una vez compilado, aparecerá indicado en el OSD.</li>
  <li><b>use_lib_core_jsanchezv: </b> Permite elegir el core de José Luis Sánchez. Una vez compilado, aparecerá indicado en el OSD.</li>
- <li><b>use_lib_delayContention: </b> Si está activo, permite aplicara la espera de la memoria contenida, sólo en el core de José Luis Sánchez.</li>
+ <li><b>use_lib_delayContention: </b> Si está activo, permite aplicar la espera de la memoria contenida, sólo en el core de José Luis Sánchez.</li>
 </ul>
 
 
