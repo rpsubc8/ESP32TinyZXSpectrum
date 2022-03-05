@@ -25,7 +25,7 @@ He realizado varias modificaciones:
  <li>Ajuste de pantalla X, Y (consume un poco de CPU)</li>
  <li>Escala de colores R, G, B, al estilo de las pantallas de fósforo verde</li>
  <li>Menú de velocidad de video de emulación</li>
- <li>Menú de velocidad de emulación AUTO (50 fps 20000 microsegundos) así como un delay en microsegundos o sin freno.</li>
+ <li>Menú de velocidad de emulación AUTO (50 fps 20000 microsegundos) así como un delay en microsegundos o sin freno, de 150 fps a 396 fps en el core de Lin Ke-Fong o desde los 95 fps a los 225 fps en el core de Jose Luis Sanchez.</li>
  <li>Soporte para leer archivos SCR</li>
  <li>Soporte para cargar archivos screen dentro de ficheros .TAP</li>
  <li>Carga de BASIC desde .TAP (intercepción de rutina de cinta). Sólo en el core de Lin Ke-Fong</li> 
