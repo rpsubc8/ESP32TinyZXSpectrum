@@ -14,7 +14,8 @@ He realizado varias modificaciones:
  <li>Optimización de tamaño en FLASH</li> 
  <li>Optimización de la rutina de video (2200 microsegundos por frame)</li>
  <li>Soporte para modo con (50 fps 20000 microsegundos) y sin hilos (50 fps 17000 microsegundos)</li>
- <li>Emulación de ratón Kempston (librería reducida de Rob Kent jazzycamel)</li>  
+ <li>Emulación de ratón Kempston (librería reducida de Rob Kent jazzycamel)</li>
+ <li>Emulación Kempston con teclas cursores (izquierda, derecha, arriba, abajo) y ALT derecho.</li> 
  <li>Emulación de AY8912 con fabgl, versión reducida de dcrespo3d(David Crespo Tascón)</li>
  <li>Redirección de los pulsos de grabación de cinta al altavoz</li>
  <li>Opción de resampleo en modo speaker y mezcla con AY8912 (inestable)</li>
