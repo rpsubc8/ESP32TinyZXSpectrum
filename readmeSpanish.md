@@ -106,7 +106,6 @@ El archivo <b>gbConfig.h</b> se seleccionan las opciones:
  <li><b>gb_ms_sound:</b> Se debe especificar el número de milisegundos de polling para el sonido AY8912.</li>
  <li><b>gb_frame_crt_skip:</b> El número de frames de video que deben saltarse.</li>
  <li><b>gb_delay_emulate_ms:</b> Milisegundos de espera por cada frame completado.</li>
- <li><b>gb_delay_emulate_div_microsec:</b> Se especifica la división de espera de tiempo en microsegundos de emulación (por defecto 5). A valor más alto, más rápido va la emulación. El valor 0, elimina la espera, es decir, es lo más rápido.</li> 
  <li><b>use_lib_tape_rom_intercept:</b> Controla la rutina 0x056B de leer cintas. Sólo está activo para el core de Lin Ke-Fong, y sólo carga el primer bloque de un programa BASIC.</li>
  <li><b>use_lib_ultrafast_speaker:</b> Modo rápido de activación de pin E/S audio.</li>
  <li><b>use_lib_stats_time_unified: </b> Permite ver trazas por el puerto serie con los fps, así como microsegundos actuales, mínimos y máximos por frame. Lo mismo para el video.</li>
