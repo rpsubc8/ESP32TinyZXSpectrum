@@ -4,7 +4,7 @@ Fork del emulador de David Crespo con el soporte de mando de WII <a href='https:
 <center><img src='https://raw.githubusercontent.com/rpsubc8/ESP32TinyZXSpectrum/main/preview/previewZx128k.gif'></center>
 He realizado varias modificaciones:
 <ul>
- <li>No se usa PSRAM, funcionando en ESP32 de 520 KB de RAM (TTGO VGA32 v1.2)</li> 
+ <li>No se usa PSRAM, funcionando en ESP32 de 520 KB de RAM (TTGO VGA32 v1.x)</li> 
  <li>Soporta los modos 128K,+2,+3 y +3e sin falta de PSRAM</li>
  <li>Eliminado el soporte de mando WII</li>
  <li>Sustitución del OSD por uno de bajos recursos</li>
