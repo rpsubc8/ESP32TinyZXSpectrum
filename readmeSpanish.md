@@ -13,7 +13,7 @@ He realizado varias modificaciones:
  <li>Recolocación de ROMs, SNA, .SCR, .TAP en Flash progmem</li>
  <li>Optimización de tamaño en FLASH</li> 
  <li>Optimización de la rutina de video (2200 microsegundos por frame)</li>
- <li>Soporte para modo con (50 fps 20000 micros) y sin hilos (50 fps 17000 micros)</li>
+ <li>Soporte para modo con (50 fps 20000 microsegundos) y sin hilos (50 fps 17000 microsegundos)</li>
  <li>Emulación de ratón Kempston (librería reducida de Rob Kent jazzycamel)</li>  
  <li>Emulación de AY8912 con fabgl, versión reducida de dcrespo3d(David Crespo Tascón)</li>
  <li>Redirección de los pulsos de grabación de cinta al altavoz</li>
@@ -23,7 +23,7 @@ He realizado varias modificaciones:
  <li>Ajuste de pantalla X, Y (consume un poco de CPU)</li>
  <li>Escala de colores R, G, B, al estilo de las pantallas de fósforo verde</li>
  <li>Menú de velocidad de video de emulación</li>
- <li>Menú de velocidad de emulación AUTO (50 fps 20000 microsegundos) así como un delay en microsegundos.</li>
+ <li>Menú de velocidad de emulación AUTO (50 fps 20000 microsegundos) así como un delay en microsegundos o sin freno.</li>
  <li>Soporte para leer archivos SCR</li>
  <li>Soporte para cargar archivos screen dentro de ficheros .TAP</li>
  <li>Carga de BASIC desde .TAP (intercepción de rutina de cinta). Sólo en el core de Lin Ke-Fong</li> 
@@ -48,25 +48,20 @@ Se requiere:
  
 
 <h1>PlatformIO</h1>
-Se debe instalar el PLATFORMIO 2.2.0 desde las extensiones del Visual Studio.
+Se debe instalar el PLATFORMIO 2.2.1 desde las extensiones del Visual Studio. Se requiere también Espressif32 v3.3.2. 
 <center><img src='https://raw.githubusercontent.com/rpsubc8/ESP32TinyZXSpectrum/main/preview/previewPlatformIOinstall.gif'></center>
 Luego se seleccionará el directorio de trabajo <b>TinyZXESPectrumttgovga32</b>.
 Debemos modificar el fichero <b>platformio.ini</b> la opción <b>upload_port</b> para seleccionar el puerto COM donde tenemos nuestra placa TTGO VGA32.
 <center><img src='https://raw.githubusercontent.com/rpsubc8/ESP32TinyZXSpectrum/main/preview/previewPlatformIO.gif'></center>
-Luego procederemos a compilar y subir a la placa. No se usa particiones, así que debemos subir todo el binario compilado.
-Está todo preparado para no tener que instalar las librerias de bitluni. Sin embargo, si necesitamos las opciones de sonido y ratón, necesitaremos la librería <b>fabgl</b>, que se encuentra dentro del proyecto en PLATFORMIO.
-
+Luego procederemos a compilar y subir a la placa. No se usa particiones, así que debemos subir todo el binario compilado. Está todo preparado para no tener que instalar las librerias de bitluni ni fabgl.
 
 <br>
 <h1>Arduino IDE</h1>
 Todo el proyecto es compatible con la estructura de Arduino 1.8.11.
-Tan sólo tenemos que abrir el <b>ZX-ESPectrum.ino</b> del directorio <b>ZX-ESPectrum</b>.
+Tan sólo tenemos que abrir el <b>ZX-ESPectrum.ino</b> del directorio <b>ZXESPectrum</b>.
 <center><img src='https://raw.githubusercontent.com/rpsubc8/ESP32TinyZXSpectrum/main/preview/previewArduinoIDEpreferences.gif'></center>
 Debemos instalar las extensiones de spressif en el gestor de urls adicionales de tarjetas <b>https://dl.espressif.com/dl/package_esp32_index.json</b>
-<center><img src='https://raw.githubusercontent.com/rpsubc8/ESP32TinyZXSpectrum/main/preview/previewArduinoIDElibrary.gif'></center>
-Para el modo normal, ya está preparado el proyecto, de forma que no se necesita ninguna librería de bitluni. Sin embargo, si necesitamos el soporte de ratón y sonido, se requiere instalar las librerias <b>fabgl 0.9.0</b>.
-Lo podemos hacer desde el administrador de bibliotecas.
-Debemos desactivar la opción de PSRAM, y en caso de superar 1 MB de binario, seleccionar 4 MB de partición a la hora de subir. Aunque el código no use PSRAM, si la opción está activa y nuestro ESP32 no dispone de ella, se generará una excepción y reinicio del mismo en modo bucle.
+Ya está preparado el proyecto, de forma que no se necesita ninguna librería de bitluni ni fabgl. Debemos desactivar la opción de PSRAM, y en caso de superar 1 MB de binario, seleccionar 4 MB de partición a la hora de subir. Aunque el código no use PSRAM, si la opción está activa y nuestro ESP32 no dispone de ella, se generará una excepción y reinicio del mismo en modo bucle.
 
 
 <br>
