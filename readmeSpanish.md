@@ -25,11 +25,11 @@ He realizado varias modificaciones:
  <li>Ajuste de pantalla X, Y (consume un poco de CPU)</li>
  <li>Escala de colores R, G, B, al estilo de las pantallas de fósforo verde</li>
  <li>Menú de velocidad de video de emulación</li>
- <li>Menú de velocidad de emulación AUTO (50 fps 20000 microsegundos) así como un delay en microsegundos o sin freno, de 150 fps a 396 fps en el core de Lin Ke-Fong o desde los 95 fps a los 225 fps en el core de Jose Luis Sanchez.</li>
+ <li>Menú de velocidad de emulación AUTO (50 fps 20000 microsegundos) así como un delay en microsegundos o sin freno, de 150 fps a 396 fps en el core de Lin Ke-Fong o desde los 95 fps a los 225 fps en el core de José Luis Sánchez.</li>
  <li>Soporte para leer archivos SCR</li>
  <li>Soporte para cargar archivos screen dentro de ficheros .TAP</li>
  <li>Carga de BASIC desde .TAP (intercepción de rutina de cinta). Sólo en el core de Lin Ke-Fong</li> 
- <li>Soporte de core Lin Ke-Fong y de Jose Luis Sanchez</li>
+ <li>Soporte de core Lin Ke-Fong y de José Luis Sánchez</li>
  <li>Creado port de Windows bajo SDL (no disponible para descargar)</li>
  <li>Modos de video 360x200, 320x240, 320x200</li> 
  <li>Soporte de SNA de 128K</li> 
@@ -114,8 +114,8 @@ El archivo <b>gbConfig.h</b> se seleccionan las opciones:
  <li><b>use_lib_delay_tick_cpu_micros: </b> Si es 0, no se aplica espera en cada ejecución de intrucción.</li>
  <li><b>use_lib_cpu_adjust_mask_instructions: </b> Aplica una mascara de reajuste de tiempo para los 20000 microsegundos de cada frame. Si la mascara es 0x03, se aplica la máscara binaria 00000011, es decir, cada 4 intrucciones.</li>
  <li><b>use_lib_core_linkefong: </b> Permite elegir el core de Lin Ke-Fong. Una vez compilado, aparecerá indicado en el OSD.</li>
- <li><b>use_lib_core_jsanchezv: </b> Permite elegir el core de Jose Luis Sanchez. Una vez compilado, aparecerá indicado en el OSD.</li>
- <li><b>use_lib_delayContention: </b> Si está activo, permite aplicara la espera de la memoria contenida, sólo en el core de Jose Luis Sanchez.</li>
+ <li><b>use_lib_core_jsanchezv: </b> Permite elegir el core de José Luis Sánchez. Una vez compilado, aparecerá indicado en el OSD.</li>
+ <li><b>use_lib_delayContention: </b> Si está activo, permite aplicara la espera de la memoria contenida, sólo en el core de José Luis Sánchez.</li>
 </ul>
 
 
