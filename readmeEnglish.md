@@ -1,6 +1,8 @@
 # Tiny ESP32 ZX Spectrum
 
-!! The documentation in English is outdated. You have to read the Spanish version with core support from Lin Ke Fong and Jose Luis Sanchez.
+|:exclamation:  This is very important                                                                                      |
+|The documentation is outdated.You should read the Spanish version with core support from Lin Ke Fong and Jose Luis Sanchez.|
+|---------------------------------------------------------------------------------------------------------------------------|
 
 <br><br>
 Fork of David Crespo's emulator with the support of WII <a href='https://github.com/dcrespo3d/ZX-ESPectrum-Wiimote'>Wiimote</a>, based on the emulator of Ramon Martinez and Jorge Fuertes <a href='https://github.com/rampa069/ZX-ESPectrum'>ZX-ESPectrum</a>, with dependencies of the author Pete Todd.
