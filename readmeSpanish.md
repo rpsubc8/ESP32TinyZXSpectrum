@@ -19,6 +19,7 @@ He realizado varias modificaciones:
  <li>Redirección de los pulsos de grabación de cinta al altavoz</li>
  <li>Opción de resampleo en modo speaker y mezcla con AY8912 (inestable)</li>
  <li>Posibilidad de elegir modo brillo y modos de 8 colores en compilación.</li>
+ <li>DAC VGA 64 colores (6 bits) y 8 colores (3 bits)</li>
  <li>Remapeo de los cursores en el menú de +2,+3, así como la tecla de borrar</li>
  <li>Ajuste de pantalla X, Y (consume un poco de CPU)</li>
  <li>Escala de colores R, G, B, al estilo de las pantallas de fósforo verde</li>
@@ -33,7 +34,7 @@ He realizado varias modificaciones:
  <li>Soporte de SNA de 128K</li> 
 </ul>
 
-<br>
+<br><br>
 <h1>Requerimientos</h1>
 Se requiere:
  <ul>
@@ -44,7 +45,7 @@ Se requiere:
   <li>Librería reducida Arduino bitluni 0.3.3 (incluida en proyecto)</li>
  </ul>
  <center><img src='https://raw.githubusercontent.com/rpsubc8/ESP32TinyZXSpectrum/main/preview/ttgovga32v12.jpg'></center>
-<br>
+<br><br>
  
 
 <h1>PlatformIO</h1>
@@ -55,7 +56,7 @@ Debemos modificar el fichero <b>platformio.ini</b> la opción <b>upload_port</b>
 <center><img src='https://raw.githubusercontent.com/rpsubc8/ESP32TinyZXSpectrum/main/preview/previewPlatformIO.gif'></center>
 Luego procederemos a compilar y subir a la placa. No se usa particiones, así que debemos subir todo el binario compilado. Está todo preparado para no tener que instalar las librerias de bitluni ni fabgl.
 
-<br>
+<br><br>
 <h1>Arduino IDE</h1>
 Todo el proyecto es compatible con la estructura de Arduino 1.8.11.
 Tan sólo tenemos que abrir el <b>ZX-ESPectrum.ino</b> del directorio <b>ZXESPectrum</b>.
@@ -64,7 +65,7 @@ Debemos instalar las extensiones de spressif en el gestor de urls adicionales de
 Ya está preparado el proyecto, de forma que no se necesita ninguna librería de bitluni ni fabgl. Debemos desactivar la opción de PSRAM, y en caso de superar 1 MB de binario, seleccionar 4 MB de partición a la hora de subir. Aunque el código no use PSRAM, si la opción está activa y nuestro ESP32 no dispone de ella, se generará una excepción y reinicio del mismo en modo bucle.
 
 
-<br>
+<br><br>
 <h1>Usabilidad</h1>
 Se permite cargar:
  <ul>
@@ -80,37 +81,45 @@ Se permite cargar:
  <a href='http://tomeko.net/online_tools/file_to_hex.php?lang=en'>http://tomeko.net/online_tools/file_to_hex.php?lang=en</a>
  
  
-<br>
+<br><br>
 <h1>Opciones</h1>
 El archivo <b>gbConfig.h</b> se seleccionan las opciones:
 <ul>
- <li><b>use_lib_mouse_kempston:</b> Se usa un ratón conectado al puerto PS/2 emulando el protocolo kempston. Se utiliza la libreria fabgl 0.9.0</li>
- <li><b>use_lib_sound_ay8912:</b> Se utiliza un mezclador de 3 canales en modo dirty, emulando el AY8912. El speaker utiliza el canal 1 en modo digital, salvo que se active la opción de resampleo. Se requiere la librería fabgl 0.9.0</li>
- <li><b>use_lib_resample_speaker:</b> La salida del speaker se emula como onda senoidal en el canal 1. Está aún en un estado muy experimental. Se requiere la librería fabgl 0.9.0</li>
+ <li><b>use_lib_mouse_kempston:</b> Se usa un ratón conectado al puerto PS/2 emulando el protocolo kempston. Se utiliza la libreria reducida de Rob Kent. Al usar un modo sin interrupciones, se consume CPU en cada iteración, reduciendo frames de emulación.</li>
+ <li><b>define use_lib_mouse_kempston </b> Si está activa, permite elegir por defecto el ratón en modo zurdo. En cualquier momento, desde el OSD,se puede también cambiar, así como elegir la inversión de la X e Y, y la velocidad de incremento.</li>
+ <li><b>gb_delay_init_ms: </b> Permite especificar los milisegundos de espera por la inicialización del ratón.</li>
+ <li><b>gb_ms_mouse: </b> Permite especificar los milisegundos de polling del ratón.</li>
+ <li><b>use_lib_sound_ay8912:</b> Se utiliza un mezclador de 3 canales en modo dirty, emulando el AY8912. El speaker utiliza el canal 1 en modo digital, salvo que se active la opción de resampleo. Se requiere la librería fabgl reducida, que ya se encuentra dentro del proyecto</li> 
+ <li><b>use_lib_resample_speaker:</b> La salida del speaker se emula como onda senoidal en el canal 1. Está aún en un estado muy experimental.</li>
  <li><b>use_lib_redirect_tapes_speaker:</b> Redirige la salida de tonos de la cinta al altavoz.</li>
  <li><b>use_lib_vga8colors:</b> Obliga a usar RGB, sólo 3 pines y sin modo de brillo, 8 colores</li>
  <li><b>use_lib_vga64colors:</b> Obliga a usar RRGGBB, 6 pines, sin modo de brillo, es decir con 8 colores</li>
  <li><b>use_lib_use_bright:</b> Obliga a usar RRGGBB, 6 pines, con modo brillo, 16 colores</li>
- <li><b>use_lib_vga_low_memory:</b> Modo experimental de bajo consumo de RAM de video. En algún modo de video da problemas.</li>
- <li><b>use_lib_ultrafast_vga:</b> Modo rápido (el doble) de acceso a video. Puede dar problemas si se combina con el modo de video de bajo consumo de ram.</li> 
- <li><b>use_lib_vga_thread:</b> Utiliza la salida de video en un hilo. Si se hace en modo polling, no se usará ni el ajuste de pantalla, ni los modos de brillo. El modo polling está pensado para depuración</li>
- <li><b>use_lib_screen_offset:</b> Permite mover a la izquierda y arriba la pantalla.</li>
+ <li><b>use_lib_vga_thread:</b> Utiliza la salida de video en un hilo. Si está comentada, se usará un sólo núcleo.</li>
+ <li><b>use_lib_screen_offset:</b> Permite mover a la izquierda y arriba la pantalla. Consume un poco de CPU, un par de microsegundos. Si está activo, se puede ajustar desde el OSD. Lo ideal, es no tenerlo activo y hacer los ajustes desde el monitor.</li>
  <li><b>use_lib_skip_frame:</b> Permite saltarse frames al emular</li>
  <li><b>use_lib_vga360x200:</b> Modo de video normal</li>
- <li><b>use_lib_vga320x200:</b> Modo experimental de video para bajo consumo de RAM</li>
- <li><b>use_lib_vga320x240:</b> Modo experimental de video para bajo consumo de RAM</li>
+ <li><b>use_lib_vga320x200:</b> Modo de vídeo 320x200</li>
+ <li><b>use_lib_vga320x240:</b> Modo 320x240</li>
  <li><b>use_lib_log_serial:</b> Se envian logs por puerto serie usb</li>
  <li><b>gb_ms_keyboard:</b> Se debe especificar el número de milisegundos de polling para el teclado.</li>
  <li><b>gb_ms_sound:</b> Se debe especificar el número de milisegundos de polling para el sonido AY8912.</li>
  <li><b>gb_frame_crt_skip:</b> El número de frames de video que deben saltarse.</li>
  <li><b>gb_delay_emulate_ms:</b> Milisegundos de espera por cada frame completado.</li>
  <li><b>gb_delay_emulate_div_microsec:</b> Se especifica la división de espera de tiempo en microsegundos de emulación (por defecto 5). A valor más alto, más rápido va la emulación. El valor 0, elimina la espera, es decir, es lo más rápido.</li> 
- <li><b>use_lib_tape_rom_intercept:</b> Controla la rutina 0x056B de leer cintas.</li>
+ <li><b>use_lib_tape_rom_intercept:</b> Controla la rutina 0x056B de leer cintas. Sólo está activo para el core de Lin Ke-Fong, y sólo carga el primer bloque de un programa BASIC.</li>
  <li><b>use_lib_ultrafast_speaker:</b> Modo rápido de activación de pin E/S audio.</li>
+ <li><b>use_lib_stats_time_unified: </b> Permite ver trazas por el puerto serie con los fps, así como microsegundos actuales, mínimos y máximos por frame. Lo mismo para el video.</li>
+ <li><b>use_lib_delay_tick_cpu_auto: </b> Si vale 1, permite autoajustar la velocidad del frame a 20000 microsegundos, es decir 20 milisegundos, que equivale a 50 fps. Posteriormente desde el OSD se puede cambiar la velocidad de espera de la CPU.</li>
+ <li><b>use_lib_delay_tick_cpu_micros: </b> Si es 0, no se aplica espera en cada ejecución de intrucción.</li>
+ <li><b>use_lib_cpu_adjust_mask_instructions: </b> Aplica una mascara de reajuste de tiempo para los 20000 microsegundos de cada frame. Si la mascara es 0x03, se aplica la máscara binaria 00000011, es decir, cada 4 intrucciones.</li>
+ <li><b>use_lib_core_linkefong: </b> Permite elegir el core de Lin Ke-Fong. Una vez compilado, aparecerá indicado en el OSD.</li>
+ <li><b>use_lib_core_jsanchezv: </b> Permite elegir el core de Jose Luis Sanchez. Una vez compilado, aparecerá indicado en el OSD.</li>
+ <li><b>use_lib_delayContention: </b> Si está activo, permite aplicara la espera de la memoria contenida, sólo en el core de Jose Luis Sanchez.</li>
 </ul>
 
 
-<br>
+<br><br>
 <h1>Modo brillo</h1>
 El modo brillo, se corresponde con 16 colores, por tanto, se tiene que usar la salida del DAC de 6 pines. Este modo es incompatible con el modo de 8 colores, por tanto, si se elige esta opción, se tiene que deshabilitar el <b>use_lib_vga8colors</b> en el gbConfig.h.
 <center><img src='https://raw.githubusercontent.com/rpsubc8/ESP32TinyZXSpectrum/main/preview/previewFantasy.gif'></center>
@@ -118,7 +127,7 @@ Este modo consume más CPU y RAM que el modo normal de 8 colores.
 
 
 
-<br>
+<br><br>
 <h1>Aplicaciones Test</h1>
 Al arrancar el ESP32, se realiza en modo ZX 48K, es decir, cargando la rom del ZX 48k con el BASIC.
 Cada vez que seleccionamos una ROM, se resetea la selección de cinta al bloque 0, así como el sonido.
@@ -155,6 +164,7 @@ Para el caso de los SNA:
  <li><b>MouseTestZXds: </b> Tool para test del protocolo del ratón kempston.</li>
  <li><b>FireKey: </b> el mismo juego Fire pero usando el teclado en lugar del ratón. Tiene salida de sonido AY8912 (modo 128K) y altavoz interno (modo 48K).</li>
  <li><b>Tritone1: </b> Musicdisk que usa altavoz interno.</li>
+ <li><b>Z80FULL: </b> El Test de z80 completo. Se debe ejecutar con el comando <b>RUN</b>.</li>
 </ul>
 <br>
 Para la carga de SCR desde TAP:
