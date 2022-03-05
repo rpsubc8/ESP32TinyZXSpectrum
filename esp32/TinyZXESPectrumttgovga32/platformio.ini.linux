@@ -1,5 +1,5 @@
 [platformio]
-src_dir = ZX-ESPectrum/
+src_dir = ZXESPectrum/
 
 [env:lolin32]
 platform = espressif32
@@ -21,6 +21,7 @@ monitor_speed = 115200
 board_build.partitions = huge_app.csv
 build_flags =
     -w
+    -O2
 ;    -DBOARD_HAS_PSRAM
 ;    -mfix-esp32-psram-cache-issue
 
