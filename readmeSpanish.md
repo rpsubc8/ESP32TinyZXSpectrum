@@ -12,34 +12,36 @@ He realizado varias modificaciones:
  <li>Eliminado el soporte de SPIFFS</li>
  <li>Recolocación de ROMs, SNA, .SCR, .TAP en Flash progmem</li>
  <li>Optimización de tamaño en FLASH</li> 
- <li>Optimización de la rutina de video</li>
- <li>Soporte para modo sin hilos</li> 
- <li>Emulación de ratón Kempston con fabgl</li>  
- <li>Emulación de AY8912 con fabgl</li>
+ <li>Optimización de la rutina de video (2200 microsegundos por frame)</li>
+ <li>Soporte para modo con (50 fps 20000 micros) y sin hilos (50 fps 17000 micros)</li>
+ <li>Emulación de ratón Kempston (librería reducida de Rob Kent jazzycamel)</li>  
+ <li>Emulación de AY8912 con fabgl, versión reducida de dcrespo3d(David Crespo Tascón)</li>
  <li>Redirección de los pulsos de grabación de cinta al altavoz</li>
  <li>Opción de resampleo en modo speaker y mezcla con AY8912 (inestable)</li>
  <li>Posibilidad de elegir modo brillo y modos de 8 colores en compilación.</li>
  <li>Remapeo de los cursores en el menú de +2,+3, así como la tecla de borrar</li>
- <li>Ajuste de pantalla X, Y</li>
+ <li>Ajuste de pantalla X, Y (consume un poco de CPU)</li>
  <li>Escala de colores R, G, B, al estilo de las pantallas de fósforo verde</li>
  <li>Menú de velocidad de video de emulación</li>
- <li>Menú de velocidad de emulación por división de tiempo (5 por defecto).</li>
+ <li>Menú de velocidad de emulación AUTO (50 fps 20000 microsegundos) así como un delay en microsegundos.</li>
  <li>Soporte para leer archivos SCR</li>
  <li>Soporte para cargar archivos screen dentro de ficheros .TAP</li>
- <li>Carga de BASIC desde .TAP (intercepción de rutina de cinta)</li> 
- <li>Creado port de Windows bajo SDL</li>
- <li>Modos de video 360x200, 320x240, 320x200</li>  
+ <li>Carga de BASIC desde .TAP (intercepción de rutina de cinta). Sólo en el core de Lin Ke-Fong</li> 
+ <li>Soporte de core Lin Ke-Fong y de Jose Luis Sanchez</li>
+ <li>Creado port de Windows bajo SDL (no disponible para descargar)</li>
+ <li>Modos de video 360x200, 320x240, 320x200</li> 
+ <li>Soporte de SNA de 128K</li> 
 </ul>
 
 <br>
 <h1>Requerimientos</h1>
 Se requiere:
  <ul>
-  <li>TTGO VGA32 v1.2</li>
-  <li>Visual Studio 1.48.1 PLATFORMIO 2.2.0</li>
-  <li>Arduino IDE 1.8.11</li>
-  <li>Librería Arduino fabgl 0.9.0 (incluida en proyecto PLATFORMIO). El el Arduino IDE se tiene que instalar.</li>
-  <li>Librería Arduino bitluni 0.3.3 (incluida en proyecto)</li>
+  <li>TTGO VGA32 v1.x (1.0, 1.1, 1.2, 1.4)</li>
+  <li>Visual Studio 1.48.1 PLATFORMIO 2.2.1 Espressif32 v3.3.2</li>
+  <li>Arduino IDE 1.8.11 Espressif System 1.0.6</li>
+  <li>Librería reducida Arduino fabgl 0.9.0 (incluida en proyecto PLATFORMIO)</li>
+  <li>Librería reducida Arduino bitluni 0.3.3 (incluida en proyecto)</li>
  </ul>
  <center><img src='https://raw.githubusercontent.com/rpsubc8/ESP32TinyZXSpectrum/main/preview/ttgovga32v12.jpg'></center>
 <br>
