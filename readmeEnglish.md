@@ -1,26 +1,4 @@
 # Tiny ESP32 ZX Spectrum
-<table>
-  <thead>
-    <tr>
-      <td align="left">
-        :exclamation: This is very important
-      </td>
-    </tr>
-  </thead>
-
-  <tbody>
-    <tr>
-      <td>
-        <ul>
-          <li>The English documentation is outdated</li>
-          <li>You should read the Spanish version with core support from Lin Ke Fong and Jose Luis Sanchez.</li>
-        </ul>
-      </td>
-    </tr>
-  </tbody>
-</table>
-
-
 <br><br>
 Fork of David Crespo's emulator with the support of WII <a href='https://github.com/dcrespo3d/ZX-ESPectrum-Wiimote'>Wiimote</a>, based on the emulator of Ramon Martinez and Jorge Fuertes <a href='https://github.com/rampa069/ZX-ESPectrum'>ZX-ESPectrum</a>, with dependencies of the author Pete Todd.
 <br>
@@ -112,29 +90,38 @@ Loading is allowed:
 <h1>Options</h1>
 The file <b>gbConfig.h</b> options are selected:
 <ul>
- <li><b>use_lib_mouse_kempston:</b> A mouse connected to the PS/2 port emulating the kempston protocol is used. The fabgl library 0.9.0 is used</li>
- <li><b>use_lib_sound_ay8912:</b> A 3 channel mixer is used in dirty mode, emulating AY8912. The speaker uses channel 1 in digital mode, unless the resample option is enabled. The fabgl library 0.9.0 is required.</li>
- <li><b>use_lib_resample_speaker:</b> The speaker output is emulated as a sine wave on channel 1. The fabgl library 0.9.0 is required.</li>
+ <li><b>use_lib_mouse_kempston:</b> It uses a mouse connected to the PS/2 port emulating the kempston protocol. Rob Kent's reduced library is used. By using an uninterruptible mode, CPU is consumed in each iteration, reducing emulation frames.</li>
+ <li><b>define use_lib_mouse_kempston </b> If active, it allows to choose by default the mouse in left-handed mode. At any time, from the OSD, you can also change it, as well as choose the inversion of the X and Y, and the speed of increase.</li>
+ <li><b>gb_delay_init_ms: </b> Allows you to specify the milliseconds to wait for mouse initialization.</li>
+ <li><b>gb_ms_mouse: </b> Allows you to specify the mouse polling milliseconds.</li>
+ <li><b>use_lib_sound_ay8912:</b> A 3-channel mixer is used in dirty mode, emulating the AY8912. The speaker uses channel 1 in digital mode, unless the resampling option is activated. The reduced fabgl library is required, which is already inside the project.</li>
+ <li><b>use_lib_resample_speaker:</b> The speaker output is emulated as a sine wave on channel 1. It is still in a very experimental state.</li>
  <li><b>use_lib_redirect_tapes_speaker:</b> Redirects the tone output from the tape to the speaker.</li>
- <li><b>use_lib_vga8colors:</b> Force RGB, only 3 pins and no brightness mode, 8 colors</li>
+ <li><b>use_lib_vga8colors:</b> Forces to use RGB, only 3 pins and no brightness mode, 8 colors</li>
  <li><b>use_lib_vga64colors:</b> Forced to use RRGGBB, 6-pin, no brightness mode, i.e. with 8 colors</li>
  <li><b>use_lib_use_bright:</b> Force to use RRGGBB, 6 pins, with brightness mode, 16 colors</li>
  <li><b>use_lib_vga_low_memory:</b> Experimental mode with low video RAM consumption. In some video mode it gives problems.</li>
- <li><b>use_lib_ultrafast_vga:</b>Fast mode (double) access to video. May give problems if combined with low ram video mode.</li>
- <li><b>use_lib_vga_thread:</b> Use the video output in a thread. If it is done in polling mode, neither the screen adjustment nor the brightness modes will be used. The polling mode is intended for debugging</li>
- <li><b>use_lib_screen_offset:</b> Allows to move to the left and up the screen.</li>
+ <li><b>use_lib_vga_thread:</b> Use the video output in a thread. If it is annotated, only one core will be used.</li>
+ <li><b>use_lib_screen_offset:</b> Allows to move left and up the screen. It consumes a little CPU, a couple of microseconds. If active, it can be adjusted from the OSD. Ideally, do not have it active and make the adjustments from the monitor.</li>
  <li><b>use_lib_skip_frame:</b> Allows to skip frames when emulating</li>
  <li><b>use_lib_vga360x200:</b> Normal video mode</li>
- <li><b>use_lib_vga320x200:</b> Experimental video mode for low RAM consumption.</li> 
- <li><b>use_lib_vga320x240:</b> Experimental video mode for low RAM consumption.</li>
+ <li><b>use_lib_vga320x200:</b> Video mode 320x200</li> 
+ <li><b>use_lib_vga320x240:</b> Video mode 320x240</li>
  <li><b>use_lib_log_serial:</b> Logs are sent by serial port usb</li>
  <li><b>gb_ms_keyboard:</b> The number of milliseconds of polling must be specified for the keyboard.</li>
  <li><b>gb_ms_sound:</b> The number of polling milliseconds must be specified for sound AY8912.</li>
  <li><b>gb_frame_crt_skip:</b> The number of video frames to be skipped</li>
- <li><b>gb_delay_emulate_ms:</b> Milliseconds of waiting for each completed frame.</li>
- <li><b>gb_delay_emulate_div_microsec:</b> The timeout division in microseconds of emulation is specified (default 5). The higher value, the faster the emulation goes. The value 0, eliminates the wait, that is, it is the fastest.</li>
- <li><b>use_lib_tape_rom_intercept:</b> Controls the 0x056B tape reading routine.</li>
+ <li><b>gb_delay_emulate_ms:</b> Milliseconds of waiting for each completed frame.</li> 
+ <li><b>use_lib_tape_rom_intercept:</b> Controls the 0x056B routine to read tapes. It is only active for the Lin Ke-Fong core, and only loads the first block of a BASIC program. It consumes a few CPU cycles, as it is checking the PC register.</li>
  <li><b>use_lib_ultrafast_speaker:</b> Fast mode of audio I/O pin activation.</li> 
+
+ <li><b>use_lib_stats_time_unified: </b> It allows to see traces through the serial port with the fps, as well as current microseconds, minimum and maximum per frame. The same for video.</li>
+ <li><b>use_lib_delay_tick_cpu_auto: </b> If it is set to 1, it allows you to set the frame rate to 20000 microseconds, i.e. 20 milliseconds, which is equivalent to 50 fps. Subsequently from the OSD you can change the CPU standby speed.</li>
+ <li><b>use_lib_delay_tick_cpu_micros: </b> If 0, no wait is applied at each instruction execution.</li>
+ <li><b>use_lib_cpu_adjust_mask_instructions: </b> It applies a time reset mask for the 20000 microseconds of each frame. If the mask is 0x03, the binary mask 00000011 is applied, i.e. every 4 instructions.</li>
+ <li><b>use_lib_core_linkefong: </b> Allows to choose the Lin Ke-Fong core. Once compiled, it will be displayed on the OSD.</li>
+ <li><b>use_lib_core_jsanchezv: </b> It allows to choose the core of José Luis Sánchez. Once compiled, it will be displayed on the OSD.</li>
+ <li><b>use_lib_delayContention: </b> If active, it allows to apply the wait of the contained memory, only in the Jose Luis Sanchez core.</li>
 </ul>
 
 
@@ -182,6 +169,7 @@ In the case of the SNA:
  <li><b>MouseTestZXds:</b> Tool for testing the kempston mouse protocol</li>
  <li><b>FireKey:</b> The same Fire game but using the keyboard instead of the mouse. It has sound output AY8912 (128K mode) and internal speaker (48K mode).</li>
  <li><b>Tritone1:</b> Musicdisk that uses internal speaker.</li> 
+ <li><b>Z80FULL: </b> El Test de z80 completo. Se debe ejecutar con el comando <b>RUN</b>.</li>
 </ul>
 <br>
 For SCR loading from TAP:
@@ -233,9 +221,9 @@ I have created a very basic tool, to convert .rom, .tape, .sna, .scr files into 
    128k/
     nothing.txt
 </pre>
-The concept of numerical rom files (0.rom, 1.rom, 2.rom, 3.rom) follows the same basis as the ZX-ESPectrum emulator. The name of the folder is what defines the title of rom.
+The concept of numerical rom files (0.rom, 1.rom, 2.rom, 3.rom) follows the same basis as the ZXESPectrum emulator. The name of the folder is what defines the title of rom.
 It is mandatory to leave the folder <b>48k/sinclair/0.rom</b>, because you need the 48k rom to start the emulator.
-Then we must copy the directory <b>dataFlash</b> into the project <b>ESP32TinyZXSpectrum\ZX-ESPectrum</b> overwriting the previous dataFlash folder. It is recommended to clean up the project and recompile it.<br>
+Then we must copy the directory <b>dataFlash</b> into the project <b>ESP32TinyZXSpectrum\ZXESPectrum</b> overwriting the previous dataFlash folder. It is recommended to clean up the project and recompile it.<br>
 This tool is very simple, and does not control errors, so it is recommended to leave you the files with very simple names and as simple as possible.<br>
 The project in PLATFORM.IO is prepared for 2 MB of Flash. If we need the 4MB of flash, we will have to modify the entry in the file <b>platform.ini</b>
 <pre>board_build.partitions = huge_app.csv</pre>
