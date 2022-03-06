@@ -14,7 +14,7 @@ I have made several modifications:
  <li>ROM, SNA, SCR, TAP repositioning in Flash progmem</li>
  <li>Size optimization in FLASH</li>
  <li>Video routine optimization (2200 microseconds per frame)</li>
- <li>Support for both wired (50 fps 20000 microseconds) and wireless (50 fps 17000 microseconds) modes.</li>
+ <li>Support for both 2 core's (50 fps 20000 microseconds) and one core (50 fps 17000 microseconds) modes.</li>
  <li>Kempston mouse emulation with fabgl</li>
  <li>Kempston mouse emulation (reduced library by Rob Kent jazzycamel)</li>
  <li>Kempston emulation with cursor keys (left, right, up, down) and right ALT.</li>
