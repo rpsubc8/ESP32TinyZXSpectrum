@@ -168,7 +168,7 @@ In the case of the SNA:
  <li><b>MouseTestZXds:</b> Tool for testing the kempston mouse protocol</li>
  <li><b>FireKey:</b> The same Fire game but using the keyboard instead of the mouse. It has sound output AY8912 (128K mode) and internal speaker (48K mode).</li>
  <li><b>Tritone1:</b> Musicdisk that uses internal speaker.</li> 
- <li><b>Z80FULL: </b> El Test de z80 completo. Se debe ejecutar con el comando <b>RUN</b>.</li>
+ <li><b>Z80FULL: </b> The complete z80 test. It must be executed with the <b>RUN</b> command.</li>
 </ul>
 <br>
 For SCR loading from TAP:
