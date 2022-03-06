@@ -21,7 +21,7 @@ I have made several modifications:
  <li>Redirecting tape recording pulses to the speaker</li>
  <li>Resample option in speaker mode and mix with AY8912 (unstable)</li>
  <li>Possibility to choose brightness mode and 8 color modes in compilation.</li>
- <li>DAC VGA 64 colors (6 bits) and 8 colors (3 bits)</li>
+ <li>DAC VGA 64 colors (6 bits) and 8 colors (3 bits) (tiny version Ricardo Massaro)</li>
  <li>Removal of the cursors in the menu of +2,+3, as well as the key of erasing</li>
  <li>X, Y screen adjustment (slightly CPU consuming)</li>
  <li>R, G, B color scale, green phosphorous screen style</li>
