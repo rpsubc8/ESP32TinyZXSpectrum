@@ -27,7 +27,7 @@ Fork of David Crespo's emulator with the support of WII <a href='https://github.
 <center><img src='https://raw.githubusercontent.com/rpsubc8/ESP32TinyZXSpectrum/main/preview/previewZx128k.gif'></center>
 I have made several modifications:
 <ul>
- <li>PSRAM is not used, it works in ESP32 with 520 KB of RAM (TTGO VGA32 v1.2)</li>
+ <li>PSRAM is not used, it works in ESP32 with 520 KB of RAM (TTGO VGA32 v1.x)</li>
  <li>Supports 128K,+2,+3 and +3e modes without lack of PSRAM</li>
  <li>Removed the control support WII</li>
  <li>Replacement of the OSD with a low resource OSD</li>
@@ -35,63 +35,64 @@ I have made several modifications:
  <li>Removal of SPIFFS support</li>
  <li>ROM, SNA, SCR, TAP repositioning in Flash progmem</li>
  <li>Size optimization in FLASH</li>
- <li>Optimization of the video routine</li>
- <li>Support for wireless mode</li>
+ <li>Video routine optimization (2200 microseconds per frame)</li>
+ <li>Support for both wired (50 fps 20000 microseconds) and wireless (50 fps 17000 microseconds) modes.</li>
  <li>Kempston mouse emulation with fabgl</li>
- <li>Emulation of AY8912 with fabgl</li>
+ <li>Kempston mouse emulation (reduced library by Rob Kent jazzycamel)</li>
+ <li>Kempston emulation with cursor keys (left, right, up, down) and right ALT.</li>
+ <li>AY8912 emulation with fabgl, reduced version of dcrespo3d (David Crespo Tascón)</li>
  <li>Redirecting tape recording pulses to the speaker</li>
  <li>Resample option in speaker mode and mix with AY8912 (unstable)</li>
  <li>Possibility to choose brightness mode and 8 color modes in compilation.</li>
+ <li>DAC VGA 64 colors (6 bits) and 8 colors (3 bits)</li>
  <li>Removal of the cursors in the menu of +2,+3, as well as the key of erasing</li>
- <li>Screen adjustment X, Y</li>
+ <li>X, Y screen adjustment (slightly CPU consuming)</li>
  <li>R, G, B color scale, green phosphorous screen style</li>
  <li>Emulation video speed menu</li>
- <li>Time division emulation speed menu (5 by default)</li>
+ <li>AUTO emulation speed menu (50 fps 20000 microseconds) as well as a delay in microseconds or without brake, from 150 fps to 396 fps in Lin Ke-Fong's core or from 95 fps to 225 fps in Jose Luis Sanchez's core.</li> 
  <li>Support for reading SCR files</li>
  <li>Support for loading screen files into TAP files</li>
- <li>Load BASIC from TAP (tape intercept routine)</li>
- <li>Created Windows port under SDL</li>
+ <li>BASIC loading from .TAP (tape routine intercept). Only in Lin Ke-Fong core</li>
+ <li>Core support from Lin Ke-Fong and José Luis Sánchez</li>
+ <li>Created Windows port under SDL (not available for download)</li>
  <li>Video modes 360x200, 320x240, 320x200</li>
+ <li>128K SNA support</li>
 </ul>
 
-<br>
+<br><br>
 <h1>Requirements</h1>
 Required:
  <ul>
-  <li>TTGO VGA32 v1.2</li>
-  <li>Visual Studio 1.48.1 PLATFORM 2.2.0</li>
-  <li>Arduino IDE 1.8.11</li>
-  <li>Arduino fabgl bookstore 0.9.0 (included in PLATFORM project). The Arduino IDE has to be installed.</li>
-  <li>Arduino bitluni bookcase 0.3.3 (included in project)</li>
+  <li>TTGO VGA32 v1.x (1.0, 1.1, 1.2, 1.4)</li>
+  <li>Visual Studio 1.48.1 PLATFORMIO 2.2.1 Espressif32 v3.3.2</li>
+  <li>Arduino IDE 1.8.11 Espressif System 1.0.6</li>
+  <li>Arduino fabgl 0.9.0 reduced library (included in PLATFORMIO project)</li>
+  <li>Arduino bitluni 0.3.3 reduced library (included in project)</li>
  </ul>
  <center><img src='https://raw.githubusercontent.com/rpsubc8/ESP32TinyZXSpectrum/main/preview/ttgovga32v12.jpg'></center>
-<br> 
+<br><br>
  
 
 <h1>PlatformIO</h1>
-PLATFORM 2.2.0 must be installed from the Visual Studio extensions.
+PLATFORMIO 2.2.1 must be installed from the Visual Studio extensions. Espressif32 v3.3.2 is also required.
 <center><img src='https://raw.githubusercontent.com/rpsubc8/ESP32TinyZXSpectrum/main/preview/previewPlatformIOinstall.gif'></center>
 Then the working directory <b>TinyZXESPectrumttgovga32</b> will be selected.
 We must modify the file <b>platformio.ini</b> the option <b>upload_port</b> to select the COM port where we have our TTGO VGA32 board.
 <center><img src='https://raw.githubusercontent.com/rpsubc8/ESP32TinyZXSpectrum/main/preview/previewPlatformIO.gif'></center>
-Then we will proceed to compile and upload to the board. No partitions are used, so we must upload all the compiled binary.
-Everything is prepared so we don't have to install the bitluni libraries. However, if we need the sound and mouse options, we will need the <b>fabgl</b> library, which can be found within the project on PLATFORM.
+Then we will proceed to compile and upload to the board. No partitions are used, so we must upload the whole compiled binary. It's all set up so we don't have to install the bitluni and fabgl libraries.
 
 
-<br>
+<br><br>
 <h1>Arduino IDE</h1>
 The whole project is compatible with the structure of Arduino 1.8.11.
-We only have to open the <b>ZX-ESPectrum.ino</b> from the <b>ZX-ESPectrum</b> directory.
+We only have to open the <b>ZXESPectrum.ino</b> from the <b>ZXESPectrum</b> directory.
 <center><img src='https://raw.githubusercontent.com/rpsubc8/ESP32TinyZXSpectrum/main/preview/previewArduinoIDEpreferences.gif'></center>
 We must install the spressif extensions in the additional card url manager <b>https://dl.espressif.com/dl/package_esp32_index.json</b>
-<center><img src='https://raw.githubusercontent.com/rpsubc8/ESP32TinyZXSpectrum/main/preview/previewArduinoIDElibrary.gif'></center>
-For the normal mode, the project is already prepared, so that no bitluni library is needed. However, if we need the mouse and sound support, it is required to install the libraries <b>fabgl 0.9.0</b>.
-We can do it from the library manager.
-We must deactivate the PSRAM option, and in case of exceeding 1 MB of binary, select 4 MB of partition at the time of uploading. Although the code does not use PSRAM, if the option is active and our ESP32 does not have it, an exception will be generated and restart it in loop mode.
+The project is now ready, so no bitluni or fabgl libraries are needed. We must deactivate the PSRAM option, and in case of exceeding 1 MB of binary, select 4 MB of partition when uploading. Although the code does not use PSRAM, if the option is active and our ESP32 does not have it, an exception will be generated and it will restart in loop mode.
 
 
 
-<br>
+<br><br>
 <h1>Usability</h1>
 Loading is allowed:
  <ul>
@@ -99,7 +100,7 @@ Loading is allowed:
   <li>SNA of 48K</li>
   <li>Read screenshots of .SCR files. The .SCR file, converted to hexadecimal, contains an image, which is dumped into the video memory area. SCR files are very easy to get, if we use the emulator <b>fuse</b>.</li>
   <li>Read tape screens .TAP. We should have a hexadecimal converted .TAP file with the basic BASIC loader format, followed by a SCREEN data block. The routine that I have done is very basic, and it is in charge of looking for the screen block, and dumping it into video memory.</li>
-  <li>Select TAP to choose the TAP and go to block 0, to read the BASIC of a tape. This way, if we select the <b>Tape loader</b> from the 128K menu, or if we write the command <b>load ""</b> from the BASIC, the BASIC code will be loaded. We should have a .TAP file converted to hexadecimal with the basic format of loader and BASIC code.</li>
+  <li>Seleccionar TAP permite elegir el .TAP y situarse en el bloque 0, para poder leer el BASIC de una cinta. De esta forma, si seleccionamos el <b>Tape loader</b> desde el menú del 128K,o si escribimos el comando <b>load ""</b> desde el BASIC, se procederá a cargar el código de BASIC. Debemos tener un fichero .TAP convertido en hexadecimal con el formato básico de cargador y código BASIC. Sólo está activo para el core de Lin Ke-Fong, y sólo carga el primer bloque de un programa BASIC. Si ese programa BASIC termina lanzando un RUN o un LOAD, no llegará a procesar esa nueva carga de datos, provocando un reinicio o algo aleatorio</li>
  </ul>
  There is a basic OSD of low resources, that is to say, very simple, that is visualized by pressing the key <b>F1</b>.
  <center><img src='https://raw.githubusercontent.com/rpsubc8/ESP32TinyZXSpectrum/main/preview/previewOSD.gif'></center>
@@ -107,7 +108,7 @@ Loading is allowed:
  <a href='http://tomeko.net/online_tools/file_to_hex.php?lang=en'>http://tomeko.net/online_tools/file_to_hex.php?lang=en</a>
  
  
-<br>
+<br><br>
 <h1>Options</h1>
 The file <b>gbConfig.h</b> options are selected:
 <ul>
@@ -137,14 +138,14 @@ The file <b>gbConfig.h</b> options are selected:
 </ul>
 
 
-<br>
+<br><br>
 <h1>Brightness mode</h1>
 The brightness mode corresponds to 16 colors, so the 6-pin DAC output must be used. This mode is incompatible with the 8 colors mode, so if you choose this option, you have to disable the <b>use_lib_vga8colors</b> in the gbConfig.h.
 <center><img src='https://raw.githubusercontent.com/rpsubc8/ESP32TinyZXSpectrum/main/preview/previewFantasy.gif'></center>
 This mode consumes more CPU and RAM than the normal 8-color mode.
 
 
-<br>
+<br><br>
 <Test applications
 When starting the ESP32, it is done in ZX 48K mode, that is, loading the rom of the ZX 48k with the BASIC.
 Every time we select a ROM, the tape selection is reset to block 0, as well as the sound.
