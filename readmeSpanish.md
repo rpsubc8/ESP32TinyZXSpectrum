@@ -16,7 +16,7 @@ He realizado varias modificaciones:
  <li>Soporte para modo con (50 fps 20000 microsegundos) y sin hilos (50 fps 17000 microsegundos)</li>
  <li>Emulación de ratón Kempston (librería reducida de Rob Kent jazzycamel)</li>
  <li>Emulación Kempston con teclas cursores (izquierda, derecha, arriba, abajo) y ALT derecho.</li> 
- <li>Emulación de AY8912 con fabgl, versión reducida de dcrespo3d(David Crespo Tascón)</li>
+ <li>Emulación de AY8912 con fabgl, versión reducida de dcrespo3d (David Crespo Tascón)</li>
  <li>Redirección de los pulsos de grabación de cinta al altavoz</li>
  <li>Opción de resampleo en modo speaker y mezcla con AY8912 (inestable)</li>
  <li>Posibilidad de elegir modo brillo y modos de 8 colores en compilación.</li>
@@ -74,7 +74,7 @@ Se permite cargar:
   <li>SNA de 48K</li>
   <li>Leer pantallas de ficheros .SCR. El fichero .SCR convertido a hexadecimal, contiene una imagen, la cual se vuelca en la zona de memoria de video. Los ficheros .SCR son muy fáciles de conseguir, si usamos el emulador <b>fuse</b>.</li>
   <li>Leer pantallas de cintas .TAP. Debemos tener un fichero .TAP convertido en hexadecimal con el formato básico de cargador BASIC, seguido de un bloque de datos de SCREEN. La rutina que he realizado es muy básica, y se encarga de buscar el bloque de pantalla, y volcarlo a memoria de video</li>
-  <li>Seleccionar TAP permite elegir el .TAP y situarse en el bloque 0, para poder leer el BASIC de una cinta. De esta forma, si seleccionamos el <b>Tape loader</b> desde el menú del 128K,o si escribimos el comando <b>load ""</b> desde el BASIC, se procederá a cargar el código de BASIC. Debemos tener un fichero .TAP convertido en hexadecimal con el formato básico de cargador y código BASIC. Sólo está activo para el core de Lin Ke-Fong, y sólo carga el primer bloque de un programa BASIC. Si esse programa BASIC termina lanzando un RUN o un LOAD, no llegará a procesar esa nueva carga de datos, provocando un reinicio o algo aleatorio.</li>
+  <li>Seleccionar TAP permite elegir el .TAP y situarse en el bloque 0, para poder leer el BASIC de una cinta. De esta forma, si seleccionamos el <b>Tape loader</b> desde el menú del 128K,o si escribimos el comando <b>load ""</b> desde el BASIC, se procederá a cargar el código de BASIC. Debemos tener un fichero .TAP convertido en hexadecimal con el formato básico de cargador y código BASIC. Sólo está activo para el core de Lin Ke-Fong, y sólo carga el primer bloque de un programa BASIC. Si ese programa BASIC termina lanzando un RUN o un LOAD, no llegará a procesar esa nueva carga de datos, provocando un reinicio o algo aleatorio.</li>
  </ul>
  Se dispone de un OSD básico de bajos recursos, es decir, muy simple, que se visualiza pulsando la tecla <b>F1</b>.
  <center><img src='https://raw.githubusercontent.com/rpsubc8/ESP32TinyZXSpectrum/main/preview/previewOSD.gif'></center>
