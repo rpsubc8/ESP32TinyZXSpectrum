@@ -20,7 +20,7 @@ He realizado varias modificaciones:
  <li>Redirección de los pulsos de grabación de cinta al altavoz</li>
  <li>Opción de resampleo en modo speaker y mezcla con AY8912 (inestable)</li>
  <li>Posibilidad de elegir modo brillo y modos de 8 colores en compilación.</li>
- <li>DAC VGA 64 colores (6 bits) y 8 colores (3 bits)</li>
+ <li>DAC VGA 64 colores (6 bits) y 8 colores (3 bits) (versión reducida de Ricardo Massaro)</li>
  <li>Remapeo de los cursores en el menú de +2,+3, así como la tecla de borrar</li>
  <li>Ajuste de pantalla X, Y (consume un poco de CPU)</li>
  <li>Escala de colores R, G, B, al estilo de las pantallas de fósforo verde</li>
