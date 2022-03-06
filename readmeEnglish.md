@@ -78,8 +78,7 @@ Loading is allowed:
   <li>Read screenshots of .SCR files. The .SCR file, converted to hexadecimal, contains an image, which is dumped into the video memory area. SCR files are very easy to get, if we use the emulator <b>fuse</b>.</li>
   <li>Read tape screens .TAP. We should have a hexadecimal converted .TAP file with the basic BASIC loader format, followed by a SCREEN data block. The routine that I have done is very basic, and it is in charge of looking for the screen block, and dumping it into video memory.</li>
   <li>Select TAP allows you to select the .TAP and place it in block 0, in order to read the BASIC from a tape. This way, if we select the <b>Tape loader</b> from the 128K menu, or if we type the <b>load ""</b> command from the BASIC, it will proceed to load the BASIC code. We must have a .TAP file converted in hexadecimal with the basic loader format and BASIC code. It is only active for the Lin Ke-Fong core, and only loads the first block of a BASIC program. If that BASIC program ends up launching a RUN or a LOAD, it will not be able to process that new data load, causing a restart or something random.
-
-Translated with www.DeepL.com/Translator (free version)</li>
+</li>
  </ul>
  There is a basic OSD of low resources, that is to say, very simple, that is visualized by pressing the key <b>F1</b>.
  <center><img src='https://raw.githubusercontent.com/rpsubc8/ESP32TinyZXSpectrum/main/preview/previewOSD.gif'></center>
