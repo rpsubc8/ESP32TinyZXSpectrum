@@ -74,7 +74,7 @@ Se permite cargar:
   <li>SNA de 48K</li>
   <li>Leer pantallas de ficheros .SCR. El fichero .SCR convertido a hexadecimal, contiene una imagen, la cual se vuelca en la zona de memoria de video. Los ficheros .SCR son muy fáciles de conseguir, si usamos el emulador <b>fuse</b>.</li>
   <li>Leer pantallas de cintas .TAP. Debemos tener un fichero .TAP convertido en hexadecimal con el formato básico de cargador BASIC, seguido de un bloque de datos de SCREEN. La rutina que he realizado es muy básica, y se encarga de buscar el bloque de pantalla, y volcarlo a memoria de video</li>
-  <li>Seleccionar TAP permite elegir el .TAP y situarse en el bloque 0, para poder leer el BASIC de una cinta. De esta forma, si seleccionamos el <b>Tape loader</b> desde el menú del 128K,o si escribimos el comando <b>load ""</b> desde el BASIC, se procederá a cargar el código de BASIC. Debemos tener un fichero .TAP convertido en hexadecimal con el formato básico de cargador y código BASIC.</li>
+  <li>Seleccionar TAP permite elegir el .TAP y situarse en el bloque 0, para poder leer el BASIC de una cinta. De esta forma, si seleccionamos el <b>Tape loader</b> desde el menú del 128K,o si escribimos el comando <b>load ""</b> desde el BASIC, se procederá a cargar el código de BASIC. Debemos tener un fichero .TAP convertido en hexadecimal con el formato básico de cargador y código BASIC. Sólo está activo para el core de Lin Ke-Fong, y sólo carga el primer bloque de un programa BASIC. Si esse programa BASIC termina lanzando un RUN o un LOAD, no llegará a procesar esa nueva carga de datos, provocando un reinicio o algo aleatorio.</li>
  </ul>
  Se dispone de un OSD básico de bajos recursos, es decir, muy simple, que se visualiza pulsando la tecla <b>F1</b>.
  <center><img src='https://raw.githubusercontent.com/rpsubc8/ESP32TinyZXSpectrum/main/preview/previewOSD.gif'></center>
@@ -107,7 +107,7 @@ El archivo <b>gbConfig.h</b> se seleccionan las opciones:
  <li><b>gb_ms_sound:</b> Se debe especificar el número de milisegundos de polling para el sonido AY8912.</li>
  <li><b>gb_frame_crt_skip:</b> El número de frames de video que deben saltarse.</li>
  <li><b>gb_delay_emulate_ms:</b> Milisegundos de espera por cada frame completado.</li>
- <li><b>use_lib_tape_rom_intercept:</b> Controla la rutina 0x056B de leer cintas. Sólo está activo para el core de Lin Ke-Fong, y sólo carga el primer bloque de un programa BASIC.</li>
+ <li><b>use_lib_tape_rom_intercept:</b> Controla la rutina 0x056B de leer cintas. Sólo está activo para el core de Lin Ke-Fong, y sólo carga el primer bloque de un programa BASIC. Consume unos ciclos de CPU, al estar chequeando el registro PC.</li>
  <li><b>use_lib_ultrafast_speaker:</b> Modo rápido de activación de pin E/S audio.</li>
  <li><b>use_lib_stats_time_unified: </b> Permite ver trazas por el puerto serie con los fps, así como microsegundos actuales, mínimos y máximos por frame. Lo mismo para el video.</li>
  <li><b>use_lib_delay_tick_cpu_auto: </b> Si vale 1, permite autoajustar la velocidad del frame a 20000 microsegundos, es decir 20 milisegundos, que equivale a 50 fps. Posteriormente desde el OSD se puede cambiar la velocidad de espera de la CPU.</li>
