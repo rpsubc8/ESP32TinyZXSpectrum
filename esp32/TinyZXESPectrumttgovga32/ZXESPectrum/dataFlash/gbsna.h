@@ -16,6 +16,11 @@
  //#include "sna/snaArkanoid48K.h" 
  #include "sna/snaFireKey.h" 
  #include "sna/snaTritone1.h" 
+ //error in naming "sna/snaZ80full48k.h", was written with capital "48K" before
+ //In file included from ZXESPectrum/Disk.cpp:4:0:
+ //ZXESPectrum/dataFlash/gbsna.h:20:32: fatal error: sna/snaZ80full48k.h: No such file or directory
+  #include "sna/snaZ80full48k.h"
+
  #include "sna/snaZ80full48k.h"
 
 
