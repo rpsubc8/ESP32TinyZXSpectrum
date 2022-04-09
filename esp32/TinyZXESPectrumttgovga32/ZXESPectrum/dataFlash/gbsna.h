@@ -16,7 +16,7 @@
  //#include "sna/snaArkanoid48K.h" 
  #include "sna/snaFireKey.h" 
  #include "sna/snaTritone1.h" 
- #include "sna/snaZ80full48k.h"
+ #include "sna/snaZ80full48K.h"
 
 
  //#define max_list_sna_48 10
