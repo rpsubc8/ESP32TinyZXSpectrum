@@ -2115,6 +2115,7 @@ void setup()
  gb_buffer_vga32=(unsigned int **)gb_buffer_vga;
  PrepareColorsUltraFastVGA(); //Llamar despues de tener gb_sync_bits
  SDLClear();
+ vTaskDelay(20);
 //jjvga #ifdef use_lib_vga8colors
 //jjvga  #ifndef use_lib_vga320x200
 //jjvga   #ifdef use_lib_vga320x240
