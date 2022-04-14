@@ -116,6 +116,8 @@ El archivo <b>gbConfig.h</b> se seleccionan las opciones:
  <li><b>use_lib_core_linkefong: </b> Permite elegir el core de Lin Ke-Fong. Una vez compilado, aparecerá indicado en el OSD.</li>
  <li><b>use_lib_core_jsanchezv: </b> Permite elegir el core de José Luis Sánchez. Una vez compilado, aparecerá indicado en el OSD.</li>
  <li><b>use_lib_delayContention: </b> Si está activo, permite aplicar la espera de la memoria contenida, sólo en el core de José Luis Sánchez.</li>
+ <li><b>use_lib_wifi: </b> Soporte de modo WIFI para cargar ScR's y SNA's. (sólo modo 48K)</li>
+ <li><b>use_lib_only_48k: </b> Sólo soporta el modo 48K, rom0, ram0, ram2 y ram5</li>
 </ul>
 
 
@@ -226,7 +228,7 @@ En el Arduino IDE, debemos elegir la opción <b>Partition Scheme (Huge APP)</b>.
 
 
 <br><br>
-<h1>Soporte WIFI/h1>
+<h1>Soporte WIFI</h1>
 Se ha añadido un soporte básico de WIFI, para poder cargar los SCR's y SNA's desde un servidor básico HTML, sin necesidad de CORS, por lo que el despliegue es muy rápido.<br>
  Para activar este modo, se debe descomentar la línea <b>use_lib_wifi</b> en el <b>gbConfig.h</b><br>
 Dado el consumo de sram, sólo se permite el modo 48K, cuando se usa la WIFI.<br>
