@@ -226,6 +226,44 @@ En el Arduino IDE, debemos elegir la opción <b>Partition Scheme (Huge APP)</b>.
 
 
 <br><br>
+<h1>Soporte WIFI/h1>
+Se ha añadido un soporte básico de WIFI, para poder cargar los SCR's y SNA's desde un servidor básico HTML, sin necesidad de CORS, por lo que el despliegue es muy rápido.<br>
+ Para activar este modo, se debe descomentar la línea <b>use_lib_wifi</b> en el <b>gbConfig.h</b><br>
+Dado el consumo de sram, sólo se permite el modo 48K, cuando se usa la WIFI.<br>
+ Debemos configurar en el archivo <b>gbWIFIConfig.h</b> los datos:
+ <pre>
+  #define gb_wifi_ssd "nombreDeNuestraRedWIFIdelRooter"
+  #define gb_wifi_pass "passwordDeNuestraRedWIFIdelRooter"
+
+  #define gb_wifi_url_base_path "http://192.168.0.36/zxspectrum/output"
+
+  //millisecons delay stream read
+  #define gb_wifi_delay_available 0
+
+  #define use_lib_wifi_debug
+ </pre>
+ Por ahora, la configuración está a calzador en nuestro <b>gbWIFIConfig.h</b> que tendremos que recompilar, de manera, que sólo se conectará a nuestra red local. Por tanto debemos de cambiar <b>gb_wifi_ssd</b> y <b>gb_wifi_pass</b>.<br>
+ El <b>gb_wifi_url_base_path</b> es la ruta en donde se encuentran nuestros directorios <b>outlist</b> y <b>outdat</b>, que contienen el listado de archivos, así como los mismos.<br><br>
+ Por ahora, para optimizar el consumo de RAM, se ha dejado una estructura de longitud de nombres 8:3, es decir, 8 caracteres de nombre y 3 de extensión. Dejo unas tools intermedias para preparar y hacer la conversión:<br>
+ <pre>
+  build.bat --> Lanza todos los bats, procesador input en output
+  
+  data83.bat --> Convierte todos los archivos input a formato 8:3
+  
+  list --> Genera los outlist (lista de archivos).
+  dsk --> Genera un txt que dentro contiene la lista de archivos con longitud de nombre 8.
+  lowerscr --> Convierte las extensiones SCR a .scr
+  lowersna --> Lo mismo, pero para SNA.
+ </pre>
+
+ Un ejemplo de <b>outlist</b>, por ejemplo de action.txt, que contiene:
+ <pre>
+ amc1    batman  goody   robocop ThePunk 
+ </pre>
+ Dentro esta la lista de archivos con longitud máxima de 8 caracteres, que es la que se mostrará en el menu de selección de SCR o SNA en el ESP32. Estos archivos, por ahora están pensados para un máximo de 128 entradas, que equivale a 1024 bytes (128 x 8).<br>
+ Cuando se seleccione un archivo, se procederá a cargarlo en <b>outdat</b> con su ruta. Los archivos tienen que tener la extensión en minúsculas.
+
+<br><br>
 <h1>Formato SNA</h1>
 Está soportado el formato SNA de 48K (49179 bytes) y 128K (131103 bytes), compatible con los SNA del emulador FUSE.<br>
 El formato SNA de 48K:
