@@ -275,7 +275,7 @@ Dado el consumo de sram, sólo se permite el modo 48K, cuando se usa la WIFI.<br
  amc1    batman  goody   robocop ThePunk 
  </pre>
  
- Siempre que se añada un fichero, debemos de regenerar la lista con el <b>list.bat</b> o bien llamando a todo el proceso <b>build.bat</b>
+ Siempre que se añada un fichero, debemos de regenerar la lista con el <b>list.bat</b> o bien llamando a todo el proceso <b>build.bat</b>.<br>
  
  Dentro esta la lista de archivos con longitud máxima de 8 caracteres, que es la que se mostrará en el menu de selección de SCR o SNA en el ESP32. Estos archivos, por ahora están pensados para un máximo de 128 entradas, que equivale a 1024 bytes (128 x 8).<br>
  Cada vez que se hace una petición a un tipo, se carga el fichero .TXT con la lista (1024 bytes, 128 nombres). Y cuando se selecciona, se hace la petición al fichero que se encuentra en el outdat.<br>
@@ -283,7 +283,7 @@ Dado el consumo de sram, sólo se permite el modo 48K, cuando se usa la WIFI.<br
  
  Si se usa un servidor externo WEB, es posible, que por políticas impida realizar peticiones seguidas, así que es recomendable no hacer peticiones muy seguidas.<br>
  
- Para depurar la WIFI, se debe descomentar <b>use_lib_wifi_debug</b> el el fichero <b>gbWifiConfig.h</b>
+ Para depurar la WIFI, se debe descomentar <b>use_lib_wifi_debug</b> en el fichero <b>gbWifiConfig.h</b>
  
  
 
