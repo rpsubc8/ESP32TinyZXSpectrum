@@ -34,6 +34,7 @@ I have made several modifications:
  <li>Created Windows port under SDL (not available for download)</li>
  <li>Video modes 360x200, 320x240, 320x200</li>
  <li>128K SNA support</li>
+ <li>WIFI support load SCR and SNA</li>
 </ul>
 
 <br><br>
@@ -135,7 +136,7 @@ This mode consumes more CPU and RAM than the normal 8-color mode.
 
 
 <br><br>
-<Test applications
+<h1>Test applications</h1>
 When starting the ESP32, it is done in ZX 48K mode, that is, loading the rom of the ZX 48k with the BASIC.
 Every time we select a ROM, the tape selection is reset to block 0, as well as the sound.
 Later we can choose the roms:
