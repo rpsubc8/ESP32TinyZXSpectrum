@@ -41,7 +41,7 @@ I have made several modifications:
 Required:
  <ul>
   <li>TTGO VGA32 v1.x (1.0, 1.1, 1.2, 1.4)</li>
-  <li>Visual Studio 1.48.1 PLATFORMIO 2.2.1 Espressif32 v3.3.2</li>
+  <li>Visual Studio 1.66.1 PLATFORMIO 2.4.3 Espressif32 v3.5.0 (python 3.6)</li>
   <li>Arduino IDE 1.8.11 Espressif System 1.0.6</li>
   <li>Arduino fabgl 0.9.0 reduced library (included in PLATFORMIO project)</li>
   <li>Arduino bitluni 0.3.3 reduced library (included in project)</li>
@@ -51,7 +51,7 @@ Required:
  
 
 <h1>PlatformIO</h1>
-PLATFORMIO 2.2.1 must be installed from the Visual Studio extensions. Espressif32 v3.3.2 is also required.
+PLATFORMIO 2.4.3 must be installed from the Visual Studio extensions. Espressif32 v3.5.0 (python 3.6) is also required.
 <center><img src='https://raw.githubusercontent.com/rpsubc8/ESP32TinyZXSpectrum/main/preview/previewPlatformIOinstall.gif'></center>
 Then the working directory <b>TinyZXESPectrumttgovga32</b> will be selected.
 We must modify the file <b>platformio.ini</b> the option <b>upload_port</b> to select the COM port where we have our TTGO VGA32 board.
@@ -122,6 +122,8 @@ The file <b>gbConfig.h</b> options are selected:
  <li><b>use_lib_core_linkefong: </b> Allows to choose the Lin Ke-Fong core. Once compiled, it will be displayed on the OSD.</li>
  <li><b>use_lib_core_jsanchezv: </b> It allows to choose the core of José Luis Sánchez. Once compiled, it will be displayed on the OSD.</li>
  <li><b>use_lib_delayContention: </b> If active, it allows to apply the wait of the contained memory, only in the Jose Luis Sanchez core.</li>
+ <li><b>use_lib_wifi: </b> WIFI mode support for loading SCR's and SNA's. (48K mode only)</li>
+ <li><b>use_lib_only_48k: </b> Only supports 48K mode, rom0, ram0, ram2 and ram5.</li> 
 </ul>
 
 
@@ -229,6 +231,66 @@ The project in PLATFORM.IO is prepared for 2 MB of Flash. If we need the 4MB of 
 <pre>board_build.partitions = huge_app.csv</pre>
 In the Arduino IDE, we must choose the option <b>Partition Scheme (Huge APP)</b>.
 
+
+<br><br>
+<h1>WIFI support</h1>
+A basic WIFI support has been added for TEST, to be able to load the SCR's and SNA's from a basic HTML server, without the need of CORS, so the deployment is very fast. Apache Server, NGINX, etc... can be used.<br>
+By default, it has been left pointing to the project's github pages server:
+<pre>
+https://rpsubc8.github.io/ESP32TinyZXSpectrum/www/zxspectrum/output
+</pre>
+
+ To activate this mode, uncomment the line <b>use_lib_wifi</b> in <b>gbConfig.h</b><br>
+Given the sram consumption, only 48K mode is allowed, when using WIFI.<br>
+ We must configure in the <b>gbWIFIConfig.h</b> file the data:
+ <pre>
+  #define gb_wifi_ssd "nombreDeNuestraRedWIFIdelRooter"
+  #define gb_wifi_pass "passwordDeNuestraRedWIFIdelRooter"
+
+  //#define gb_wifi_url_base_path "http://192.168.0.36/zxspectrum/output"
+  #define gb_wifi_url_base_path "https://rpsubc8.github.io/ESP32TinyZXSpectrum/www/zxspectrum/output"
+
+  //millisecons delay stream read
+  #define gb_wifi_delay_available 0
+
+  #define use_lib_wifi_debug
+ </pre>
+ 
+ For now, the configuration is fixed in our <b>gb>gbWIFIConfig.h</b> that we will have to recompile, so, that it will only connect to our rooter network. Therefore, we must change <b>gb_wifi_ssd</b> and <b>gb_wifi_pass</b>.<br>
+ The <b>gb_wifi_url_base_path</b> is the path where our <b>outlist</b> and <b>outdat</b> directories are located, which contain the list of files, as well as the files themselves, so this path will be different if we use a local server.<br><br>
+ The concept is simple, you have:
+ <pre>
+  outlist --> File with the list of names (length 8) of SCR or SNA. Limit of 128 files
+  outdat  --> SCR or SNA files.
+ </pre>
+ For now, to optimize RAM consumption, we have left an 8:3 name length structure, i.e. 8 name characters and 3 extension characters. I leave some intermediate tools to prepare and make the conversion:<br>
+ <pre>
+  build.bat --> Launches all bats, processing input to output
+  
+  data83.bat --> Converts all input files to 8:3 format
+  
+  list.bat --> Generates the outlist (list of files).
+  dsk.exe --> Generates a txt file containing a list of files with name length 8.
+  lowerscr.bat --> Convert SCR extensions to .scr
+  lowersna.bat --> The same, but for SNA.
+ </pre>
+
+ An example of <b>outlist</b>, for example from action.txt, containing:
+ <pre>
+ amc1    batman  goody   robocop ThePunk 
+ </pre>
+ 
+ Whenever a file is added, we must regenerate the list with the <b>list.bat</b> or by calling the whole <b>build.bat</b> process.<br>
+ 
+ Inside is the list of files with a maximum length of 8 characters, which is the one that will be shown in the SCR or SNA selection menu in the ESP32. These files, for now, are intended for a maximum of 128 entries, which is equivalent to 1024 bytes (128 x 8).<br>
+ Each time a request is made to a type, the .TXT file with the list (1024 bytes, 128 names) is loaded. And when it is selected, the request is made to the file in the outdat.<br>
+ When a file is selected, it will be loaded in <b>outdat</b> with its path. The files must have the extension in lower case.<br>
+ 
+ If you are using an external WEB server, it is possible that policies may prevent you from making consecutive requests, so it is advisable not to make requests too close together.<br>
+ 
+ To debug the WIFI, uncomment <b>use_lib_wifi_debug</b> in the <b>gbWifiConfig.h</b> file.
+ 
+ 
 
 <br><br>
 <h1>SNA format</h1>
