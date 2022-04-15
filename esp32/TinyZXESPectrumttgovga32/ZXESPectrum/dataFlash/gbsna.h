@@ -49,6 +49,7 @@
   "Z80FULL"
   //"EightOfNoise",
   //"WWTF"
+  
  };
  
  //Datos 48K sna
@@ -91,20 +92,24 @@
  //sna 128K
  //Titulos
  static const char * gb_list_sna_128k_title[max_list_sna_128]={  
+   
   //"Music2tap128",
   "MusicDemo128"
   //,"Abadia",
   //"Robocop",
   //"Robocop2"
+
  };
 
  //Datos 128K
  static const unsigned char * gb_list_sna_128k_data[max_list_sna_128]={  
+   
   //gb_sna_Music2tap128_128k,
   gb_sna_MusicDemo128_128k
   //,gb_sna_abadia_128k,
   //gb_sna_robocop_128k,
   //gb_sna_robocop2_128k
+  
  };
 
 #endif 
