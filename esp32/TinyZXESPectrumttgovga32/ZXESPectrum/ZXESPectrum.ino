@@ -27,10 +27,11 @@
 // - Library Arduino fabgl 0.9.0 sound include project
 // - Library Arduino tiny bitluni 0.3.3 include project
 // - Arduino support espressif
-// - Visual Studio 1.48.1 PLATFORMIO 2.2.1 Espressif32 v3.3.2
+// - Visual Studio 1.66.1 PLATFORMIO 2.4.3 Espressif32 v3.5.0(python 3.6)
 // - Compatible TTGO VGA32 v1.x (1.0, 1.1, 1.2, 1.4)
 // - Tiny Bitluni 0.3.3 mod C fix 8 colors (Ricardo Massaro)
 // - Tiny mouse library Arduino mod fix (Rob Kent jazzycamel)
+// - Support WIFI Load SCR, SNA only 48k mode
 //
 // Basado en codigo de David Crespo ZX-ESPectrum-Wiimote
 // -------------------------------------------------------------------
