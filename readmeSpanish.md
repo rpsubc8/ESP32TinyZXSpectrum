@@ -40,7 +40,7 @@ He realizado varias modificaciones:
 Se requiere:
  <ul>
   <li>TTGO VGA32 v1.x (1.0, 1.1, 1.2, 1.4)</li>
-  <li>Visual Studio 1.48.1 PLATFORMIO 2.2.1 Espressif32 v3.3.2</li>
+  <li>Visual Studio 1.66.1 PLATFORMIO 2.4.3 Espressif32 v3.5.0 (python 3.6)</li>
   <li>Arduino IDE 1.8.11 Espressif System 1.0.6</li>
   <li>Librería reducida Arduino fabgl 0.9.0 (incluida en proyecto PLATFORMIO)</li>
   <li>Librería reducida Arduino bitluni 0.3.3 (incluida en proyecto)</li>
@@ -116,7 +116,7 @@ El archivo <b>gbConfig.h</b> se seleccionan las opciones:
  <li><b>use_lib_core_linkefong: </b> Permite elegir el core de Lin Ke-Fong. Una vez compilado, aparecerá indicado en el OSD.</li>
  <li><b>use_lib_core_jsanchezv: </b> Permite elegir el core de José Luis Sánchez. Una vez compilado, aparecerá indicado en el OSD.</li>
  <li><b>use_lib_delayContention: </b> Si está activo, permite aplicar la espera de la memoria contenida, sólo en el core de José Luis Sánchez.</li>
- <li><b>use_lib_wifi: </b> Soporte de modo WIFI para cargar ScR's y SNA's. (sólo modo 48K)</li>
+ <li><b>use_lib_wifi: </b> Soporte de modo WIFI para cargar SCR's y SNA's. (sólo modo 48K)</li>
  <li><b>use_lib_only_48k: </b> Sólo soporta el modo 48K, rom0, ram0, ram2 y ram5</li>
 </ul>
 
@@ -229,7 +229,7 @@ En el Arduino IDE, debemos elegir la opción <b>Partition Scheme (Huge APP)</b>.
 
 <br><br>
 <h1>Soporte WIFI</h1>
-Se ha añadido un soporte básico de WIFI, para poder cargar los SCR's y SNA's desde un servidor básico HTML, sin necesidad de CORS, por lo que el despliegue es muy rápido. Se puede usar un Servidor Apache, NGINX, etc...<br>
+Se ha añadido para TEST un soporte básico de WIFI, para poder cargar los SCR's y SNA's desde un servidor básico HTML, sin necesidad de CORS, por lo que el despliegue es muy rápido. Se puede usar un Servidor Apache, NGINX, etc...<br>
 Por defecto, se ha dejado apuntando al servidor de pages de github del proyecto:
 <pre>
 https://rpsubc8.github.io/ESP32TinyZXSpectrum/www/zxspectrum/output
@@ -251,8 +251,8 @@ Dado el consumo de sram, sólo se permite el modo 48K, cuando se usa la WIFI.<br
   #define use_lib_wifi_debug
  </pre>
  
- Por ahora, la configuración está a calzador en nuestro <b>gbWIFIConfig.h</b> que tendremos que recompilar, de manera, que sólo se conectará a nuestro rooter. Por tanto debemos de cambiar <b>gb_wifi_ssd</b> y <b>gb_wifi_pass</b>.<br>
- El <b>gb_wifi_url_base_path</b> es la ruta en donde se encuentran nuestros directorios <b>outlist</b> y <b>outdat</b>, que contienen el listado de archivos, así como los mismos.<br><br>
+ Por ahora, la configuración está fijada en nuestro <b>gbWIFIConfig.h</b> que tendremos que recompilar, de manera, que sólo se conectará a nuestra red del rooter. Por tanto debemos de cambiar <b>gb_wifi_ssd</b> y <b>gb_wifi_pass</b>.<br>
+ El <b>gb_wifi_url_base_path</b> es la ruta en donde se encuentran nuestros directorios <b>outlist</b> y <b>outdat</b>, que contienen el listado de archivos, así como los mismos, por lo que dicho path será diferente si usamos un servidor local.<br><br>
  El concepto es simple, se dispone de:
  <pre>
   outlist --> Fichero con la lista de nombres (longitud 8) de SCR o SNA. Límite de 128 ficheros
@@ -279,9 +279,12 @@ Dado el consumo de sram, sólo se permite el modo 48K, cuando se usa la WIFI.<br
  
  Dentro esta la lista de archivos con longitud máxima de 8 caracteres, que es la que se mostrará en el menu de selección de SCR o SNA en el ESP32. Estos archivos, por ahora están pensados para un máximo de 128 entradas, que equivale a 1024 bytes (128 x 8).<br>
  Cada vez que se hace una petición a un tipo, se carga el fichero .TXT con la lista (1024 bytes, 128 nombres). Y cuando se selecciona, se hace la petición al fichero que se encuentra en el outdat.<br>
- Cuando se seleccione un archivo, se procederá a cargarlo en <b>outdat</b> con su ruta. Los archivos tienen que tener la extensión en minúsculas.
+ Cuando se seleccione un archivo, se procederá a cargarlo en <b>outdat</b> con su ruta. Los archivos tienen que tener la extensión en minúsculas.<br>
  
- Si se usa un servidor externo WEB, es posible, que por políticas impida realizar peticiones seguidas, así que es recomendable no hacer peticiones muy seguidas.
+ Si se usa un servidor externo WEB, es posible, que por políticas impida realizar peticiones seguidas, así que es recomendable no hacer peticiones muy seguidas.<br>
+ 
+ Para depurar la WIFI, se debe descomentar <b>use_lib_wifi_debug</b> el el fichero <b>gbWifiConfig.h</b>
+ 
  
 
 <br><br>
