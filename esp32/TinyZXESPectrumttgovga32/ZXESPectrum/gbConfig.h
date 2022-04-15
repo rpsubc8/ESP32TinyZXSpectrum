@@ -1,6 +1,11 @@
 #ifndef _GB_CONFIG_H
  #define _GB_CONFIG_H
 
+ //WIFI No permite 128K, solo 64K
+ //#define use_lib_wifi
+ #ifdef use_lib_wifi
+  #define use_lib_only_48k
+ #endif 
  //#define use_lib_board_wemos
 
  //Corrige teclados que no se inicializan(solucion dcrespo3D)

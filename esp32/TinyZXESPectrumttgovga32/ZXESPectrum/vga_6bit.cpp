@@ -156,7 +156,20 @@ static volatile int DRAM_ATTR vga_frame_count = 0;    // incremented by I2S inte
 
 //static const VgaMode *vga_mode;
 
+//****************************
+void SetVideoInterrupt(unsigned char auxState)
+{
+ if (auxState == 1)
+ {
+  esp_intr_enable(i2s_isr_handle);
+ }
+ else
+ {
+  esp_intr_disable(i2s_isr_handle);
+ } 
+}
 
+//****************************
 static void die()
 {  
   while (true) {

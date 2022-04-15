@@ -1,7 +1,13 @@
+#include "gbConfig.h"
+#include "gbGlobals.h"
 #include "dataFlash/gbtape.h"
-#include "dataFlash/gbscr.h"
+#ifndef use_lib_wifi
+ #include "dataFlash/gbscr.h"
+#endif 
 #include "dataFlash/gbrom.h"
-#include "dataFlash/gbsna.h"
+#ifndef use_lib_wifi
+ #include "dataFlash/gbsna.h"
+#endif 
 #include "PS2Kbd.h"
 #include "Memory.h"
 #include "z80main.h"
@@ -9,8 +15,12 @@
 //#include "def/ascii.h"
 //#include "types.h"
 #include "osd.h"
-#include "gbConfig.h"
-#include "gbGlobals.h";
+#include "Disk.h"
+
+#ifdef use_lib_wifi
+ #include "gbWifiConfig.h"
+ #include "gbWifi.h"
+#endif
 
 //void IRAM_ATTR kb_interruptHandler(void);
 //void zx_reset();
@@ -38,20 +48,24 @@
 // video_latch = 0;   
 //}
 
-//Lee una pantalla a zona video
-void load_scr2Flash(unsigned char id)
-{
-// for (int i=0;i<6912;i++)
-//  writebyte((16384+i),gb_list_scr_48k_data[id][i]); //screen
- #ifdef use_lib_core_linkefong
-  memcpy(ram5,&gb_list_scr_48k_data[id][0],6912); //optimizado
- #else 
-  #ifdef use_lib_core_jsanchezv
-   memcpy(ram5_jsanchezv,&gb_list_scr_48k_data[id][0],6912); //optimizado
+
+#ifdef use_lib_wifi
+#else
+ //Lee una pantalla a zona video
+ void load_scr2Flash(unsigned char id)
+ {
+ // for (int i=0;i<6912;i++)
+ //  writebyte((16384+i),gb_list_scr_48k_data[id][i]); //screen
+  #ifdef use_lib_core_linkefong
+   memcpy(ram5,&gb_list_scr_48k_data[id][0],6912); //optimizado
+  #else 
+   #ifdef use_lib_core_jsanchezv
+    memcpy(ram5_jsanchezv,&gb_list_scr_48k_data[id][0],6912); //optimizado
+   #endif
   #endif
- #endif
  
-}
+ }
+#endif
 
 
 void LoadTapeName(unsigned char id,char *cad,int * cont)
@@ -221,21 +235,38 @@ void load_tape2Flash(unsigned char id)
 #endif
 
 #ifdef use_lib_core_linkefong
-//Prueba Load 128 SNA
-void load_ram2Flash128(unsigned char id)
-{
- int contBuffer=0;
- //uint16_t size_read;
- byte sp_h, sp_l;
- uint16_t retaddr;
- //int sna_size;
- #ifdef use_lib_sound_ay8912
-  ResetSound();
- #endif
- if (id >= max_list_sna_128)
-  return;
- zx_reset();
- 
+ #ifdef use_lib_wifi
+ #else
+  //Prueba Load 128 SNA
+  void load_ram2Flash128(unsigned char id)
+  {
+   int contBuffer=0;
+   //uint16_t size_read;
+   byte sp_h, sp_l;
+   uint16_t retaddr;
+   //int sna_size;
+   #ifdef use_lib_sound_ay8912
+    ResetSound();
+   #endif
+   if (id >= max_list_sna_128)
+    return;
+   zx_reset();
+
+    #ifdef use_lib_only_48k
+     memset(ram0,0,0x4000);
+     memset(ram2,0,0x4000);
+     memset(ram5,0,0x4000);
+    #else
+     memset(ram0,0,0x4000);
+     memset(ram1,0,0x4000);
+     memset(ram2,0,0x4000);
+     memset(ram3,0,0x4000);
+     memset(ram4,0,0x4000);
+     memset(ram5,0,0x4000);
+     memset(ram6,0,0x4000);
+     memset(ram7,0,0x4000);
+    #endif   
+
     // Read in the registers    
     _zxCpu.i = gb_list_sna_128k_data[id][0]; //lhandle.read();
     _zxCpu.registers.byte[Z80_L] = gb_list_sna_128k_data[id][1];//lhandle.read();
@@ -304,7 +335,7 @@ void load_ram2Flash128(unsigned char id)
     
     contBuffer= 0x801B; //27+0x4000+0x4000
     switch (bank_latch)
-    {
+    {     
      case 0: memcpy(ram0,&gb_list_sna_128k_data[id][contBuffer],0x4000); break;
      case 1: memcpy(ram1,&gb_list_sna_128k_data[id][contBuffer],0x4000); break;
      case 2: memcpy(ram2,&gb_list_sna_128k_data[id][contBuffer],0x4000); break;
@@ -344,18 +375,21 @@ void load_ram2Flash128(unsigned char id)
     //printf("SNA Ret address: %x\n",retaddr);
     //fflush(stdout);
     //printf("SNA Ret address: %x Stack: %x AF: %x Border: %x sna_size: %d rom: %d bank: %x\n", retaddr, _zxCpu.registers.word[Z80_SP], _zxCpu.registers.word[Z80_AF], borderTemp, sna_size, rom_in_use, bank_latch);
-}
+  }
+ #endif
 #endif
 
 #ifdef use_lib_core_linkefong
-//Lee SNA desde flash
-void load_ram2Flash(unsigned char id,unsigned char isSNA48K)
-{
- if (isSNA48K != 1)
- {
-  load_ram2Flash128(id);
-  return;
- }    
+ #ifdef use_lib_wifi
+ #else
+  //Lee SNA desde flash
+  void load_ram2Flash(unsigned char id,unsigned char isSNA48K)
+  {
+   if (isSNA48K != 1)
+   {
+    load_ram2Flash128(id);
+    return;
+   }    
     int contBuffer=0;
     //JJ File lhandle;
     uint16_t size_read;
@@ -374,6 +408,21 @@ void load_ram2Flash(unsigned char id,unsigned char isSNA48K)
     //JJ Serial.printf("%s SNA: %ub\n", MSG_FREE_HEAP_BEFORE, ESP.getFreeHeap());
 
     KB_INT_STOP;
+
+    #ifdef use_lib_only_48k
+     memset(ram0,0,0x4000);
+     memset(ram2,0,0x4000);
+     memset(ram5,0,0x4000);
+    #else
+     memset(ram0,0,0x4000);
+     memset(ram1,0,0x4000);
+     memset(ram2,0,0x4000);
+     memset(ram3,0,0x4000);
+     memset(ram4,0,0x4000);
+     memset(ram5,0,0x4000);
+     memset(ram6,0,0x4000);
+     memset(ram7,0,0x4000);
+    #endif    
 
     //sna_size = 49179;       
     //Serial.println("Modo JJ "+cfg_arch);
@@ -462,7 +511,7 @@ void load_ram2Flash(unsigned char id,unsigned char isSNA48K)
         // retaddr = ram5[offset] + 0x100 * ram5[offset + 1];
         retaddr = readword(thestack);
         #ifdef use_lib_log_serial
-         Serial.printf("%x\n", retaddr);
+         Serial.printf("retaddr %x\n", retaddr);
         #endif
         _zxCpu.registers.word[Z80_SP]++;
         _zxCpu.registers.word[Z80_SP]++;
@@ -538,7 +587,173 @@ void load_ram2Flash(unsigned char id,unsigned char isSNA48K)
     //              bank_latch);
     #endif                  
     KB_INT_START;
-}
+  }
+ #endif 
+
+
+
+ #ifdef use_lib_wifi
+ void load_ram2FlashFromWIFI(char *cadUrl,unsigned char isSNA48K)
+ {
+  #ifdef use_lib_wifi_debug
+   Serial.printf("loadram2FlashFromWIFI\n");
+  #endif
+  if (isSNA48K != 1)
+  {
+   //load_ram2Flash128(id);
+   return;
+  }    
+    int contBuffer=0;    
+    uint16_t size_read;
+    byte sp_h, sp_l;
+    uint16_t retaddr;    
+    #ifdef use_lib_sound_ay8912
+     ResetSound();
+    #endif 
+
+//JJ    if (id >= max_list_sna_48)
+//JJ     return;
+
+    zx_reset();    
+
+    KB_INT_STOP;
+
+
+    #ifdef use_lib_only_48k
+     memset(ram0,0,0x4000);
+     memset(ram2,0,0x4000);
+     memset(ram5,0,0x4000);
+    #else
+     memset(ram0,0,0x4000);
+     memset(ram1,0,0x4000);
+     memset(ram2,0,0x4000);
+     memset(ram3,0,0x4000);
+     memset(ram4,0,0x4000);
+     memset(ram5,0,0x4000);
+     memset(ram6,0,0x4000);
+     memset(ram7,0,0x4000);
+    #endif
+
+    if (gb_cfg_arch_is48K == 1)
+    {
+        rom_latch = 0;
+        rom_in_use = 0;
+        bank_latch = 0; gb_ptr_IdRomRam[3]=0;
+        paging_lock = 1;
+    }
+
+    if (gb_cfg_arch_is48K != 1)
+    {
+        rom_in_use = 1;
+        rom_latch = 1;
+        paging_lock = 1;
+        bank_latch = 0; gb_ptr_IdRomRam[3]=0;
+        video_latch = 0;
+        paging_lock = 1;
+        bank_latch = 0; gb_ptr_IdRomRam[3]=0;
+        video_latch = 0;
+    }
+    size_read = 0;
+
+    #ifdef use_lib_wifi_debug
+     Serial.printf("Check WIFI\n");
+    #endif 
+    if (Check_WIFI() == false)
+    {
+     return;
+    }
+
+    int leidos=0;    
+    //Asignar_URL_stream_WIFI("http://192.168.0.36/zxspectrum/input/sna/48k/scene/Dream.sna");
+    #ifdef use_lib_wifi_debug
+     Serial.printf("URL:%s\n",cadUrl);
+    #endif 
+    Asignar_URL_stream_WIFI(cadUrl);    
+    Leer_url_stream_WIFI(&leidos);
+    #ifdef use_lib_wifi_debug
+     Serial.printf("Leidos:%d\n",leidos); //Leemos 1024 bytes
+    #endif 
+
+    // Read in the registers    
+    _zxCpu.i = gb_buffer_wifi[0];
+    _zxCpu.registers.byte[Z80_L] = gb_buffer_wifi[1];
+    _zxCpu.registers.byte[Z80_H] = gb_buffer_wifi[2];
+    _zxCpu.registers.byte[Z80_E] = gb_buffer_wifi[3];
+    _zxCpu.registers.byte[Z80_D] = gb_buffer_wifi[4];
+    _zxCpu.registers.byte[Z80_C] = gb_buffer_wifi[5];
+    _zxCpu.registers.byte[Z80_B] = gb_buffer_wifi[6];
+    _zxCpu.registers.byte[Z80_F] = gb_buffer_wifi[7];
+    _zxCpu.registers.byte[Z80_A] = gb_buffer_wifi[8];
+
+    _zxCpu.alternates[Z80_HL] = _zxCpu.registers.word[Z80_HL];
+    _zxCpu.alternates[Z80_DE] = _zxCpu.registers.word[Z80_DE];
+    _zxCpu.alternates[Z80_BC] = _zxCpu.registers.word[Z80_BC];
+    _zxCpu.alternates[Z80_AF] = _zxCpu.registers.word[Z80_AF];
+
+    _zxCpu.registers.byte[Z80_L] = gb_buffer_wifi[9];
+    _zxCpu.registers.byte[Z80_H] = gb_buffer_wifi[10];
+    _zxCpu.registers.byte[Z80_E] = gb_buffer_wifi[11];
+    _zxCpu.registers.byte[Z80_D] = gb_buffer_wifi[12];
+    _zxCpu.registers.byte[Z80_C] = gb_buffer_wifi[13];
+    _zxCpu.registers.byte[Z80_B] = gb_buffer_wifi[14];
+    _zxCpu.registers.byte[Z80_IYL] = gb_buffer_wifi[15];
+    _zxCpu.registers.byte[Z80_IYH] = gb_buffer_wifi[16];
+    _zxCpu.registers.byte[Z80_IXL] = gb_buffer_wifi[17];
+    _zxCpu.registers.byte[Z80_IXH] = gb_buffer_wifi[18];
+
+    byte inter = gb_buffer_wifi[19];
+    _zxCpu.iff2 = (inter & 0x04) ? 1 : 0;
+    _zxCpu.r = gb_buffer_wifi[20];
+
+    _zxCpu.registers.byte[Z80_F] = gb_buffer_wifi[21];
+    _zxCpu.registers.byte[Z80_A] = gb_buffer_wifi[22];
+
+    sp_l = gb_buffer_wifi[23];
+    sp_h = gb_buffer_wifi[24];
+    _zxCpu.registers.word[Z80_SP] = sp_l + sp_h * 0x100;
+
+    _zxCpu.im = gb_buffer_wifi[25];
+    byte bordercol = gb_buffer_wifi[26];
+
+    borderTemp = bordercol;
+
+    _zxCpu.iff1 = _zxCpu.iff2;
+
+        uint16_t thestack = _zxCpu.registers.word[Z80_SP];
+        uint16_t buf_p = 0x4000;
+        contBuffer = 27;
+        
+        //He leido 1024 bytes. Lee resto 27
+        int cont1024= 27;
+        while (contBuffer< 50000)
+        {
+         writebyte(buf_p, gb_buffer_wifi[cont1024]);
+         contBuffer++;
+         buf_p++;
+         cont1024++;
+         if (cont1024 >= 1024)
+         {
+          Leer_url_stream_WIFI(&leidos);
+          #ifdef use_lib_wifi_debug
+           Serial.printf("Leidos:%d\n",leidos);
+          #endif 
+          cont1024= 0;
+         }
+        }
+
+        retaddr = readword(thestack);
+        #ifdef use_lib_log_serial
+         Serial.printf("retaddr:%x\n", retaddr);
+        #endif
+        _zxCpu.registers.word[Z80_SP]++;
+        _zxCpu.registers.word[Z80_SP]++;
+
+    _zxCpu.pc = retaddr;
+
+    KB_INT_START;
+ }
+ #endif 
+
 #endif
 
 

@@ -62,6 +62,7 @@
 #include "z80emu.h"
 #include "z80main.h"
 #include "z80user.h"
+//#include "Disk.h"
 #include <Arduino.h>
 //Para ahorrar memoria
 //JJ #include <esp_bt.h>
@@ -74,6 +75,22 @@
 #include "soc/timer_group_struct.h"
 #include "osd.h"
 #include "gbGlobals.h"
+
+#ifdef use_lib_wifi
+ #include "gbWifi.h"
+ #include <WiFi.h>
+ //#include <WiFiMulti.h>
+ #include <HTTPClient.h>
+ #include "gbWifiConfig.h"
+ //#include <esp_wifi.h>
+ //WiFiMulti wifiMulti;
+ HTTPClient http;
+ WiFiClient * stream;
+ 
+ unsigned char gb_buffer_wifi[1024]; //128 ficheros * 8
+ int gb_size_file_wifi=0; 
+#endif
+
 
 #ifdef use_lib_mouse_kempston
  #include "PS2Mouse.h"
@@ -353,6 +370,8 @@ volatile unsigned char gbFrameSkipVideoCurrentCont=0;
 inline void swap_flash(unsigned char *a, unsigned char *b);
 
 void PrepareColorsUltraFastVGA(void);
+
+
 
 // GLOBALS
 
@@ -1266,6 +1285,7 @@ if (skipFrame == 1){
 //    }  
 // }
 
+ #ifndef use_lib_wifi 
  void Z80sim::load_ram2Flash128_jsanchezv(unsigned char id)
  {
   int contBuffer=0; 
@@ -1402,7 +1422,9 @@ if (skipFrame == 1){
     //_zxCpu.pc = retaddr;
     cpu.setRegPC(retaddr);
  }
+ #endif
 
+ #ifndef use_lib_wifi
  //Lee SNA desde flash core jsanchez
  void Z80sim::load_ram2Flash_jsanchezv(unsigned char id,unsigned char isSNA48K)
  {
@@ -1508,6 +1530,156 @@ if (skipFrame == 1){
     cpu.setRegSP(auxSP);
     cpu.setRegPC(retaddr);    
  }
+ #endif
+
+
+ #ifdef use_lib_wifi
+ //Lee SNA desde WIFI core jsanchez
+ void Z80sim::load_ram2Flash_jsanchezvFromWIFI(char * cadUrl,unsigned char isSNA48K)
+ {
+  #ifdef use_lib_wifi_debug
+   Serial.printf("load_ram2Flash_jsanchezvFromWIFI\n");
+  #endif     
+  if (isSNA48K != 1)
+  {
+   //load_ram2Flash128_jsanchezv(id);
+   return;
+  }
+
+    int contBuffer=0; 
+    uint16_t size_read;
+    byte sp_h, sp_l;
+    uint16_t retaddr; 
+	bool auxIFF2=false;
+	unsigned char auxSwap; 
+    
+    #ifdef use_lib_only_48k
+     memset(ram0_jsanchezv,0,0x4000);
+     memset(ram2_jsanchezv,0,0x4000);
+     memset(ram5_jsanchezv,0,0x4000);
+    #else
+     memset(ram0_jsanchezv,0,0x4000);
+     memset(ram1_jsanchezv,0,0x4000);
+     memset(ram2_jsanchezv,0,0x4000);
+     memset(ram3_jsanchezv,0,0x4000);
+     memset(ram4_jsanchezv,0,0x4000);
+     memset(ram5_jsanchezv,0,0x4000);
+     memset(ram6_jsanchezv,0,0x4000);
+     memset(ram7_jsanchezv,0,0x4000);
+    #endif 
+
+    //ResetSound();
+    
+    //if (id >= max_list_sna_48)
+    // return;
+            
+    cpu.reset(); //zx_reset();        
+    //Hago lo mismo que zx_reset
+    zx_reset_jsanchezv();    
+    //Fin lo mismo zx_reset
+
+    if (gb_cfg_arch_is48K == 1)
+    {
+        rom_latch_jsanchezv = 0;
+        rom_in_use_jsanchezv = 0;
+        bank_latch_jsanchezv = 0; gb_ptr_IdRomRam_jsanchezv[3] = 0;
+        paging_lock_jsanchezv = 1;
+    }
+    size_read = 0;
+
+    #ifdef use_lib_wifi_debug
+     Serial.printf("Check WIFI\n");
+    #endif 
+    if (Check_WIFI() == false)
+    {
+     return;
+    }
+    int leidos=0;
+    #ifdef use_lib_wifi_debug
+     Serial.printf("URL:%s\n",cadUrl);
+    #endif 
+    Asignar_URL_stream_WIFI(cadUrl);    
+    Leer_url_stream_WIFI(&leidos);
+    #ifdef use_lib_wifi_debug
+     Serial.printf("Leidos:%d\n",leidos); //Leemos 1024 bytes
+    #endif    
+
+    // Read in the registers        
+    cpu.setRegI(gb_buffer_wifi[0]);
+    cpu.setRegLx(gb_buffer_wifi[1]);
+    cpu.setRegHx(gb_buffer_wifi[2]);
+    cpu.setRegEx(gb_buffer_wifi[3]);
+    cpu.setRegDx(gb_buffer_wifi[4]);
+    cpu.setRegCx(gb_buffer_wifi[5]);
+    cpu.setRegBx(gb_buffer_wifi[6]);
+    cpu.setRegFx(gb_buffer_wifi[7]);
+    cpu.setRegAx(gb_buffer_wifi[8]);
+
+    cpu.setRegL(gb_buffer_wifi[9]);
+    cpu.setRegH(gb_buffer_wifi[10]);
+    cpu.setRegE(gb_buffer_wifi[11]);
+    cpu.setRegD(gb_buffer_wifi[12]);
+    cpu.setRegC(gb_buffer_wifi[13]);
+    cpu.setRegB(gb_buffer_wifi[14]);    
+
+    sp_l= gb_buffer_wifi[15];
+    sp_h= gb_buffer_wifi[16];    
+    cpu.setRegIY(sp_l + sp_h * 0x100);
+    sp_l= gb_buffer_wifi[17];
+    sp_h= gb_buffer_wifi[18];
+    cpu.setRegIX(sp_l + sp_h * 0x100);
+    byte inter = gb_buffer_wifi[19];//lhandle.read();
+    auxIFF2 = (inter & 0x04) ? true : false;
+    cpu.setIFF2(auxIFF2);
+    cpu.setRegR(gb_buffer_wifi[20]);
+    cpu.setFlags(gb_buffer_wifi[21]);
+    cpu.setRegA(gb_buffer_wifi[22]);
+    sp_l = gb_buffer_wifi[23];//lhandle.read();
+    sp_h = gb_buffer_wifi[24];//lhandle.read();
+    cpu.setRegSP(sp_l + sp_h * 0x100);
+
+    switch (gb_buffer_wifi[25])
+    {
+     case 0: cpu.setIM(cpu.IM0); break;
+     case 1: cpu.setIM(cpu.IM1); break;
+     case 2: cpu.setIM(cpu.IM2); break;
+	}
+
+    byte bordercol = gb_buffer_wifi[26];//lhandle.read();
+    borderTemp_jsanchezv = bordercol;
+    cpu.setIFF1(auxIFF2);
+
+    uint16_t thestack = cpu.getRegSP();
+    uint16_t buf_p = 0x4000;
+    contBuffer = 27;
+    
+    //He leido 1024 bytes. Lee resto 27
+    int cont1024= 27;
+    while (contBuffer< 50000)
+    {
+     //JJ writebyte(buf_p, lhandle.read());
+     poke8(buf_p, gb_buffer_wifi[cont1024]);
+     contBuffer++;
+     buf_p++;
+     
+     cont1024++;
+     if (cont1024 >= 1024)
+     {
+      Leer_url_stream_WIFI(&leidos);
+      #ifdef use_lib_wifi_debug
+       Serial.printf("Leidos:%d\n",leidos);
+      #endif 
+      cont1024= 0;
+     }     
+    }    
+    retaddr = peek16(thestack);    
+    unsigned short int auxSP = cpu.getRegSP();
+    auxSP++;
+    auxSP++;
+    cpu.setRegSP(auxSP);
+    cpu.setRegPC(retaddr);    
+ } 
+ #endif 
 
  Z80sim::Z80sim(void) : cpu(this)
  {
@@ -1900,32 +2072,51 @@ void Z80sim::runTestJJ_poll(void)
 
 void Z80sim::runTestJJ(void)
 {
+  //zx modo 48K rom 0, ram0, ram2, y ram5
   #ifdef use_lib_rom0_inRAM_jsanchezv    
    rom0_inRAM_jsanchezv = (unsigned char *)malloc(0x4000);
-  #endif   
-  ram1_jsanchezv = (unsigned char *)malloc(0x4000);  
-  ram3_jsanchezv = (unsigned char *)malloc(0x4000);
-  ram4_jsanchezv = (unsigned char *)malloc(0x4000);
+  #endif
+  #ifdef use_lib_only_48k
+   ram1_jsanchezv = NULL;
+   ram3_jsanchezv = NULL;
+   ram4_jsanchezv = NULL;
+  #else
+   ram1_jsanchezv = (unsigned char *)malloc(0x4000);  
+   ram3_jsanchezv = (unsigned char *)malloc(0x4000);
+   ram4_jsanchezv = (unsigned char *)malloc(0x4000);   
+  #endif
   #ifdef use_lib_48k_iram_jsanchezv   
   #else
    ram0_jsanchezv = (unsigned char *)malloc(0x4000);
    ram2_jsanchezv = (unsigned char *)malloc(0x4000);
    ram5_jsanchezv = (unsigned char *)malloc(0x4000);
+  #endif
+ 
+  #ifdef use_lib_only_48k
+   ram6_jsanchezv = NULL;
+   ram7_jsanchezv = NULL;
+  #else
+   ram6_jsanchezv = (unsigned char *)malloc(0x4000);
+   ram7_jsanchezv = (unsigned char *)malloc(0x4000);
   #endif 
-  ram6_jsanchezv = (unsigned char *)malloc(0x4000);
-  ram7_jsanchezv = (unsigned char *)malloc(0x4000);
   
   z80Ports_jsanchezv = (unsigned char *)malloc(256);
   memset(z80Ports_jsanchezv, 0x1F, 256);   
 
-  memset(ram0_jsanchezv,0,0x4000);
-  memset(ram1_jsanchezv,0,0x4000);
-  memset(ram2_jsanchezv,0,0x4000);
-  memset(ram3_jsanchezv,0,0x4000);
-  memset(ram4_jsanchezv,0,0x4000);
-  memset(ram5_jsanchezv,0,0x4000);
-  memset(ram6_jsanchezv,0,0x4000); 
-  memset(ram7_jsanchezv,0,0x4000);
+  #ifdef use_lib_only_48k
+   memset(ram0_jsanchezv,0,0x4000);
+   memset(ram2_jsanchezv,0,0x4000);
+   memset(ram5_jsanchezv,0,0x4000);
+  #else
+   memset(ram0_jsanchezv,0,0x4000);
+   memset(ram1_jsanchezv,0,0x4000);
+   memset(ram2_jsanchezv,0,0x4000);
+   memset(ram3_jsanchezv,0,0x4000);
+   memset(ram4_jsanchezv,0,0x4000);
+   memset(ram5_jsanchezv,0,0x4000);
+   memset(ram6_jsanchezv,0,0x4000);
+   memset(ram7_jsanchezv,0,0x4000);
+  #endif
 
   #ifdef use_lib_48k_iram_jsanchezv
    AssignStaticRam_jsanchezv(ram0_jsanchezv,ram2_jsanchezv,ram5_jsanchezv);//fast iram
@@ -2042,6 +2233,8 @@ void PrepareColorsUltraFastVGA()
 }
 
 
+
+
 void setup()
 {
  //DO NOT turn off peripherals to recover some memory
@@ -2072,18 +2265,37 @@ void setup()
   #endif
  #endif 
  
+ //zx48k se usa rom0 ram0, ram2 y ram5
  #ifdef use_lib_core_linkefong
-  ram0 = (unsigned char *)malloc(16384);
-  ram1 = (unsigned char *)malloc(16384);
+  ram0 = (unsigned char *)malloc(16384);  
+  #ifdef use_lib_only_48k
+   ram1 = NULL;
+  #else
+   ram1 = (unsigned char *)malloc(16384);  
+  #endif 
   ram2 = (unsigned char *)malloc(16384);
-  ram3 = (unsigned char *)malloc(16384);
-  ram4 = (unsigned char *)malloc(16384);
+  #ifdef use_lib_only_48k   
+   ram3 = NULL;
+   ram4 = NULL;
+  #else   
+   ram3 = (unsigned char *)malloc(16384);
+   ram4 = (unsigned char *)malloc(16384);  
+  #endif
+
   #ifdef use_lib_iram_video
   #else
    ram5 = (unsigned char *)malloc(16384);
-   ram7 = (unsigned char *)malloc(16384);
+   #ifdef use_lib_only_48k
+    ram7 = NULL;
+   #else
+    ram7 = (unsigned char *)malloc(16384);
+   #endif 
   #endif
-  ram6 = (unsigned char *)malloc(16384);
+  #ifdef use_lib_only_48k
+   ram6 = NULL;
+  #else
+   ram6 = (unsigned char *)malloc(16384);
+  #endif 
   
  #else
   #ifdef use_lib_core_jsanchezv       
@@ -2256,7 +2468,40 @@ void setup()
      }
      soundGenerator.play(true);
     #endif 
-    
+        
+    #ifdef use_lib_wifi
+     Serial.printf("RAM before WIFI %d\n",ESP.getFreeHeap());
+     //for(uint8_t t = 4; t > 0; t--) 
+     //{
+     //   Serial.printf("[SETUP] WAIT %d...\n", t);
+     //   Serial.flush();
+     //   delay(1000);
+     //}
+//     wifiMulti.addAP(gb_wifi_ssd, gb_wifi_pass);     
+
+     WiFi.mode(WIFI_STA);
+     //esp_wifi_set_ps(WIFI_PS_NONE); //Ahorro energia desactivado
+     WiFi.begin(gb_wifi_ssd, gb_wifi_pass);
+
+     for(unsigned char t = 4; t > 0; t--)
+     {
+      #ifdef use_lib_wifi_debug
+       Serial.printf("WIFI WAIT %d...\n", t);
+       Serial.flush();
+      #endif
+      delay(1000);
+     }
+     //AsignarOSD_WIFI(&wifiMulti, &http, stream);
+     //AsignarOSD_WIFI(&http, stream);
+     Asignar_WIFI(&http, stream);
+     Check_WIFI();
+     #ifdef use_lib_wifi_debug
+      Serial.print("IP address:");
+      Serial.println(WiFi.localIP());
+     #endif 
+     //AsignarDISK_WIFI(&http, stream);
+    #endif 
+
     #ifdef use_lib_log_serial
      Serial.printf("End of setup RAM %d\n",ESP.getFreeHeap());
      //Serial.printf("mask %d bits %d\n",vga.RGBAXMask,vga.SBits);  
@@ -2265,7 +2510,7 @@ void setup()
     #ifdef use_lib_sound_ay8912
      gb_sdl_time_sound_before = gb_keyboardTime;
     #endif
-        
+
 }
 
 

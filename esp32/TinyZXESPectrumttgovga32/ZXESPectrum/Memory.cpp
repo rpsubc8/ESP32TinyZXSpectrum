@@ -24,8 +24,13 @@
  unsigned char *ram3;
  unsigned char *ram4;
  #ifdef use_lib_iram_video
-  unsigned char ram5[16384];
-  unsigned char ram7[16384];
+  #ifdef use_lib_only_48k
+   unsigned char ram5[16384]; //Solo 48k   
+   unsigned char *ram7;
+  #else
+   unsigned char ram5[16384];
+   unsigned char ram7[16384];
+  #endif
  #else 
   unsigned char *ram5;
   unsigned char *ram7;

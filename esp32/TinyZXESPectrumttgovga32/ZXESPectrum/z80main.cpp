@@ -157,12 +157,15 @@ unsigned char gb_ptr_IdRomRam[4]={
 //Lectura rapida
 extern "C" inline uint8_t fast_readbyte(uint16_t addr)
 {
-
-  unsigned char idRomRam = (addr>>14);
+  unsigned char idRomRam = (addr>>14);  
   if (idRomRam == 0)
+  {
    return (gb_local_cache_rom[rom_in_use][addr]);
+  }
   else
-   return (gb_local_cache_ram[(gb_ptr_IdRomRam[idRomRam])][(addr & 0x3fff)]);
+  {  
+   return (gb_local_cache_ram[(gb_ptr_IdRomRam[idRomRam])][(addr & 0x3fff)]);  
+  }
 
   /*unsigned char idRomRam = (addr>>14);
   switch(idRomRam)
@@ -248,7 +251,9 @@ extern "C" void writebyte(uint16_t addr, uint8_t data) {
    //Modo rapido
   unsigned char idRomRam = (addr>>14);
   if (idRomRam != 0)
-   gb_local_cache_ram[(gb_ptr_IdRomRam[idRomRam])][(addr & 0x3fff)] = data;  
+  {
+   gb_local_cache_ram[(gb_ptr_IdRomRam[idRomRam])][(addr & 0x3fff)] = data;   
+  }
 
   /*unsigned char idRomRam = (addr>>14);
   switch(idRomRam)

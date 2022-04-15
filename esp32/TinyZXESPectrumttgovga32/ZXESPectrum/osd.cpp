@@ -1,9 +1,13 @@
 #include "gbConfig.h"
 #include "gbOptimice.h"
 #include "dataFlash/gbtape.h"
-#include "dataFlash/gbscr.h"
+#ifndef use_lib_wifi
+ #include "dataFlash/gbscr.h"
+#endif 
 #include "dataFlash/gbrom.h"
-#include "dataFlash/gbsna.h"
+#ifndef use_lib_wifi
+ #include "dataFlash/gbsna.h"
+#endif 
 #include "osd.h"
 #include "Disk.h"
 #include "PS2Kbd.h"
@@ -15,6 +19,16 @@
 #include "gbGlobals.h"
 #include "gb_sdl_font8x8.h"
 #include "Memory.h"
+#ifdef use_lib_wifi
+ //JJ #include "gbWifiConfig.h"
+ //JJ #include <WiFi.h>
+ //JJ #include <HTTPClient.h>
+ //HTTPClient * osd_http;
+ //WiFiClient * osd_stream;
+ #include "gbWifiConfig.h"
+ #include "gbWifi.h"
+ #include "vga_6bit.h" 
+#endif
 
 #ifdef use_lib_core_jsanchezv
  #include "Memory.h"
@@ -182,20 +196,37 @@ const char * gb_osd_delay_instructions[max_gb_osd_delay_instructions]={
 };
 
 #define max_gb_main_menu 12
-const char * gb_main_menu[max_gb_main_menu]={
- "Load SNA",
- "Select ROM",
- "Load SCR TAP",
- "Select TAP",
- "Load SCR",
- "Speed",
- "Screen Adjust",
- "Force Mode",
- "Mouse",
- "Sound", 
- "Reset",
- "Return"
-};
+#ifdef use_lib_wifi
+ const char * gb_main_menu[max_gb_main_menu]={
+  "Load SNA WIFI",
+  "Select ROM",
+  "Load SCR TAP",
+  "Select TAP",
+  "Load SCR WIFI",
+  "Speed",
+  "Screen Adjust",
+  "Force Mode",
+  "Mouse",
+  "Sound", 
+  "Reset",
+  "Return"
+ };
+#else
+ const char * gb_main_menu[max_gb_main_menu]={
+  "Load SNA",
+  "Select ROM",
+  "Load SCR TAP",
+  "Select TAP",
+  "Load SCR",
+  "Speed",
+  "Screen Adjust",
+  "Force Mode",
+  "Mouse",
+  "Sound", 
+  "Reset",
+  "Return"
+ };
+#endif
 
 #ifdef use_lib_mouse_kempston
  #define max_gb_osd_mouse_menu 10
@@ -218,6 +249,67 @@ const char * gb_machine_menu[max_gb_machine_menu]={
  "48K",
  "128K"
 };
+
+#ifdef use_lib_wifi
+ #define max_gb_sna_type_menu 29
+ const char * gb_sna_type_menu[max_gb_sna_type_menu]={
+  "app",
+  "arcade",
+  "action",
+  "board",
+  "card",
+  "chess",
+  "combat",
+  "dungeon",
+  "fight",
+  "gambling",
+  "maze",
+  "mouse",
+  "pinball",
+  "platform",
+  "pong",
+  "puzzle",
+  "quiz",
+  "race",
+  "rpg",
+  "scene",
+  "school",
+  "shoot",
+  "simul",
+  "sport",
+  "strategy",
+  "tactical",
+  "tools",
+  "venture",
+  "war"
+ };
+
+ #define max_gb_scr_type_menu 22
+ const char * gb_scr_type_menu[max_gb_scr_type_menu]={
+  "action",
+  "arcade",
+  "board",
+  "card",
+  "chess",
+  "combat",
+  "dungeon",
+  "fight",
+  "maze",
+  "pinball",
+  "platform",
+  "pong",
+  "puzzle",
+  "race",
+  "rpg",
+  "scene",
+  "shoot",
+  "simul",
+  "sport",
+  "strategy",
+  "venture",
+  "war"
+ };
+#endif 
 
 #define max_gb_speed_menu 5
 const char * gb_speed_menu[max_gb_speed_menu]={
@@ -444,6 +536,83 @@ void OSDMenuRowsDisplayScroll(const char **ptrValue,unsigned char currentId,unsi
  }     
 }
 
+#ifdef use_lib_wifi
+ //**********************************************************************************
+ void OSDMenuRowsDisplayScrollFromWIFI(unsigned char *ptrBuffer,unsigned char currentId,unsigned char aMax)
+ {//Dibuja varias lineas 
+  char cadName8[10];
+  cadName8[8]='\0';
+  for (int i=0;i<gb_osd_max_rows;i++)
+  {
+   SDLprintText("                    ",gb_pos_x_menu,gb_pos_y_menu+8+(i<<3),ID_COLOR_BLACK,ID_COLOR_BLACK);
+  }
+ 
+  for (int i=0;i<gb_osd_max_rows;i++)
+  {
+   if (currentId >= aMax)
+    break;
+   memcpy(cadName8, &ptrBuffer[(currentId*8)], 8);
+   cadName8[8]='\0';
+//   SDLprintText(ptrValue[currentId],gb_pos_x_menu,gb_pos_y_menu+8+(i<<3),((i==0)?ID_COLOR_WHITE:ID_COLOR_WHITE),((i==0)?ID_COLOR_MAGENTA:ID_COLOR_BLACK));
+   SDLprintText((const char*)cadName8,gb_pos_x_menu,gb_pos_y_menu+8+(i<<3),((i==0)?ID_COLOR_WHITE:ID_COLOR_WHITE),((i==0)?ID_COLOR_MAGENTA:ID_COLOR_BLACK));
+   currentId++;
+  }     
+ }
+
+ //**********************************************************************************
+ unsigned char ShowTinyMenuFromWIFI(const char *cadTitle,unsigned char *ptrBuffer,unsigned char aMax)
+ {
+  unsigned char aReturn=0;
+  unsigned char salir=0;
+
+  SDLClear();
+  #ifdef use_lib_core_linkefong
+   SDLprintText("ZXESPectrum LKF(Ackerman)",(gb_pos_x_menu-(32)),(gb_pos_y_menu-16),ID_COLOR_WHITE,ID_COLOR_BLACK);
+  #else
+   SDLprintText("ZXESPectrum JLS(Ackerman)",(gb_pos_x_menu-(32)),(gb_pos_y_menu-16),ID_COLOR_WHITE,ID_COLOR_BLACK);
+  #endif
+  for (int i=0;i<14;i++)
+  {
+   SDLprintCharOSD(' ',gb_pos_x_menu+(i<<3),gb_pos_y_menu,ID_COLOR_BLACK,ID_COLOR_WHITE);
+  }
+  SDLprintText(cadTitle,gb_pos_x_menu,gb_pos_y_menu,ID_COLOR_BLACK,ID_COLOR_WHITE);
+  OSDMenuRowsDisplayScrollFromWIFI(ptrBuffer,0,aMax); 
+  while (salir == 0)
+  {  
+   if (checkAndCleanKey(KEY_CURSOR_LEFT))
+   {
+    if (aReturn>10) aReturn-=10;
+    OSDMenuRowsDisplayScrollFromWIFI(ptrBuffer,aReturn,aMax);
+   }
+   if (checkAndCleanKey(KEY_CURSOR_RIGHT))
+   {
+    if (aReturn<(aMax-10)) aReturn+=10;
+    OSDMenuRowsDisplayScrollFromWIFI(ptrBuffer,aReturn,aMax);
+   }
+   if (checkAndCleanKey(KEY_CURSOR_UP))
+   {
+    if (aReturn>0) aReturn--;
+    OSDMenuRowsDisplayScrollFromWIFI(ptrBuffer,aReturn,aMax);
+   }
+   if (checkAndCleanKey(KEY_CURSOR_DOWN))
+   {
+    if (aReturn < (aMax-1)) aReturn++;
+    OSDMenuRowsDisplayScrollFromWIFI(ptrBuffer,aReturn,aMax);
+   } 
+   if (checkAndCleanKey(KEY_ENTER))
+   {
+    salir= 1;
+   }
+   if (checkAndCleanKey(KEY_ESC))
+   {
+    salir=1; aReturn= 255;
+   }
+  }
+  gb_show_osd_main_menu= 0;
+  return aReturn;
+ }
+#endif
+
 //Maximo 256 elementos
 unsigned char ShowTinyMenu(const char *cadTitle,const char **ptrValue,unsigned char aMax)
 {
@@ -601,33 +770,132 @@ void ShowTinySoundMenu()
 
 }
 
+//***************************
+void ShowStatusWIFI(unsigned char aState)
+{
+ if (aState == 1)
+ {
+  SDLprintText("WIFI LOAD",8,8,ID_COLOR_BLACK,ID_COLOR_WHITE);   
+ }
+ else
+ {  
+  SDLprintText("         ",8,8,ID_COLOR_BLACK,ID_COLOR_BLACK);
+ }
+}
+
 //Menu SNA
 void ShowTinySNAMenu()
 {
- unsigned char aSelNum;     
- aSelNum = ShowTinyMenu("Machine SNA",gb_machine_menu,max_gb_machine_menu);
+ unsigned char aSelNum;
+ #ifdef use_lib_wifi
+  aSelNum = ShowTinyMenu("Machine SNA WIFI",gb_machine_menu,max_gb_machine_menu);
+ #else
+  aSelNum = ShowTinyMenu("Machine SNA",gb_machine_menu,max_gb_machine_menu);
+ #endif
  if (aSelNum == 255)
   return;
  Z80EmuSelectTape(0);
  if (aSelNum == 0)
- {
-  aSelNum = ShowTinyMenu("48K SNA",gb_list_sna_48k_title,max_list_sna_48);                
-  if (aSelNum == 255)
-   return;  
-  //strcpy(cfg_arch,"48K");
-  //cfg_arch = "48K";
-  gb_cfg_arch_is48K = 1;  
-  changeSna2Flash(aSelNum,1); //SNA 48K
+ {   
+  #ifdef use_lib_wifi
+   unsigned char aSelType;
+   unsigned char aSelNum;
+   unsigned char tope;
+   int leidos=0;
+   char cadUrl[256];
+
+   aSelType = ShowTinyMenu("48K SNA TYPE WIFI",gb_sna_type_menu,max_gb_sna_type_menu);
+   if (aSelType == 255)
+    return;
+   if (Check_WIFI() == true)
+   {
+    //strcpy(cadUrl,"http://192.168.0.36/zxspectrum/outlist/sna/48k/");
+    //strcpy(cadUrl, gb_wifi_url_base_path);
+    //strcat(cadUrl, "/outlist/sna/48k/");
+    //strcat(cadUrl,gb_sna_type_menu[aSelType]);
+    //strcat(cadUrl,".txt");
+    PreparaURL(cadUrl, "/outlist/sna/48k", "", (char*)gb_sna_type_menu[aSelType], "txt");
+    #ifdef use_lib_wifi_debug
+     Serial.printf("URL:%s\n",cadUrl);    
+    #endif 
+    ShowStatusWIFI(1);
+    //SetVideoInterrupt(0);
+    //noInterrupts();
+    Asignar_URL_stream_WIFI(cadUrl);    
+    //Asignar_URL_stream_WIFI("http://192.168.0.36/zxspectrum/outlist/sna/48k/arcade.txt");
+    Leer_url_stream_WIFI(&leidos);
+    //interrupts();
+    //SetVideoInterrupt(1);    
+    ShowStatusWIFI(0);
+    #ifdef use_lib_wifi_debug
+     Serial.printf("Leidos:%d\n",leidos);
+    #endif 
+    //downloadURL("http://192.168.0.36/zxspectrum/outlist/sna/48k/arcade.txt",NULL,0);
+    tope = gb_size_file_wifi>>3; //DIV 8    
+    #ifdef use_lib_wifi_debug
+     Serial.printf("Tope:%d\n",tope);
+    #endif 
+    if (tope<1){
+      return;
+    }
+    if (tope>127)
+    {
+     tope= 127;
+    }
+    aSelNum = ShowTinyMenuFromWIFI("48K SNA WIFI",gb_buffer_wifi,tope);    
+    if (aSelNum == 255)
+     return;
+    char cadFile[10];
+    for (int i=0;i<8;i++)
+    {
+     cadFile[i]= gb_buffer_wifi[(aSelNum*8)+i];
+     if (cadFile[i] ==' '){
+      cadFile[i]='\0';
+     }
+    }
+    cadFile[8]='\0';
+
+    gb_cfg_arch_is48K = 1;  
+    #ifdef use_lib_wifi_debug
+     Serial.printf("Select:%d\n",aSelNum);
+    #endif 
+    //strcpy(cadUrl, gb_wifi_url_base_path);
+    //strcat(cadUrl, "/input/sna/48k/");
+    //strcat(cadUrl,gb_sna_type_menu[aSelType]);
+    //strcat(cadUrl,"/");
+    //strcat(cadUrl,cadFile);
+    //strcat(cadUrl,".sna");
+    PreparaURL(cadUrl, "/outdat/sna/48k/", (char*)gb_sna_type_menu[aSelType], cadFile,"sna");
+
+    #ifdef use_lib_wifi_debug
+     Serial.printf("URL:%s\n",cadUrl);    
+    #endif 
+    ShowStatusWIFI(1);
+    changeSna2FlashFromWIFI(cadUrl,1); //SNA 48K
+    ShowStatusWIFI(0);    
+   }
+  #else
+   aSelNum = ShowTinyMenu("48K SNA",gb_list_sna_48k_title,max_list_sna_48);
+   if (aSelNum == 255)
+    return;
+   //strcpy(cfg_arch,"48K");
+   //cfg_arch = "48K";
+   gb_cfg_arch_is48K = 1;  
+   changeSna2Flash(aSelNum,1); //SNA 48K
+  #endif 
  }
  else
  {
-  aSelNum = ShowTinyMenu("128K SNA",gb_list_sna_128k_title,max_list_sna_128);                
-  if (aSelNum == 255)
-   return;  
-  //strcpy(cfg_arch,"128K");
-  //cfg_arch = "128K";
-  gb_cfg_arch_is48K = 0;
-  changeSna2Flash(aSelNum,0); //SNA 128K 
+  #ifdef use_lib_wifi
+  #else
+   aSelNum = ShowTinyMenu("128K SNA",gb_list_sna_128k_title,max_list_sna_128);                
+   if (aSelNum == 255)
+    return;  
+   //strcpy(cfg_arch,"128K");
+   //cfg_arch = "128K";
+   gb_cfg_arch_is48K = 0;
+   changeSna2Flash(aSelNum,0); //SNA 128K 
+  #endif
  }
  //vTaskDelay(2);
 }
@@ -696,12 +964,137 @@ void ShowTinySelectTAPEMenu()
 
 //Menu SCREEN
 void ShowTinySCRMenu()
-{
- unsigned char aSelNum;
- aSelNum = ShowTinyMenu("48K SCREEN",gb_list_scr_48k_title,max_list_scr_48);
- if (aSelNum == 255)
-  return;
- load_scr2Flash(aSelNum);
+{  
+ #ifdef use_lib_wifi
+  unsigned char aSelType;
+  unsigned char aSelNum;
+  unsigned char tope;
+  int leidos=0;
+  char cadUrl[256];
+
+  aSelType = ShowTinyMenu("48K SCR TYPE WIFI",gb_scr_type_menu,max_gb_scr_type_menu);
+  if (aSelType == 255)
+   return;
+
+  if (Check_WIFI() == true)
+  {
+   //strcpy(cadUrl, gb_wifi_url_base_path);
+   //strcat(cadUrl, "/outlist/scr/");
+   //strcat(cadUrl,gb_scr_type_menu[aSelType]);
+   //strcat(cadUrl,".txt");
+
+   PreparaURL(cadUrl, "/outlist/scr", "", (char*)gb_scr_type_menu[aSelType], "txt");
+   #ifdef use_lib_wifi_debug
+    Serial.printf("URL:%s\n",cadUrl);   
+   #endif 
+
+   //Asignar_URL_stream_WIFI("http://192.168.0.36/zxspectrum/outlist/scr/car.txt");
+   ShowStatusWIFI(1);
+   Asignar_URL_stream_WIFI(cadUrl);
+   Leer_url_stream_WIFI(&leidos);
+   ShowStatusWIFI(0);
+   #ifdef use_lib_wifi_debug
+    Serial.printf("Leidos:%d\n",leidos);
+   #endif 
+   tope = gb_size_file_wifi>>3; //DIV 8
+   #ifdef use_lib_wifi_debug
+    Serial.printf("Tope:%d\n",tope);
+   #endif 
+   if (tope<1){
+    return;
+   }
+   if (tope>127)
+   {
+    tope= 127;
+   }
+   //Muestro lista scr
+   aSelNum = ShowTinyMenuFromWIFI("48K SCREEN WIFI",gb_buffer_wifi,tope);
+   if (aSelNum == 255)
+    return;
+   
+   char cadFile[10];
+   for (int i=0;i<8;i++)
+   {
+    cadFile[i]= gb_buffer_wifi[(aSelNum*8)+i];
+    if (cadFile[i] ==' '){
+     cadFile[i]='\0';
+    }
+   }
+   cadFile[8]='\0';
+   #ifdef use_lib_wifi_debug
+    Serial.printf("Select:%d\n",aSelNum);
+   #endif 
+
+   //strcpy(cadUrl, gb_wifi_url_base_path);
+   //strcat(cadUrl, "/input/scr/");
+   //strcat(cadUrl,gb_scr_type_menu[aSelType]);
+   //strcat(cadUrl,"/");
+   //strcat(cadUrl,cadFile);
+   //strcat(cadUrl,".scr");
+   PreparaURL(cadUrl, "/outdat/scr/", (char *)gb_scr_type_menu[aSelType], cadFile, "scr");
+
+   #ifdef use_lib_wifi_debug
+    Serial.printf("URL:%s\n",cadUrl);
+   #endif 
+
+   //Leo fichero SCR en banco 5 video
+   //Asignar_URL_stream_WIFI("http://192.168.0.36/zxspectrum/input/scr/car/scr4x4.scr");
+   ShowStatusWIFI(1);
+   Asignar_URL_stream_WIFI(cadUrl);
+   int auxContWifi = 0;
+   leidos=0;
+   while (auxContWifi < gb_size_file_wifi)
+   {
+    Leer_url_stream_WIFI(&leidos);
+    #ifdef use_lib_wifi_debug
+     Serial.printf("Leidos:%d\n",leidos);        
+    #endif 
+    //memcpy(&ram5[auxContWifi],gb_buffer_wifi,leidos);
+
+    #ifdef use_lib_core_linkefong     
+     memcpy(&ram5[auxContWifi],gb_buffer_wifi,leidos); //optimizado
+    #else 
+     #ifdef use_lib_core_jsanchezv
+      memcpy(&ram5_jsanchezv[auxContWifi],gb_buffer_wifi,leidos); //optimizado
+     #endif
+    #endif 
+
+    auxContWifi += leidos;
+   }
+   ShowStatusWIFI(0);
+  }
+
+/*
+  //gb_buffer_wifi
+  downloadURL("http://192.168.0.36/zxspectrum/outlist/scr/car.txt",NULL,0);
+  //downloadURL("http://192.168.0.36/zxspectrum/outlist/scr/car.html","");
+
+  tope = gb_size_file_wifi>>3; //DIV 8
+  if (tope>127)
+  {
+   tope= 127;
+  }
+  aSelNum = ShowTinyMenuFromWIFI("48K SCREEN",gb_buffer_wifi,tope);
+  if (aSelNum == 255)
+   return;
+  //load_scr2FlashFromWIFI(aSelNum);
+
+  downloadURL("http://192.168.0.36/zxspectrum/input/scr/car/scr4x4.scr",ram5,1);
+  //#ifdef use_lib_core_linkefong
+  // memcpy(ram5,&gb_list_scr_48k_data[id][0],6912); //optimizado
+  //#else 
+  // #ifdef use_lib_core_jsanchezv
+  //  memcpy(ram5_jsanchezv,&gb_list_scr_48k_data[id][0],6912); //optimizado
+  // #endif
+  //#endif
+*/
+ #else
+  unsigned char aSelNum;
+  aSelNum = ShowTinyMenu("48K SCREEN",gb_list_scr_48k_title,max_list_scr_48);
+  if (aSelNum == 255)
+   return;
+  load_scr2Flash(aSelNum);
+ #endif
 }
 
 //Menu velocidad emulador

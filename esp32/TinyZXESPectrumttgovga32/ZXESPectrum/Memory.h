@@ -23,8 +23,13 @@
   extern unsigned char *ram3;
   extern unsigned char *ram4;
   #ifdef use_lib_iram_video
-   extern unsigned char ram5[16384];
-   extern unsigned char ram7[16384]; 
+   #ifdef use_lib_only_48k
+    extern unsigned char ram5[16384]; //Solo 48K    
+    extern unsigned char *ram7;    
+   #else
+    extern unsigned char ram5[16384];
+    extern unsigned char ram7[16384];
+   #endif
   #else
    extern unsigned char *ram5;
    extern unsigned char *ram7;

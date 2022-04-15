@@ -69,9 +69,13 @@ public:
 
     void runTest(std::ifstream* f);
     void runTestJJ(void);
-    void runTestJJ_poll(void);
-    void load_ram2Flash_jsanchezv(unsigned char id,unsigned char isSNA48K);
-    void load_ram2Flash128_jsanchezv(unsigned char id);
+    void runTestJJ_poll(void);    
+    #ifdef use_lib_wifi
+     void load_ram2Flash_jsanchezvFromWIFI(char * cadUrl,unsigned char isSNA48K);
+    #else
+     void load_ram2Flash_jsanchezv(unsigned char id,unsigned char isSNA48K);
+     void load_ram2Flash128_jsanchezv(unsigned char id);
+    #endif    
     void ResetCPU(void);
     #ifdef use_lib_cycle_32bits_jsanchezv
      unsigned int * GetAddr_tstates(void);

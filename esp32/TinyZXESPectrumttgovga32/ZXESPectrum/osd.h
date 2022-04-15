@@ -1,6 +1,13 @@
 #ifndef OSDFILE_H
  #define OSDFILE_H
 
+#include "gbConfig.h"
+
+#ifdef use_lib_wifi
+ #include <WiFi.h>
+// #include <WiFiMulti.h>
+ #include <HTTPClient.h> 
+#endif 
 // OSD Headers
 #include <Arduino.h>
 
@@ -8,8 +15,14 @@
 
 // SNA Management
 
-void changeSna(String sna_filename);
-void changeSna2Flash(unsigned char id,unsigned char isSNA48K);
+//void changeSna(String sna_filename); //No se usa
+#ifdef use_lib_wifi
+#else
+ void changeSna2Flash(unsigned char id,unsigned char isSNA48K);
+#endif 
+#ifdef use_lib_wifi
+ void changeSna2FlashFromWIFI(char *cadUrl,unsigned char isSNA48K);
+#endif 
 // ULA
 //void stepULA();
 void do_tinyOSD(void);
@@ -25,4 +38,16 @@ void SetMode48K(void);
 void SetMode128K(void);
 
 void ResetSound(void);
+
+unsigned char ShowTinyMenu(const char *cadTitle,const char **ptrValue,unsigned char aMax);
+#ifdef use_lib_wifi
+ void OSDMenuRowsDisplayScrollFromWIFI(unsigned char *ptrBuffer,unsigned char currentId,unsigned char aMax);
+ unsigned char ShowTinyMenuFromWIFI(const char *cadTitle,unsigned char *ptrBuffer,unsigned char aMax);
+ //bool downloadURL(char const * URL, char const * filename); 
+ //bool downloadURL(char const * URL, unsigned char * ptrDest, unsigned char isPtrDest);
+ //void AsignarOSD_WIFI(WiFiMulti * ptr);
+ //void AsignarOSD_WIFI(WiFiMulti * ptr, HTTPClient * ptr_http, WiFiClient * ptr_stream);
+ //void AsignarOSD_WIFI(HTTPClient * ptr_http, WiFiClient * ptr_stream);
+#endif 
+
 #endif

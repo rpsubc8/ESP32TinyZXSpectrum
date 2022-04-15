@@ -1,7 +1,11 @@
 #ifndef _GB_GLOBALS_H
  #define _GB_GLOBALS_H
  #include "gbConfig.h"
- 
+
+ #ifdef use_lib_wifi
+  extern unsigned char gb_buffer_wifi[1024]; //128 * 8
+  extern int gb_size_file_wifi;  
+ #endif 
 
  extern int gb_screen_xIni;
  extern int gb_screen_yIni;

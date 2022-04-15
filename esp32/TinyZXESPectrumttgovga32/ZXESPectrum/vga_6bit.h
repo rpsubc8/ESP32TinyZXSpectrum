@@ -57,6 +57,8 @@ int vga_get_yres();
 unsigned char vga_get_vsync_inv_bit(void);
 unsigned char vga_get_hsync_inv_bit(void);
 
+void SetVideoInterrupt(unsigned char auxState);
+
 #endif
 
 #endif //VGA_6BIT_H_FILE
