@@ -32,7 +32,8 @@ He realizado varias modificaciones:
  <li>Soporte de core Lin Ke-Fong y de José Luis Sánchez</li>
  <li>Creado port de Windows bajo SDL (no disponible para descargar)</li>
  <li>Modos de video 360x200, 320x240, 320x200</li> 
- <li>Soporte de SNA de 128K</li> 
+ <li>Soporte de SNA de 128K</li>
+ <li>Soporte carga SCR y SNA por WIFI</li>
 </ul>
 
 <br><br>
