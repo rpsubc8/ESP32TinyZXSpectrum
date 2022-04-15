@@ -12,6 +12,7 @@
   void Asignar_URL_stream_WIFI(char const * URL);
   bool Leer_url_stream_WIFI(int * returnC);
   void PreparaURL(char *destURL,char *pathType,char *nameType, char *cadFile, char * fileExt);
+  void FlushStreamWIFI(void);
 
  #endif 
 

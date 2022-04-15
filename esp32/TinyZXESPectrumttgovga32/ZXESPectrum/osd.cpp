@@ -824,6 +824,7 @@ void ShowTinySNAMenu()
     Asignar_URL_stream_WIFI(cadUrl);    
     //Asignar_URL_stream_WIFI("http://192.168.0.36/zxspectrum/outlist/sna/48k/arcade.txt");
     Leer_url_stream_WIFI(&leidos);
+    //FlushStreamWIFI();
     //interrupts();
     //SetVideoInterrupt(1);    
     ShowStatusWIFI(0);
@@ -871,7 +872,7 @@ void ShowTinySNAMenu()
      Serial.printf("URL:%s\n",cadUrl);    
     #endif 
     ShowStatusWIFI(1);
-    changeSna2FlashFromWIFI(cadUrl,1); //SNA 48K
+    changeSna2FlashFromWIFI(cadUrl,1); //SNA 48K    
     ShowStatusWIFI(0);    
    }
   #else
@@ -990,7 +991,7 @@ void ShowTinySCRMenu()
 
    //Asignar_URL_stream_WIFI("http://192.168.0.36/zxspectrum/outlist/scr/car.txt");
    ShowStatusWIFI(1);
-   Asignar_URL_stream_WIFI(cadUrl);
+   Asignar_URL_stream_WIFI(cadUrl);   
    Leer_url_stream_WIFI(&leidos);
    ShowStatusWIFI(0);
    #ifdef use_lib_wifi_debug
@@ -1040,12 +1041,12 @@ void ShowTinySCRMenu()
    //Leo fichero SCR en banco 5 video
    //Asignar_URL_stream_WIFI("http://192.168.0.36/zxspectrum/input/scr/car/scr4x4.scr");
    ShowStatusWIFI(1);
-   Asignar_URL_stream_WIFI(cadUrl);
+   Asignar_URL_stream_WIFI(cadUrl);   
    int auxContWifi = 0;
    leidos=0;
    while (auxContWifi < gb_size_file_wifi)
    {
-    Leer_url_stream_WIFI(&leidos);
+    Leer_url_stream_WIFI(&leidos);    
     #ifdef use_lib_wifi_debug
      Serial.printf("Leidos:%d\n",leidos);        
     #endif 

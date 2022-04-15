@@ -37,10 +37,25 @@
   {
    #ifdef use_lib_wifi_debug
     Serial.printf ("Error WIFI\n");
-   #endif 
+   #endif
+   if (gb_wifi_delay_check != 0)
+   {
+    delay(gb_wifi_delay_check);
+   }
    return false;
   }
+  
+  if (gb_wifi_delay_check != 0)  
+  {
+   delay(gb_wifi_delay_check);
+  }  
   return true;
+ }
+
+ //***************************************
+ void FlushStreamWIFI()
+ {
+  gb_wifi_stream->flush();
  }
 
  //*************************************
@@ -75,22 +90,41 @@
   }
   gb_wifi_dsize= 0;    
   #ifdef use_lib_wifi_debug
-   tiempo_fin = micros();
+   tiempo_fin = micros();   
    Serial.printf("Tiempo URL:%d\n",(tiempo_fin-tiempo_ini));
   #endif
+
+  if (gb_wifi_delay_asign_read != 0)
+  {
+   delay(gb_wifi_delay_asign_read);
+  }
  }
 
  //****************************************
  bool Leer_url_stream_WIFI(int * returnC)
- {
-  unsigned int tiempo_ini,tiempo_fin;  
+ {  
   bool success= false;
-  //Serial.printf("len:%d dsize:%d\n",gb_wifi_len,gb_wifi_dsize);
-  //tiempo_ini = micros();  
+  #ifdef use_lib_wifi_debug
+   unsigned int tiempo_ini,tiempo_fin;
+   Serial.printf("len:%d dsize:%d\n",gb_wifi_len,gb_wifi_dsize);
+   tiempo_ini = micros();
+  #endif   
   if (gb_wifi_http->connected() && (gb_wifi_len > 0 || gb_wifi_len == -1)) 
-  {
-   size_t size = gb_wifi_stream->available();
-   //Serial.printf("available size:%d\n",size);
+  {      
+   //JJ size_t size = gb_wifi_stream->available();
+   size_t size= gb_wifi_stream->available();
+   while (size == 0)
+   {
+    size= gb_wifi_stream->available();
+    if (gb_wifi_delay_check_available !=0)
+    {
+     delay(gb_wifi_delay_check_available);
+    }
+   }
+
+   #ifdef use_lib_wifi_debug
+    Serial.printf("available size:%d\n",size);
+   #endif 
    if (size) 
    {
     int c = gb_wifi_stream->readBytes(gb_buffer_wifi, 1024);
@@ -110,10 +144,17 @@
     }
     *returnC = c;
    }
+   else
+   {
+
+   }
    success = (gb_wifi_len == 0 || (gb_wifi_len == -1 && gb_wifi_dsize > 0));
   } //fin wifi
-  //tiempo_fin = micros();
-  //Serial.printf("Tiempo stream:%d\n",(tiempo_fin-tiempo_ini));
+  #ifdef use_lib_wifi_debug
+   tiempo_fin = micros();
+   Serial.printf("Tiempo stream:%d\n",(tiempo_fin-tiempo_ini));
+  #endif
+
   if (gb_wifi_delay_available != 0)
   {
    delay(gb_wifi_delay_available); //Delay millis

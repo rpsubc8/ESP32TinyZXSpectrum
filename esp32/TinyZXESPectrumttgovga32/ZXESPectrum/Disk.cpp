@@ -669,7 +669,7 @@ void load_tape2Flash(unsigned char id)
      Serial.printf("URL:%s\n",cadUrl);
     #endif 
     Asignar_URL_stream_WIFI(cadUrl);    
-    Leer_url_stream_WIFI(&leidos);
+    Leer_url_stream_WIFI(&leidos);    
     #ifdef use_lib_wifi_debug
      Serial.printf("Leidos:%d\n",leidos); //Leemos 1024 bytes
     #endif 
@@ -749,6 +749,8 @@ void load_tape2Flash(unsigned char id)
         _zxCpu.registers.word[Z80_SP]++;
 
     _zxCpu.pc = retaddr;
+
+    //FlushStreamWIFI();
 
     KB_INT_START;
  }
