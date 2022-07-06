@@ -39,12 +39,12 @@ He realizado varias modificaciones:
 
 <br><br>
 <h1>Versión precompilada</h1>
-En la carpeta precompile se encuentran 4 versiones ya compiladas para poder ser grabadas con el flash download tool 3.9.2. Se trata de la combinaciones de 2 cores y sonido AY8912 con resolución 320x200 con los juegos de demostración en FLASH.<br><br>
+En la carpeta precompile se encuentran 4 versiones ya compiladas para poder ser grabadas con el flash download tool 3.9.2. Se trata de las permutaciones de 2 cores (LKF y JLS) y sonido AY8912 con resolución 320x200 con los juegos de demostración en FLASH.<br><br>
 <a href='https://github.com/rpsubc8/ESP32TinyZXSpectrum/tree/main/esp32/precompile'>https://github.com/rpsubc8/ESP32TinyZXSpectrum/tree/main/esp32/precompile</a>
 <br><br>
 Debemos de elegir el tipo ESP32:
 <center><img src='https://raw.githubusercontent.com/rpsubc8/ESP32TinyZXSpectrum/main/preview/flash00.gif'></center>
-Posteriormente, seleccionaremos los archivos tal y como la captura adjunta, con los mismos valores de offset:
+Posteriormente, seleccionaremos los archivos tal y como la captura adjunta, con los mismos valores de offset, que serán diferentes según las 4 opciones:
 <center><img src='https://raw.githubusercontent.com/rpsubc8/ESP32TinyZXSpectrum/main/preview/flash01.gif'></center>
 Y le daremos a start. Si todo ha sido correcto, sólo tendremos que reiniciar el ESP32.
 
