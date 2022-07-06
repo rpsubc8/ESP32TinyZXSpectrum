@@ -38,6 +38,17 @@ I have made several modifications:
  <li>Precompiled version (flash download 3.9.2) 320x200 core LKF,JLS and AY8912 support</li>
 </ul>
 
+<br><br> 
+<h1>Precompiled version</h1>
+In the precompile folder there are 4 versions already compiled to be recorded with the flash download tool 3.9.2. They are the permutations of 2 cores (LKF and JLS) and AY8912 sound with 320x200 resolution with the demo games in FLASH.<br><br>
+<a href='https://github.com/rpsubc8/ESP32TinyZXSpectrum/tree/main/precompile'>https://github.com/rpsubc8/ESP32TinyZXSpectrum/tree/main/precompile</a>
+<br><br>
+We must choose the ESP32 type:
+<center><img src='https://raw.githubusercontent.com/rpsubc8/ESP32TinyZXSpectrum/main/preview/flash00.gif'></center>
+Subsequently, we will select the files as shown in the attached screenshot, with the same offset values, which will be different according to the 4 options:
+<center><img src='https://raw.githubusercontent.com/rpsubc8/ESP32TinyZXSpectrum/main/preview/flash01.gif'></center>
+And we will press start. If everything has been correct, we will only have to restart the ESP32.
+
 <br><br>
 <h1>Requirements</h1>
 Required:
@@ -49,18 +60,6 @@ Required:
   <li>Arduino bitluni 0.3.3 reduced library (included in project)</li>
  </ul>
  <center><img src='https://raw.githubusercontent.com/rpsubc8/ESP32TinyZXSpectrum/main/preview/ttgovga32v12.jpg'></center>
-
-
-<br><br> 
-<h1>Precompiled version</h1>
-In the precompile folder there are 4 versions already compiled to be recorded with the flash download tool 3.9.2. They are the permutations of 2 cores (LKF and JLS) and AY8912 sound with 320x200 resolution with the demo games in FLASH.<br><br>
-<a href='https://github.com/rpsubc8/ESP32TinyZXSpectrum/tree/main/precompile'>https://github.com/rpsubc8/ESP32TinyZXSpectrum/tree/main/precompile</a>
-<br><br>
-We must choose the ESP32 type:
-<center><img src='https://raw.githubusercontent.com/rpsubc8/ESP32TinyZXSpectrum/main/preview/flash00.gif'></center>
-Subsequently, we will select the files as shown in the attached screenshot, with the same offset values, which will be different according to the 4 options:
-<center><img src='https://raw.githubusercontent.com/rpsubc8/ESP32TinyZXSpectrum/main/preview/flash01.gif'></center>
-And we will press start. If everything has been correct, we will only have to restart the ESP32.
 
 
 <br><br>
