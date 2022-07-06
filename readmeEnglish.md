@@ -41,7 +41,7 @@ I have made several modifications:
 <br><br> 
 <h1>Precompiled version</h1>
 In the precompile folder there are 4 versions already compiled to be recorded with the flash download tool 3.9.2. They are the permutations of 2 cores (LKF and JLS) and AY8912 sound with 320x200 resolution with the demo games in FLASH.<br><br>
-<a href='https://github.com/rpsubc8/ESP32TinyZXSpectrum/tree/main/precompile'>https://github.com/rpsubc8/ESP32TinyZXSpectrum/tree/main/precompile</a>
+<a href='https://github.com/rpsubc8/ESP32TinyZXSpectrum/tree/main/esp32/precompile'>https://github.com/rpsubc8/ESP32TinyZXSpectrum/tree/main/esp32/precompile</a>
 <br><br>
 We must choose the ESP32 type:
 <center><img src='https://raw.githubusercontent.com/rpsubc8/ESP32TinyZXSpectrum/main/preview/flash00.gif'></center>
