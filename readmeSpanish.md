@@ -43,9 +43,9 @@ En la carpeta precompile se encuentran 4 versiones ya compiladas para poder ser 
 <a href='https://github.com/rpsubc8/ESP32TinyZXSpectrum/tree/main/esp32/precompile'>https://github.com/rpsubc8/ESP32TinyZXSpectrum/tree/main/esp32/precompile</a>
 <br><br>
 Debemos de elegir el tipo ESP32:
-<center><img src='https://raw.githubusercontent.com/rpsubc8/ESP32TinyUzebox/main/preview/flash00.gif'></center>
+<center><img src='https://raw.githubusercontent.com/rpsubc8/ESP32TinyZXSpectrum/main/preview/flash00.gif'></center>
 Posteriormente, seleccionaremos los archivos tal y como la captura adjunta, con los mismos valores de offset:
-<center><img src='https://raw.githubusercontent.com/rpsubc8/ESP32TinyUzebox/main/preview/flash01.gif'></center>
+<center><img src='https://raw.githubusercontent.com/rpsubc8/ESP32TinyZXSpectrum/main/preview/flash01.gif'></center>
 Y le daremos a start. Si todo ha sido correcto, sólo tendremos que reiniciar el ESP32.
 
 <br><br>
