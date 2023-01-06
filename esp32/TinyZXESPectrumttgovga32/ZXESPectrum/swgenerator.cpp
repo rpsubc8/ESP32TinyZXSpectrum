@@ -1,29 +1,27 @@
 #include "gbConfig.h"
 #ifdef use_lib_sound_ay8912
 
-/*
-  Created by Fabrizio Di Vittorio (fdivitto2013@gmail.com) - <http://www.fabgl.com>
-  Copyright (c) 2019-2020 Fabrizio Di Vittorio.
-  All rights reserved.
-
-  This file is part of FabGL Library.
-
-  FabGL is free software: you can redistribute it and/or modify
-  it under the terms of the GNU General Public License as published by
-  the Free Software Foundation, either version 3 of the License, or
-  (at your option) any later version.
-
-  FabGL is distributed in the hope that it will be useful,
-  but WITHOUT ANY WARRANTY; without even the implied warranty of
-  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-  GNU General Public License for more details.
-
-  You should have received a copy of the GNU General Public License
-  along with FabGL.  If not, see <http://www.gnu.org/licenses/>.
- */
+//  Created by Fabrizio Di Vittorio (fdivitto2013@gmail.com) - <http://www.fabgl.com>
+//  Copyright (c) 2019-2020 Fabrizio Di Vittorio.
+//  All rights reserved.
+//
+//  This file is part of FabGL Library.
+//
+//  FabGL is free software: you can redistribute it and/or modify
+//  it under the terms of the GNU General Public License as published by
+//  the Free Software Foundation, either version 3 of the License, or
+//  (at your option) any later version.
+//
+//  FabGL is distributed in the hope that it will be useful,
+//  but WITHOUT ANY WARRANTY; without even the implied warranty of
+//  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+//  GNU General Public License for more details.
+//
+//  You should have received a copy of the GNU General Public License
+//  along with FabGL.  If not, see <http://www.gnu.org/licenses/>. 
 
 
-
+#include <Arduino.h>
 #include <alloca.h>
 
 #include "freertos/FreeRTOS.h"
@@ -438,6 +436,11 @@ void GPIOStream::setupClock(int freq)
   I2S1.clkm_conf.clkm_div_num = 2;  // not less than 2
   
   I2S1.sample_rate_conf.tx_bck_div_num = 1; // this makes I2S1O_BCK = I2S1_CLK
+
+  #ifdef use_lib_debug_i2s
+   Serial.printf("swgenerator fabgl freq:%d\n",freq);
+   Serial.printf("swgenerator fabgl sdm0:0x%04X sdm1:0x%04X sdm2:0x%04X odiv:0x%04X\n",p.sdm0,p.sdm1,p.sdm2,p.o_div);
+  #endif
 
   rtc_clk_apll_enable(true, p.sdm0, p.sdm1, p.sdm2, p.o_div);
 

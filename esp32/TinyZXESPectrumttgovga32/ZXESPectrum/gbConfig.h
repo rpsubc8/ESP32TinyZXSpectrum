@@ -1,6 +1,12 @@
 #ifndef _GB_CONFIG_H
  #define _GB_CONFIG_H
 
+ //Not use double numbers (IEEE not fpu) calculate vga frequency
+ //#define use_lib_fix_double_precision
+
+ //Debug i2s bitluni vga frequency
+ //#define use_lib_debug_i2s
+
  //WIFI No permite 128K, solo 64K
  //#define use_lib_wifi
  #ifdef use_lib_wifi

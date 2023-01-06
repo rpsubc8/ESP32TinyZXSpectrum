@@ -16,6 +16,7 @@
 //JJ extern const VgaMode vga_mode_320x200;
 //JJ extern const VgaMode vga_mode_200x150;
 
+//hfront hsync hback pixels vfront vsync vback lines divy pixelclock hpolaritynegative vpolaritynegative
 const int VgaMode_vga_mode_200x150[12]={
  6,18,32,200, 1,2,22,600,4,9000000, 0,0
 };

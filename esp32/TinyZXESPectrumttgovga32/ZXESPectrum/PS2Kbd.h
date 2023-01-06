@@ -1,6 +1,7 @@
 #ifndef _TECLADO_PS2KBD_H
  #define _TECLADO_PS2KBD_H
 
+#include "gbConfig.h"
 #include "hardware.h"
 #include "keys.h"
 #include <Arduino.h>
