@@ -1,6 +1,5 @@
 # Tiny ESP32 ZX Spectrum
-Fork del emulador de David Crespo con el soporte de mando de WII <a href='https://github.com/dcrespo3d/ZX-ESPectrum-Wiimote'>Wiimote</a>, basado a su vez, en el emulador de Ramon Martinez y Jorge Fuertes <a href='https://github.com/rampa069/ZX-ESPectrum'>ZX-ESPectrum</a>, con dependencias del autor Pete Todd.
-<br>
+Fork (Octubre 2020) del emulador de David Crespo con el soporte de mando de WII <a href='https://github.com/dcrespo3d/ZX-ESPectrum-Wiimote'>Wiimote</a>, basado a su vez, en el emulador de Ramon Martinez y Jorge Fuertes <a href='https://github.com/rampa069/ZX-ESPectrum'>ZX-ESPectrum</a>, con dependencias del autor Pete Todd.<br>
 <center><img src='https://raw.githubusercontent.com/rpsubc8/ESP32TinyZXSpectrum/main/preview/previewZx128k.gif'></center>
 He realizado varias modificaciones:
 <ul>
@@ -35,11 +34,12 @@ He realizado varias modificaciones:
  <li>Soporte de SNA de 128K</li>
  <li>Soporte carga SCR y SNA por WIFI</li>
  <li>Versión precompilada (flash download 3.9.2) 320x200 core LKF,JLS y soporte AY8912</li>
+ <li>Opción de eliminar el cálculo de redondeo IEEE (double) de la VGA, para evitar problemas de precisión</li>
 </ul>
 
 <br><br>
 <h1>Versión precompilada</h1>
-En la carpeta precompile se encuentran 4 versiones ya compiladas para poder ser grabadas con el flash download tool 3.9.2. Se trata de las permutaciones de 2 cores (LKF y JLS) y sonido AY8912 con resolución 320x200 con los juegos de demostración en FLASH.<br><br>
+En la carpeta precompile se encuentran 4 versiones ya compiladas para poder ser grabadas con el flash download tool 3.9.2. Se trata de las permutaciones de 2 cores (LKF y JLS) y sonido AY8912 con resolución 320x200 con los juegos de demostración en FLASH. También se ha añadido la opción de 320x200 sin cálculo IEEE.<br><br>
 <a href='https://github.com/rpsubc8/ESP32TinyZXSpectrum/tree/main/esp32/precompile'>https://github.com/rpsubc8/ESP32TinyZXSpectrum/tree/main/esp32/precompile</a>
 <br><br>
 Debemos de elegir el tipo ESP32:
@@ -131,6 +131,7 @@ El archivo <b>gbConfig.h</b> se seleccionan las opciones:
  <li><b>use_lib_delayContention: </b> Si está activo, permite aplicar la espera de la memoria contenida, sólo en el core de José Luis Sánchez.</li>
  <li><b>use_lib_wifi: </b> Soporte de modo WIFI para cargar SCR's y SNA's. (sólo modo 48K)</li>
  <li><b>use_lib_only_48k: </b> Sólo soporta el modo 48K, rom0, ram0, ram2 y ram5</li>
+ <li><b>use_lib_fix_double_precision: </b> No usa el cálculo de frecuencia de video VGA con el propio ESP32, evitando posibles problemas de precisión con la mantisa. Es útil para ESP32's que calculen mal la frecuencia.</li>
 </ul>
 
 
