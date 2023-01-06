@@ -1,5 +1,5 @@
 # Tiny ESP32 ZX Spectrum
-Fork of David Crespo's emulator with the support of WII <a href='https://github.com/dcrespo3d/ZX-ESPectrum-Wiimote'>Wiimote</a>, based on the emulator of Ramon Martinez and Jorge Fuertes <a href='https://github.com/rampa069/ZX-ESPectrum'>ZX-ESPectrum</a>, with dependencies of the author Pete Todd.
+Fork (October 2020) of David Crespo's emulator with the support of WII <a href='https://github.com/dcrespo3d/ZX-ESPectrum-Wiimote'>Wiimote</a>, based on the emulator of Ramon Martinez and Jorge Fuertes <a href='https://github.com/rampa069/ZX-ESPectrum'>ZX-ESPectrum</a>, with dependencies of the author Pete Todd.
 <br>
 <center><img src='https://raw.githubusercontent.com/rpsubc8/ESP32TinyZXSpectrum/main/preview/previewZx128k.gif'></center>
 I have made several modifications:
@@ -36,11 +36,12 @@ I have made several modifications:
  <li>128K SNA support</li>
  <li>WIFI support load SCR and SNA</li>
  <li>Precompiled version (flash download 3.9.2) 320x200 core LKF,JLS and AY8912 support</li>
+ <li>Option to remove the IEEE (double) rounding calculation from the VGA, to avoid accuracy issues</li>
 </ul>
 
 <br><br> 
 <h1>Precompiled version</h1>
-In the precompile folder there are 4 versions already compiled to be recorded with the flash download tool 3.9.2. They are the permutations of 2 cores (LKF and JLS) and AY8912 sound with 320x200 resolution with the demo games in FLASH.<br><br>
+In the precompile folder there are 4 versions already compiled to be recorded with the flash download tool 3.9.2. They are the permutations of 2 cores (LKF and JLS) and AY8912 sound with 320x200 resolution with the demo games in FLASH.A 320x200 option without IEEE calculation has also been added.<br><br>
 <a href='https://github.com/rpsubc8/ESP32TinyZXSpectrum/tree/main/esp32/precompile'>https://github.com/rpsubc8/ESP32TinyZXSpectrum/tree/main/esp32/precompile</a>
 <br><br>
 We must choose the ESP32 type:
@@ -137,6 +138,7 @@ The file <b>gbConfig.h</b> options are selected:
  <li><b>use_lib_delayContention: </b> If active, it allows to apply the wait of the contained memory, only in the Jose Luis Sanchez core.</li>
  <li><b>use_lib_wifi: </b> WIFI mode support for loading SCR's and SNA's. (48K mode only)</li>
  <li><b>use_lib_only_48k: </b> Only supports 48K mode, rom0, ram0, ram2 and ram5.</li> 
+ <li><b>use_lib_fix_double_precision: </b> No usa el cálculo de frecuencia de video VGA con el propio ESP32, evitando posibles problemas de precisión con la mantisa. Es útil para ESP32's que calculen mal la frecuencia.</li>
 </ul>
 
 
