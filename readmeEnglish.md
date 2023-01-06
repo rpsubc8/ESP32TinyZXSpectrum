@@ -36,7 +36,7 @@ I have made several modifications:
  <li>128K SNA support</li>
  <li>WIFI support load SCR and SNA</li>
  <li>Precompiled version (flash download 3.9.2) 320x200 core LKF,JLS and AY8912 support</li>
- <li>Option to remove the IEEE (double) rounding calculation from the VGA, to avoid accuracy issues</li>
+ <li>Option to remove the IEEE (double) rounding calculation from the VGA, to avoid accuracy issues. This anomaly was found as a result of David Crespo Tascón's failure to take video.</li>
 </ul>
 
 <br><br> 
