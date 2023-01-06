@@ -34,7 +34,7 @@ He realizado varias modificaciones:
  <li>Soporte de SNA de 128K</li>
  <li>Soporte carga SCR y SNA por WIFI</li>
  <li>Versión precompilada (flash download 3.9.2) 320x200 core LKF,JLS y soporte AY8912</li>
- <li>Opción de eliminar el cálculo de redondeo IEEE (double) de la VGA, para evitar problemas de precisión</li>
+ <li>Opción de eliminar el cálculo de redondeo IEEE (double) de la VGA, para evitar problemas de precisión. Encontrada esta anomalía a partir del fallo encontrado por David Crespo Tascón al no sacar video.</li>
 </ul>
 
 <br><br>
