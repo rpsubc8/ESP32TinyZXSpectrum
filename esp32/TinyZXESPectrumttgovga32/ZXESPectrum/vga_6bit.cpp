@@ -545,7 +545,7 @@ static void setup_i2s_output(const unsigned char *pin_map)
    if (sdm > 0xA1fff) sdm = 0xA1fff;
 
    #ifdef use_lib_debug_i2s
-    Serial.printf("bitluni freq:%d pixel_clock:%d\n",freq,pixel_clock);
+    Serial.printf("bitluni freq:%ld pixel_clock:%d\n",freq,pixel_clock);
     Serial.printf("bitluni sdm:0x%04X odir:0x%04X\n",sdm,odir);
     Serial.printf("bitluni (sdm & 0xff):0x%04X (sdm >> 8):0x%04X (sdm >> 16):0x%04X\n",sdm & 0xff, (sdm >> 8) & 0xff, sdm >> 16);      
    #endif
