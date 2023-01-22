@@ -112,8 +112,7 @@ If the option <b>use_lib_keyboard_uart</b> is activated, it allows to use the PC
  <li><b>ENTER:</b> Send ENTER on the ZX48K</li>
  <li><b>+:</b> Send ALT_GR</li>
  <li><b>-:</b> Send SHIFT LEFT</li>
- <li><b>*:</b> Send CONTROL</li>
- <li><b>/:</b> Send SHIFT LEFT</li>
+ <li><b>*:</b> Send CONTROL</li> 
  <li><b>Up:</b> SHIFT + 7 and Kempston Up</li>
  <li><b>Down:</b> SHIFT + 6 and Kempston Down</li>
  <li><b>Right:</b> Kempston right</li>
