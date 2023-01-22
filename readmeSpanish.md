@@ -106,8 +106,7 @@ Se se activa la opción <b>use_lib_keyboard_uart</b>, se permite usar el teclado
  <li><b>ENTER</b>: Envía ENTER en el ZX48K</li>
  <li><b>+:</b> Envia ALT_GR</li>
  <li><b>-:</b> Envia SHIFT LEFT</li>
- <li><b>*:</b> Envia CONTROL</li>
- <li><b>/:</b> Envia SHIFT LEFT</li>
+ <li><b>*:</b> Envia CONTROL</li> 
  <li><b>Arriba:</b> SHIFT + 7 y Kempston Arriba</li>
  <li><b>Abajo:</b> SHIFT + 6 y Kempston Abajo</li>
  <li><b>Derecha:</b> Kempston derecha</li>
