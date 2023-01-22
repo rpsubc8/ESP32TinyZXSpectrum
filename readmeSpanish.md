@@ -100,18 +100,18 @@ Se permite cargar:
 <h1>Teclado UART</h1>
 Se se activa la opción <b>use_lib_keyboard_uart</b>, se permite usar el teclado del PC desde el monitor VStudio o desde el putty (115200 bauds), de manera simple, dado que no es mediante lectura SCANCODE down, up:
 <ul>
- <li>TAB, F2: Muestra OSD</li>
- <li>SHIFT+2 ("): Envia CONTROL + P al ZX48K</li>
- <li>BackSpace (borrar): Envia SHIFT + 0 al ZX48K</li>
- <li>ENTER: Envía ENTER en el ZX48K</li>
- <li>+: Envia ALT_GR</li>
- <li>-: Envia SHIFT LEFT</li>
- <li>*: Envia CONTROL</li>
- <li>/: Envia SHIFT LEFT</li>
- <li>Arriba: SHIFT + 7 y Kempston Arriba</li>
- <li>Abajo: SHIFT + 6 y Kempston Abajo</li>
- <li>Derecha: Kempston derecha</li>
- <li>Izquierda: Kempston izquierda</li> 
+ <li><b>TAB, F2:</b> Muestra OSD</li>
+ <li><b>SHIFT+2 ("):</b> Envia CONTROL + P al ZX48K</li>
+ <li><b>BackSpace (borrar):</b> Envia SHIFT + 0 al ZX48K</li>
+ <li><b>ENTER</b>: Envía ENTER en el ZX48K</li>
+ <li><b>+:</b> Envia ALT_GR</li>
+ <li><b>-:</b> Envia SHIFT LEFT</li>
+ <li><b>*:</b> Envia CONTROL</li>
+ <li><b>/:</b> Envia SHIFT LEFT</li>
+ <li><b>Arriba:</b> SHIFT + 7 y Kempston Arriba</li>
+ <li><b>Abajo:</b> SHIFT + 6 y Kempston Abajo</li>
+ <li><b>Derecha:</b> Kempston derecha</li>
+ <li><b>Izquierda:</b> Kempston izquierda</li> 
 </ul>
 Podemos realizar combinaciones de teclas exactamente al mismo tiempo, como por ejemplo * y P, de manera que sería como pulsar el CONTROL y P del zx48K, lo que equivale a que muestre ".
 Desde el Arduino IDE, no se permite dicha funcionalidad, dado que el monitor serie requiere el envio del ENTER por cada acción.
