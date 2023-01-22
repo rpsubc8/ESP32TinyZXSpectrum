@@ -95,7 +95,26 @@ Se permite cargar:
  <center><img src='https://raw.githubusercontent.com/rpsubc8/ESP32TinyZXSpectrum/main/preview/previewOSD.gif'></center>
  Los ficheros deben ser convertidos a .h en hexadecimal. Puede usarse la herramienta online:<br>
  <a href='http://tomeko.net/online_tools/file_to_hex.php?lang=en'>http://tomeko.net/online_tools/file_to_hex.php?lang=en</a>
- 
+
+<br><br>
+<h1>Teclado UART</h1>
+Se se activa la opción <b>use_lib_keyboard_uart</b>, se permite usar el teclado del PC desde el monitor VStudio o desde el putty (115200 bauds), de manera simple, dado que no es mediante lectura SCANCODE down, up:
+<ul>
+ <li>TAB, F2: Muestra OSD</li>
+ <li>SHIFT+2 ("): Envia CONTROL + P al ZX48K</li>
+ <li>BackSpace (borrar): Envia SHIFT + 0 al ZX48K</li>
+ <li>ENTER: Envía ENTER en el ZX48K</li>
+ <li>+: Envia ALT_GR</li>
+ <li>-: Envia SHIFT LEFT</li>
+ <li>*: Envia CONTROL</li>
+ <li>/: Envia SHIFT LEFT</li>
+ <li>Arriba: SHIFT + 7 y Kempston Arriba</li>
+ <li>Abajo: SHIFT + 6 y Kempston Abajo</li>
+ <li>Derecha: Kempston derecha</li>
+ <li>Izquierda: Kempston izquierda</li> 
+</ul>
+Podemos realizar combinaciones de teclas exactamente al mismo tiempo, como por ejemplo * y P, de manera que sería como pulsar el CONTROL y P del zx48K, lo que equivale a que muestre ".
+Desde el Arduino IDE, no se permite dicha funcionalidad, dado que el monitor serie requiere el envio del ENTER por cada acción.
  
 <br><br>
 <h1>Opciones</h1>
