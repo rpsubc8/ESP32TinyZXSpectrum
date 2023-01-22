@@ -37,11 +37,13 @@ I have made several modifications:
  <li>WIFI support load SCR and SNA</li>
  <li>Precompiled version (flash download 3.9.2) 320x200 core LKF,JLS and AY8912 support</li>
  <li>Option to remove the IEEE (double) rounding calculation from the VGA, to avoid accuracy issues. This anomaly was found as a result of David Crespo Tascón's failure to take video.</li>
+ <li>Added 2 video modes 320x200 70Hz and 320x240 with fabgl data.</li>
+ <li>Added keyboard support from usb serial terminal, VStudio monitor or putty.</li>
 </ul>
 
 <br><br> 
 <h1>Precompiled version</h1>
-In the precompile folder there are 4 versions already compiled to be recorded with the flash download tool 3.9.2. They are the permutations of 2 cores (LKF and JLS) and AY8912 sound with 320x200 resolution with the demo games in FLASH. A 320x200 option without IEEE calculation has also been added.<br><br>
+In the precompile folder there are 4 versions already compiled to be recorded with the flash download tool 3.9.2. They are the permutations of 2 cores (LKF and JLS) and AY8912 sound with 320x200 resolution with the demo games in FLASH.  A 320x200 option without IEEE calculation has also been added, as well as a 320x200 70 Hz video mode with fabgl parameters.<br><br>
 <a href='https://github.com/rpsubc8/ESP32TinyZXSpectrum/tree/main/esp32/precompile'>https://github.com/rpsubc8/ESP32TinyZXSpectrum/tree/main/esp32/precompile</a>
 <br><br>
 We must choose the ESP32 type:
@@ -99,7 +101,27 @@ Loading is allowed:
  Files must be converted to .h in hexadecimal. You can use the online tool:<br>
  <a href='http://tomeko.net/online_tools/file_to_hex.php?lang=en'>http://tomeko.net/online_tools/file_to_hex.php?lang=en</a>
  
- 
+
+<br><br>
+<h1>UART keyboard</h1>
+If the option <b>use_lib_keyboard_uart</b> is activated, it allows to use the PC keyboard from the VStudio monitor or from the putty (115200 bauds), in a simple way, since it is not by reading SCANCODE down, up: 
+<ul>
+ <li><b>TAB, F2:</b> Display OSD</li>
+ <li><b>SHIFT+2 ("):</b> Send CONTROL + P to ZX48K</li>
+ <li><b>BackSpace (delete):</b> Send SHIFT + 0 to the ZX48K</li>
+ <li><b>ENTER:</b> Send ENTER on the ZX48K</li>
+ <li><b>+:</b> Send ALT_GR</li>
+ <li><b>-:</b> Send SHIFT LEFT</li>
+ <li><b>*:</b> Send CONTROL</li>
+ <li><b>/:</b> Send SHIFT LEFT</li>
+ <li><b>Up:</b> SHIFT + 7 and Kempston Up</li>
+ <li><b>Down:</b> SHIFT + 6 and Kempston Down</li>
+ <li><b>Right:</b> Kempston right</li>
+ <li><b>Left:</b> Kempston left</li>
+</ul>
+We can do key combinations at exactly the same time, such as * and P, so it would be like pressing CONTROL and P on the zx48K, which is equivalent to displaying ". From the Arduino IDE, this functionality is not allowed, since the serial monitor requires sending the ENTER for each action. 
+
+
 <br><br>
 <h1>Options</h1>
 The file <b>gbConfig.h</b> options are selected:
@@ -118,9 +140,11 @@ The file <b>gbConfig.h</b> options are selected:
  <li><b>use_lib_vga_thread:</b> Use the video output in a thread. If it is annotated, only one core will be used.</li>
  <li><b>use_lib_screen_offset:</b> Allows to move left and up the screen. It consumes a little CPU, a couple of microseconds. If active, it can be adjusted from the OSD. Ideally, do not have it active and make the adjustments from the monitor.</li>
  <li><b>use_lib_skip_frame:</b> Allows to skip frames when emulating</li>
- <li><b>use_lib_vga360x200:</b> Normal video mode</li>
- <li><b>use_lib_vga320x200:</b> Video mode 320x200</li> 
- <li><b>use_lib_vga320x240:</b> Video mode 320x240</li>
+ <li><b>use_lib_vga360x200x70hz_bitluni:</b> Normal video mode with bitluni parameters.</li>
+ <li><b>use_lib_vga320x200x70hz_bitluni:</b> 320x200 video mode with bitluni parameters.</li> 
+ <li><b>use_lib_vga320x240x60hz_bitluni:</b> 320x240 mode with bitluni parameters.</li>
+ <li><b>use_lib_vga320x200x70hz_fabgl:</b>320x200 mode with fabgl parameters.</li>
+ <li><b>use_lib_vga320x240x60hz_fabgl:</b>320x240 mode with fabgl settings.</li>
  <li><b>use_lib_log_serial:</b> Logs are sent by serial port usb</li>
  <li><b>gb_ms_keyboard:</b> The number of milliseconds of polling must be specified for the keyboard.</li>
  <li><b>gb_ms_sound:</b> The number of polling milliseconds must be specified for sound AY8912.</li>
