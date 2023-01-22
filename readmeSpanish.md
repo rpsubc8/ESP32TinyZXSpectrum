@@ -35,11 +35,13 @@ He realizado varias modificaciones:
  <li>Soporte carga SCR y SNA por WIFI</li>
  <li>Versión precompilada (flash download 3.9.2) 320x200 core LKF,JLS y soporte AY8912</li>
  <li>Opción de eliminar el cálculo de redondeo IEEE (double) de la VGA, para evitar problemas de precisión. Encontrada esta anomalía a partir del fallo encontrado por David Crespo Tascón al no sacar video.</li>
+ <li>Añadidos 2 modos de video 320x200 70Hz y 320x240 con los datos de fabgl</li>
+ <li>Añadido soporte de teclado desde terminal serie usb, monitor VStudio o putty.</li>
 </ul>
 
 <br><br>
 <h1>Versión precompilada</h1>
-En la carpeta precompile se encuentran 4 versiones ya compiladas para poder ser grabadas con el flash download tool 3.9.2. Se trata de las permutaciones de 2 cores (LKF y JLS) y sonido AY8912 con resolución 320x200 con los juegos de demostración en FLASH. También se ha añadido la opción de 320x200 sin cálculo IEEE.<br><br>
+En la carpeta precompile se encuentran 4 versiones ya compiladas para poder ser grabadas con el flash download tool 3.9.2. Se trata de las permutaciones de 2 cores (LKF y JLS) y sonido AY8912 con resolución 320x200 con los juegos de demostración en FLASH. También se ha añadido la opción de 320x200 sin cálculo IEEE, así como un modo de video de 320x200 70 Hz con los parámetros de fabgl.<br><br>
 <a href='https://github.com/rpsubc8/ESP32TinyZXSpectrum/tree/main/esp32/precompile'>https://github.com/rpsubc8/ESP32TinyZXSpectrum/tree/main/esp32/precompile</a>
 <br><br>
 Debemos de elegir el tipo ESP32:
@@ -112,9 +114,11 @@ El archivo <b>gbConfig.h</b> se seleccionan las opciones:
  <li><b>use_lib_vga_thread:</b> Utiliza la salida de video en un hilo. Si está comentada, se usará un sólo núcleo.</li>
  <li><b>use_lib_screen_offset:</b> Permite mover a la izquierda y arriba la pantalla. Consume un poco de CPU, un par de microsegundos. Si está activo, se puede ajustar desde el OSD. Lo ideal, es no tenerlo activo y hacer los ajustes desde el monitor.</li>
  <li><b>use_lib_skip_frame:</b> Permite saltarse frames al emular</li>
- <li><b>use_lib_vga360x200:</b> Modo de video normal</li>
- <li><b>use_lib_vga320x200:</b> Modo de vídeo 320x200</li>
- <li><b>use_lib_vga320x240:</b> Modo 320x240</li>
+ <li><b>use_lib_vga360x200x70hz_bitluni:</b> Modo de video normal con los parámetros de bitluni.</li>
+ <li><b>use_lib_vga320x200x70hz_bitluni:</b> Modo de vídeo 320x200 con los parámetros de bitluni.</li>
+ <li><b>use_lib_vga320x240x60hz_bitluni:</b> Modo 320x240 con los parámetros de bitluni.</li>
+ <li><b>use_lib_vga320x200x70hz_fabgl:</b> Modo 320x200 con los parámetros de fabgl.</li>
+ <li><b>use_lib_vga320x240x60hz_fabgl:</b> Modo 320x240 con los parámetros de fabgl.</li>
  <li><b>use_lib_log_serial:</b> Se envian logs por puerto serie usb</li>
  <li><b>gb_ms_keyboard:</b> Se debe especificar el número de milisegundos de polling para el teclado.</li>
  <li><b>gb_ms_sound:</b> Se debe especificar el número de milisegundos de polling para el sonido AY8912.</li>
@@ -132,6 +136,7 @@ El archivo <b>gbConfig.h</b> se seleccionan las opciones:
  <li><b>use_lib_wifi: </b> Soporte de modo WIFI para cargar SCR's y SNA's. (sólo modo 48K)</li>
  <li><b>use_lib_only_48k: </b> Sólo soporta el modo 48K, rom0, ram0, ram2 y ram5</li>
  <li><b>use_lib_fix_double_precision: </b> No usa el cálculo de frecuencia de video VGA con el propio ESP32, evitando posibles problemas de precisión con la mantisa. Es útil para ESP32's que calculen mal la frecuencia.</li>
+ <li><b>use_lib_keyboard_uart:</b> Permite usar el teclado del PC desde el PC por terminal monitor VStudio o desde el putty, sin falta de tener teclado. Útil para no tener que usar el teclado físico PS/2 y para desarrollo.</li>
 </ul>
 
 
