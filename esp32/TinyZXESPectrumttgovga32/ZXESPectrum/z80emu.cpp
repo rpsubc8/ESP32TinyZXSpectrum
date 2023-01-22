@@ -8,9 +8,9 @@
 //
 // This code is free, do whatever you want with it.
 
-#include "dataFlash/gbtape.h"
+//#include "dataFlash/gbtape.h" //No se usa
 #include "z80emu.h"
-#include "Arduino.h"
+#include "Arduino.h" //No se usa
 #include "Memory.h"
 #include "instructions.h"
 #include "macros.h"
@@ -280,7 +280,7 @@ if ((*pc) == 0x056B)
    gb_tape_read = 0;  
   for (int i=0;i<auxLen;i++)
   {
-   writebyte((auxAddress+i),gb_list_tapes_48k_data[gb_current_tape][gb_contTape+i]);
+   writebyte((auxAddress+i),(uint8_t)gb_ptr_list_tapes_48k_data[gb_current_tape][gb_contTape+i]);
    //writebyte((auxAddress+i),gb_tape_3dgraph19xx_48k[gb_contTape+i]);  
   }
   //SDLEsperaTeclado();
@@ -316,7 +316,7 @@ static int emulate(Z80_STATE *state, int opcode, int elapsed_cycles, int number_
 
     int pc, r;
 
-    int last_cycles = 0;
+    //int last_cycles = 0; //No se usa
     pc = state->pc;
     r = state->r & 0x7f;
 
@@ -357,7 +357,7 @@ static int emulate(Z80_STATE *state, int opcode, int elapsed_cycles, int number_
 //        }
 
         // delayMicroseconds(1);
-        last_cycles = elapsed_cycles;
+        //last_cycles = elapsed_cycles; //No se usa
 
     emulate_next_opcode:
 
@@ -511,7 +511,8 @@ static int emulate(Z80_STATE *state, int opcode, int elapsed_cycles, int number_
             // reset. That can never happen here.             
 
             f |= state->iff2 << Z80_P_FLAG_SHIFT;
-            f |= F & Z80_C_FLAG;
+            //f |= F & Z80_C_FLAG; //Quitar warning
+            f |= FNOTWARNING & Z80_C_FLAG;
 
             AF = (a << 8) | f;
 
@@ -625,7 +626,8 @@ static int emulate(Z80_STATE *state, int opcode, int elapsed_cycles, int number_
             READ_BYTE(HL, n);
             WRITE_BYTE(DE, n);
 
-            f = F & SZC_FLAGS;
+            //f = F & SZC_FLAGS; //Quitar warning
+            f = FNOTWARNING & SZC_FLAGS;
             f |= --BC ? Z80_P_FLAG : 0;
 
 #ifndef Z80_DOCUMENTED_FLAGS_ONLY
@@ -636,7 +638,8 @@ static int emulate(Z80_STATE *state, int opcode, int elapsed_cycles, int number_
 
 #endif
 
-            F = f;
+            //F = f; //quitar warning
+            FNOTWARNING = f;
 
             d = opcode == OPCODE_LDI ? +1 : -1;
             DE += d;
@@ -662,7 +665,8 @@ static int emulate(Z80_STATE *state, int opcode, int elapsed_cycles, int number_
 
             d = opcode == OPCODE_LDIR ? +1 : -1;
 
-            f = F & SZC_FLAGS;
+            //f = F & SZC_FLAGS; //quitar warning
+            f = FNOTWARNING & SZC_FLAGS;
             bc = BC;
             de = DE;
             hl = HL;
@@ -742,7 +746,8 @@ static int emulate(Z80_STATE *state, int opcode, int elapsed_cycles, int number_
 
 #endif
 
-            F = f;
+            //F = f; //quitar warning
+            FNOTWARNING = f;
 
             break;
         }
@@ -781,7 +786,8 @@ static int emulate(Z80_STATE *state, int opcode, int elapsed_cycles, int number_
 
             f |= SZYX_FLAGS_TABLE[z & 0xff] & SZ_FLAGS;
             f |= --BC ? Z80_P_FLAG : 0;
-            F = f | Z80_N_FLAG | (F & Z80_C_FLAG);
+            //F = f | Z80_N_FLAG | (F & Z80_C_FLAG); //quitar warning
+            FNOTWARNING = f | Z80_N_FLAG | (FNOTWARNING & Z80_C_FLAG);
 
             elapsed_cycles += 5;
 
@@ -868,7 +874,7 @@ static int emulate(Z80_STATE *state, int opcode, int elapsed_cycles, int number_
 
             f |= SZYX_FLAGS_TABLE[z & 0xff] & SZ_FLAGS;
             f |= bc ? Z80_P_FLAG : 0;
-            F = f | Z80_N_FLAG | (F & Z80_C_FLAG);
+            FNOTWARNING = f | Z80_N_FLAG | (FNOTWARNING & Z80_C_FLAG);
 
             break;
         }
@@ -1114,7 +1120,8 @@ static int emulate(Z80_STATE *state, int opcode, int elapsed_cycles, int number_
 
         case DEC_R: {
 
-            DEC(R(Y(opcode)));
+            //DEC(R(Y(opcode)));
+            DECNOTWARNING(R(Y(opcode)));
             break;
         }
 
@@ -1125,7 +1132,8 @@ static int emulate(Z80_STATE *state, int opcode, int elapsed_cycles, int number_
             if (registers == state->register_table) {
 
                 READ_BYTE(HL, x);
-                DEC(x);
+                //DEC(x);
+                DECNOTWARNING(x);
                 WRITE_BYTE(HL, x);
 
                 elapsed_cycles += 7;
@@ -1137,7 +1145,8 @@ static int emulate(Z80_STATE *state, int opcode, int elapsed_cycles, int number_
                 READ_D(d);
                 d += HL_IX_IY;
                 READ_BYTE(d, x);
-                DEC(x);
+                //DEC(x);
+                DECNOTWARNING(x);
                 WRITE_BYTE(d, x);
 
                 elapsed_cycles += 6;
@@ -1155,7 +1164,7 @@ static int emulate(Z80_STATE *state, int opcode, int elapsed_cycles, int number_
             // comp.sys.sinclair's FAQ.
         
             a = A;
-            if (a > 0x99 || (F & Z80_C_FLAG)) {
+            if (a > 0x99 || (FNOTWARNING & Z80_C_FLAG)) {
 
                 c = Z80_C_FLAG;
                 d = 0x60;
@@ -1164,12 +1173,12 @@ static int emulate(Z80_STATE *state, int opcode, int elapsed_cycles, int number_
 
                 c = d = 0;
 
-            if ((a & 0x0f) > 0x09 || (F & Z80_H_FLAG))
+            if ((a & 0x0f) > 0x09 || (FNOTWARNING & Z80_H_FLAG))
 
                 d += 0x06;
 
-            A += F & Z80_N_FLAG ? -d : +d;
-            F = SZYXP_FLAGS_TABLE[A] | ((A ^ a) & Z80_H_FLAG) | (F & Z80_N_FLAG) | c;
+            A += FNOTWARNING & Z80_N_FLAG ? -d : +d;
+            FNOTWARNING = SZYXP_FLAGS_TABLE[A] | ((A ^ a) & Z80_H_FLAG) | (FNOTWARNING & Z80_N_FLAG) | c;
 
             break;
         }
@@ -1177,7 +1186,7 @@ static int emulate(Z80_STATE *state, int opcode, int elapsed_cycles, int number_
         case CPL: {
 
             A = ~A;
-            F = (F & (SZPV_FLAGS | Z80_C_FLAG))
+            FNOTWARNING = (FNOTWARNING & (SZPV_FLAGS | Z80_C_FLAG))
 
 #ifndef Z80_DOCUMENTED_FLAGS_ONLY
 
@@ -1205,7 +1214,7 @@ static int emulate(Z80_STATE *state, int opcode, int elapsed_cycles, int number_
             f |= c >> (8 - Z80_C_FLAG_SHIFT);
 
             A = z;
-            F = f;
+            FNOTWARNING = f;
 
             break;
         }
@@ -1214,8 +1223,8 @@ static int emulate(Z80_STATE *state, int opcode, int elapsed_cycles, int number_
 
             int c;
 
-            c = F & Z80_C_FLAG;
-            F = (F & SZPV_FLAGS) | (c << Z80_H_FLAG_SHIFT)
+            c = FNOTWARNING & Z80_C_FLAG;
+            FNOTWARNING = (FNOTWARNING & SZPV_FLAGS) | (c << Z80_H_FLAG_SHIFT)
 
 #ifndef Z80_DOCUMENTED_FLAGS_ONLY
 
@@ -1230,7 +1239,7 @@ static int emulate(Z80_STATE *state, int opcode, int elapsed_cycles, int number_
 
         case SCF: {
 
-            F = (F & SZPV_FLAGS)
+            FNOTWARNING = (FNOTWARNING & SZPV_FLAGS)
 
 #ifndef Z80_DOCUMENTED_FLAGS_ONLY
 
@@ -1352,7 +1361,7 @@ static int emulate(Z80_STATE *state, int opcode, int elapsed_cycles, int number_
             z = x + y;
 
             c = x ^ y ^ z;
-            f = F & SZPV_FLAGS;
+            f = FNOTWARNING & SZPV_FLAGS;
 
 #ifndef Z80_DOCUMENTED_FLAGS_ONLY
 
@@ -1364,7 +1373,7 @@ static int emulate(Z80_STATE *state, int opcode, int elapsed_cycles, int number_
             f |= c >> (16 - Z80_C_FLAG_SHIFT);
 
             HL_IX_IY = z;
-            F = f;
+            FNOTWARNING = f;
 
             elapsed_cycles += 7;
 
@@ -1377,7 +1386,7 @@ static int emulate(Z80_STATE *state, int opcode, int elapsed_cycles, int number_
 
             x = HL;
             y = RR(P(opcode));
-            z = x + y + (F & Z80_C_FLAG);
+            z = x + y + (FNOTWARNING & Z80_C_FLAG);
 
             c = x ^ y ^ z;
             f = z & 0xffff ? (z >> 8) & SYX_FLAGS : Z80_Z_FLAG;
@@ -1392,7 +1401,7 @@ static int emulate(Z80_STATE *state, int opcode, int elapsed_cycles, int number_
             f |= z >> (16 - Z80_C_FLAG_SHIFT);
 
             HL = z;
-            F = f;
+            FNOTWARNING = f;
 
             elapsed_cycles += 7;
 
@@ -1405,7 +1414,7 @@ static int emulate(Z80_STATE *state, int opcode, int elapsed_cycles, int number_
 
             x = HL;
             y = RR(P(opcode));
-            z = x - y - (F & Z80_C_FLAG);
+            z = x - y - (FNOTWARNING & Z80_C_FLAG);
 
             c = x ^ y ^ z;
             f = Z80_N_FLAG;
@@ -1422,7 +1431,7 @@ static int emulate(Z80_STATE *state, int opcode, int elapsed_cycles, int number_
             f |= c >> (16 - Z80_C_FLAG_SHIFT);
 
             HL = z;
-            F = f;
+            FNOTWARNING = f;
 
             elapsed_cycles += 7;
 
@@ -1460,7 +1469,7 @@ static int emulate(Z80_STATE *state, int opcode, int elapsed_cycles, int number_
         case RLCA: {
 
             A = (A << 1) | (A >> 7);
-            F = (F & SZPV_FLAGS) | (A & (YX_FLAGS | Z80_C_FLAG));
+            FNOTWARNING = (FNOTWARNING & SZPV_FLAGS) | (A & (YX_FLAGS | Z80_C_FLAG));
             elapsed_cycles += 4;
             break;
         }
@@ -1470,7 +1479,7 @@ static int emulate(Z80_STATE *state, int opcode, int elapsed_cycles, int number_
             int a, f;
 
             a = A << 1;
-            f = (F & SZPV_FLAGS)
+            f = (FNOTWARNING & SZPV_FLAGS)
 
 #ifndef Z80_DOCUMENTED_FLAGS_ONLY
 
@@ -1479,8 +1488,8 @@ static int emulate(Z80_STATE *state, int opcode, int elapsed_cycles, int number_
 #endif
 
                 | (A >> 7);
-            A = a | (F & Z80_C_FLAG);
-            F = f;
+            A = a | (FNOTWARNING & Z80_C_FLAG);
+            FNOTWARNING = f;
             elapsed_cycles += 4;
             break;
         }
@@ -1491,7 +1500,7 @@ static int emulate(Z80_STATE *state, int opcode, int elapsed_cycles, int number_
 
             c = A & 0x01;
             A = (A >> 1) | (A << 7);
-            F = (F & SZPV_FLAGS)
+            FNOTWARNING = (FNOTWARNING & SZPV_FLAGS)
 
 #ifndef Z80_DOCUMENTED_FLAGS_ONLY
 
@@ -1509,8 +1518,8 @@ static int emulate(Z80_STATE *state, int opcode, int elapsed_cycles, int number_
             int c;
 
             c = A & 0x01;
-            A = (A >> 1) | ((F & Z80_C_FLAG) << 7);
-            F = (F & SZPV_FLAGS)
+            A = (A >> 1) | ((FNOTWARNING & Z80_C_FLAG) << 7);
+            FNOTWARNING = (FNOTWARNING & SZPV_FLAGS)
 
 #ifndef Z80_DOCUMENTED_FLAGS_ONLY
 
@@ -1863,7 +1872,7 @@ static int emulate(Z80_STATE *state, int opcode, int elapsed_cycles, int number_
             y >>= 8;
 
             A = y;
-            F = SZYXP_FLAGS_TABLE[y] | (F & Z80_C_FLAG);
+            FNOTWARNING = SZYXP_FLAGS_TABLE[y] | (FNOTWARNING & Z80_C_FLAG);
 
             elapsed_cycles += 4;
 
@@ -1877,7 +1886,7 @@ static int emulate(Z80_STATE *state, int opcode, int elapsed_cycles, int number_
             int x;
 
             x = R(Z(opcode)) & (1 << Y(opcode));
-            F = (x ? 0 : Z80_Z_FLAG | Z80_P_FLAG)
+            FNOTWARNING = (x ? 0 : Z80_Z_FLAG | Z80_P_FLAG)
 
 #ifndef Z80_DOCUMENTED_FLAGS_ONLY
 
@@ -1885,7 +1894,7 @@ static int emulate(Z80_STATE *state, int opcode, int elapsed_cycles, int number_
 
 #endif
 
-                | Z80_H_FLAG | (F & Z80_C_FLAG);
+                | Z80_H_FLAG | (FNOTWARNING & Z80_C_FLAG);
 
             break;
         }
@@ -1912,7 +1921,7 @@ static int emulate(Z80_STATE *state, int opcode, int elapsed_cycles, int number_
 
             READ_BYTE(d, x);
             x &= 1 << Y(opcode);
-            F = (x ? 0 : Z80_Z_FLAG | Z80_P_FLAG)
+            FNOTWARNING = (x ? 0 : Z80_Z_FLAG | Z80_P_FLAG)
 
 #ifndef Z80_DOCUMENTED_FLAGS_ONLY
 
@@ -1920,7 +1929,7 @@ static int emulate(Z80_STATE *state, int opcode, int elapsed_cycles, int number_
 
 #endif
 
-                | Z80_H_FLAG | (F & Z80_C_FLAG);
+                | Z80_H_FLAG | (FNOTWARNING & Z80_C_FLAG);
 
             break;
         }
@@ -2235,7 +2244,7 @@ static int emulate(Z80_STATE *state, int opcode, int elapsed_cycles, int number_
             if (Y(opcode) != INDIRECT_HL)
                 R(Y(opcode)) = x;
 
-            F = SZYXP_FLAGS_TABLE[x] | (F & Z80_C_FLAG);
+            FNOTWARNING = SZYXP_FLAGS_TABLE[x] | (FNOTWARNING & Z80_C_FLAG);
 
             elapsed_cycles += 8;
             // elapsed_cycles += 3000;
@@ -2270,7 +2279,7 @@ static int emulate(Z80_STATE *state, int opcode, int elapsed_cycles, int number_
             }
             f |= x & 0x0100 ? HC_FLAGS : 0;
             f |= SZYXP_FLAGS_TABLE[(x & 0x07) ^ B] & Z80_P_FLAG;
-            F = f;
+            FNOTWARNING = f;
 
             elapsed_cycles += 5;
 
@@ -2347,7 +2356,7 @@ static int emulate(Z80_STATE *state, int opcode, int elapsed_cycles, int number_
             x += (C + d) & 0xff;
             f |= x & 0x0100 ? HC_FLAGS : 0;
             f |= SZYXP_FLAGS_TABLE[(x & 0x07) ^ b] & Z80_P_FLAG;
-            F = f;
+            FNOTWARNING = f;
 
             break;
         }
@@ -2387,7 +2396,7 @@ static int emulate(Z80_STATE *state, int opcode, int elapsed_cycles, int number_
             x += HL & 0xff;
             f |= x & 0x0100 ? HC_FLAGS : 0;
             f |= SZYXP_FLAGS_TABLE[(x & 0x07) ^ B] & Z80_P_FLAG;
-            F = f;
+            FNOTWARNING = f;
 
             break;
         }
@@ -2441,7 +2450,7 @@ static int emulate(Z80_STATE *state, int opcode, int elapsed_cycles, int number_
             x += hl & 0xff;
             f |= x & 0x0100 ? HC_FLAGS : 0;
             f |= SZYXP_FLAGS_TABLE[(x & 0x07) ^ b] & Z80_P_FLAG;
-            F = f;
+            FNOTWARNING = f;
 
             break;
         }

@@ -54,12 +54,12 @@ unsigned char gb_play_tape_on_now=0;
 extern unsigned char tick;
 
 CONTEXT _zxContext;
-static uint16_t _attributeCount;
+//static uint16_t _attributeCount; //No se usa
 int _total;
 int _next_total = 0;
 static uint8_t zx_data = 0;
-static uint32_t frames = 0;
-static uint32_t _ticks = 0;
+//static uint32_t frames = 0; //No se usa
+//static uint32_t _ticks = 0; //No se usa
 int cycles_per_step = CalcTStates();
 
 static uint8_t * gb_local_cache_rom[4] = {
@@ -338,7 +338,7 @@ extern "C" void writeword(uint16_t addr, uint16_t data) {
 }
 
 extern "C" uint8_t input(uint8_t portLow, uint8_t portHigh) {
-    int16_t kbdarrno = 0;
+    //int16_t kbdarrno = 0; //No se usa
     // delay(2);
     // Serial.print ("IN ");
 
@@ -518,7 +518,9 @@ extern "C" void output(uint8_t portLow, uint8_t portHigh, uint8_t data) {
               gb_ay8912_C_frec_course= gb_ay8912_reg_value & 0x0F;
               gb_ay8912_C_frec = ((gb_ay8912_C_frec_fine|((gb_ay8912_C_frec_course<<8)&0xF00)))+1;
               break;
-             case 6: gb_ay8912_noise_pitch; break;             
+             case 6: 
+              //gb_ay8912_noise_pitch; 
+              break;             
              case 7: 
               //printf("Mixer %d\n",gb_ay8912_reg_value);
               gb_ay8912_mixer= gb_ay8912_reg_value;

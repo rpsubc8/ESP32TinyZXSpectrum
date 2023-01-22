@@ -1,13 +1,13 @@
 #include "gbConfig.h"
 #include "gbOptimice.h"
-#include "dataFlash/gbtape.h"
-#ifndef use_lib_wifi
- #include "dataFlash/gbscr.h"
-#endif 
-#include "dataFlash/gbrom.h"
-#ifndef use_lib_wifi
- #include "dataFlash/gbsna.h"
-#endif 
+//#include "dataFlash/gbtape.h" //No se usa
+//#ifndef use_lib_wifi //No se usa
+// #include "dataFlash/gbscr.h" //No se usa
+//#endif  //No se usa
+//#include "dataFlash/gbrom.h" //No se necesita
+//#ifndef use_lib_wifi //No se usa
+// #include "dataFlash/gbsna.h" //No se usa
+//#endif //No se usa
 #include "osd.h"
 #include "Disk.h"
 #include "PS2Kbd.h"
@@ -470,7 +470,8 @@ void SDLprintCharOSD(char car,int x,int y,unsigned char color,unsigned char back
 // unsigned char aux = gb_sdl_font_6x8[(car-64)];
  int auxId = car << 3; //*8
  unsigned char aux;
- unsigned char auxBit,auxColor;
+ //unsigned char auxBit,auxColor;
+ unsigned char auxColor;
  for (unsigned char j=0;j<8;j++)
  {
   aux = gb_sdl_font_8x8[auxId + j];
@@ -613,11 +614,114 @@ void OSDMenuRowsDisplayScroll(const char **ptrValue,unsigned char currentId,unsi
  }
 #endif
 
+#ifdef use_lib_keyboard_uart
+ void keyboard_uart_poll()
+ {
+  if(Serial.available() > 0)
+  {
+   gb_rlen_uart = Serial.readBytes(gb_buf_uart, BUFFER_SIZE_UART);
+
+   //Serial.print("OSD I received: ");
+   gb_buf_uart[gb_rlen_uart]='\0';
+   #ifdef use_lib_log_keyboard_uart
+    Serial.printf("UART key tot:%d\r\nASCII:%s\r\n",gb_rlen_uart,gb_buf_uart);        
+    for (unsigned short int i=0;i<gb_rlen_uart;i++)
+    {
+     Serial.printf("%02X ",gb_buf_uart[i]);
+    }
+    Serial.printf("\r\n"); 
+   #endif 
+  }
+  else
+  {
+   gb_rlen_uart=0;
+   gb_buf_uart[0]='\0';
+  }  
+ }
+
+ unsigned char checkKey_uart(unsigned char scancode)
+ {
+  unsigned int contBuf=0;
+  unsigned char toReturn= 0;
+  //if(Serial.available() > 0)
+  //{
+  // gb_rlen_uart = Serial.readBytes(gb_buf_uart, BUFFER_SIZE_UART);
+  //
+  // Serial.print("OSD I received: ");
+  // gb_buf_uart[gb_rlen_uart]='\0';
+  // Serial.printf("OSD Tot:%d\nASCII:%s\n",gb_rlen_uart,gb_buf_uart);     
+  // Serial.printf("\n"); 
+   
+   //for(contBuf= 0; contBuf < gb_rlen_uart; contBuf++)
+   //Serial.printf("OSD check tot:%d\n",gb_rlen_uart);
+   while (contBuf < gb_rlen_uart)
+   {
+    //Serial.printf("%02X ",gb_buf_uart[contBuf]);
+    switch (gb_buf_uart[contBuf])
+    {
+     case 0x1B: //Arriba 1B 5B 41
+      if ((contBuf+2) < gb_rlen_uart)
+      {
+       contBuf++;
+       if (gb_buf_uart[contBuf] == 0x5B)
+       {
+        contBuf++;
+        switch (gb_buf_uart[contBuf])
+        {
+         case 0x41: toReturn = (scancode == KEY_CURSOR_UP) ? 1 : 0; break; //arriba 1B 5B 41
+         case 0x42: toReturn = (scancode == KEY_CURSOR_DOWN) ? 1 : 0; break; //abajo 1B 5B 42
+         case 0x43: toReturn = (scancode == KEY_CURSOR_RIGHT) ? 1 : 0; break; //derecha 1B 5B 43
+         case 0x44: toReturn = (scancode == KEY_CURSOR_LEFT) ? 1 : 0; break; //izquierda 1B 5B 44        
+        }
+       }
+      }
+      else
+      {       
+       toReturn = (scancode == KEY_ESC) ? 1 : 0; //ESC              
+      }
+      break;
+
+     case 0x0D: case 0x0A: //0D 0A ENTER
+      //if ((contBuf+1) < gb_rlen_uart)
+      //{
+      // contBuf++;
+      // if (gb_buf_uart[contBuf] == 0x0A)
+      // {
+      //  toReturn = (scancode == KEY_ENTER) ? 1 : 0; //ENTER
+      //  //contBuf++;
+      // }
+      //}
+       toReturn = (scancode == KEY_ENTER) ? 1 : 0; //ENTER
+      break;
+
+    }
+    contBuf++;
+   }
+  //}
+  //Serial.printf("\n");
+  return toReturn;
+ } 
+#endif 
+
 //Maximo 256 elementos
 unsigned char ShowTinyMenu(const char *cadTitle,const char **ptrValue,unsigned char aMax)
 {
  unsigned char aReturn=0;
- unsigned char salir=0; 
+ unsigned char salir=0;  
+  
+ #ifdef use_lib_keyboard_uart
+  unsigned int curTime_keyboard_uart;
+  unsigned int curTime_keyboard_before_uart;  
+ #endif 
+ unsigned int curTime_keyboard;
+ unsigned int curTime_keyboard_before;
+ 
+ #ifdef use_lib_keyboard_uart
+  curTime_keyboard_uart = curTime_keyboard_before_uart= millis();
+ #endif
+ 
+ curTime_keyboard= curTime_keyboard_before= millis();
+
 //jjvga  #ifdef use_lib_vga320x240
 //jjvga   vga.clear(BLACK);
 //jjvga   vga.fillRect(0,0,320,240,BLACK);
@@ -671,38 +775,82 @@ unsigned char ShowTinyMenu(const char *cadTitle,const char **ptrValue,unsigned c
  //SDL_Flip(gb_osd_sdl_surface); 
  while (salir == 0)
  {             
-  //case SDLK_UP:  
-  if (checkAndCleanKey(KEY_CURSOR_LEFT))
-  {
-   if (aReturn>10) aReturn-=10;
-   OSDMenuRowsDisplayScroll(ptrValue,aReturn,aMax);       
+  //case SDLK_UP:
+  curTime_keyboard = millis();    
+  if ((curTime_keyboard - curTime_keyboard_before) >= gb_current_ms_poll_keyboard)
+  {   
+   curTime_keyboard_before= curTime_keyboard;
+
+   #ifdef use_lib_keyboard_uart
+    curTime_keyboard_uart= curTime_keyboard;
+    if ((curTime_keyboard_uart - curTime_keyboard_before_uart) >= gb_current_ms_poll_keyboard_uart)
+    {
+     curTime_keyboard_before_uart = curTime_keyboard_uart;
+     keyboard_uart_poll();
+    
+     if (checkKey_uart(KEY_CURSOR_LEFT)==1)
+     {
+      if (aReturn>10) aReturn-=10;
+      OSDMenuRowsDisplayScroll(ptrValue,aReturn,aMax);
+     }
+     if (checkKey_uart(KEY_CURSOR_RIGHT)==1)
+     {
+      if (aReturn<(aMax-10)) aReturn+=10;
+      OSDMenuRowsDisplayScroll(ptrValue,aReturn,aMax);       
+     }  
+     if (checkKey_uart(KEY_CURSOR_UP)==1)
+     {
+      if (aReturn>0) aReturn--;
+      OSDMenuRowsDisplayScroll(ptrValue,aReturn,aMax);
+     }
+     if (checkKey_uart(KEY_CURSOR_DOWN)==1)
+     {
+      if (aReturn < (aMax-1)) aReturn++;
+      OSDMenuRowsDisplayScroll(ptrValue,aReturn,aMax);
+     }
+     if (checkKey_uart(KEY_ENTER)==1)
+     {
+      salir= 1;
+     }
+     if (checkKey_uart(KEY_ESC))
+     {
+      salir=1; aReturn= 255;    
+     }
+    }
+   #endif
+
+   if (checkAndCleanKey(KEY_CURSOR_LEFT))
+   {
+    if (aReturn>10) aReturn-=10;
+    OSDMenuRowsDisplayScroll(ptrValue,aReturn,aMax);
+   }
+   if (checkAndCleanKey(KEY_CURSOR_RIGHT))
+   {
+    if (aReturn<(aMax-10)) aReturn+=10;
+    OSDMenuRowsDisplayScroll(ptrValue,aReturn,aMax);       
+   }  
+   if (checkAndCleanKey(KEY_CURSOR_UP))
+   {
+    if (aReturn>0) aReturn--;
+    OSDMenuRowsDisplayScroll(ptrValue,aReturn,aMax);
+   }
+   if (checkAndCleanKey(KEY_CURSOR_DOWN))
+   {
+    if (aReturn < (aMax-1)) aReturn++;
+    OSDMenuRowsDisplayScroll(ptrValue,aReturn,aMax);
+   }
+   if (checkAndCleanKey(KEY_ENTER))
+   {
+    salir= 1;
+   }
+   //case SDLK_KP_ENTER: case SDLK_RETURN: salir= 1;break;
+   if (checkAndCleanKey(KEY_ESC))
+   {
+    salir=1; aReturn= 255;    
+   }
+   //case SDLK_ESCAPE: salir=1; aReturn= 255; break;
+   //default: break;
   }
-  if (checkAndCleanKey(KEY_CURSOR_RIGHT))
-  {
-   if (aReturn<(aMax-10)) aReturn+=10;
-   OSDMenuRowsDisplayScroll(ptrValue,aReturn,aMax);       
-  }  
-  if (checkAndCleanKey(KEY_CURSOR_UP))
-  {
-   if (aReturn>0) aReturn--;
-   OSDMenuRowsDisplayScroll(ptrValue,aReturn,aMax);
-  }
-  if (checkAndCleanKey(KEY_CURSOR_DOWN))
-  {
-   if (aReturn < (aMax-1)) aReturn++;
-   OSDMenuRowsDisplayScroll(ptrValue,aReturn,aMax);
-  }
-  if (checkAndCleanKey(KEY_ENTER))
-  {
-   salir= 1;
-  }
-  //case SDLK_KP_ENTER: case SDLK_RETURN: salir= 1;break;
-  if (checkAndCleanKey(KEY_ESC))
-  {
-   salir=1; aReturn= 255;    
-  }
-  //case SDLK_ESCAPE: salir=1; aReturn= 255; break;
-  //default: break;    
  }
  gb_show_osd_main_menu= 0;
  return aReturn;
@@ -742,33 +890,34 @@ void ShowTinyMouseMenu()
 
 
 //Activar desactivar sonido
-void ShowTinySoundMenu()
-{
- unsigned char aSelNum,aSelSoundON,aSelVol;
- aSelNum = ShowTinyMenu("SOUND MENU",gb_osd_sound_menu,max_gb_osd_sound_menu); 
- switch (aSelNum)
- {
-  case 0:
-   aSelSoundON = ShowTinyMenu("SOUND ENABLED",gb_value_binary_menu,max_gb_value_binary_menu); 
-   #ifdef use_lib_sound_ay8912
-    switch (aSelSoundON)
-    {
-     case 0: gb_mute_sound=1; break;
-     case 1: gb_mute_sound=0; break;
-     default: break;
-    }
-   #endif
-   break;
-  case 1:
-   aSelVol = ShowTinyMenu("SOUND VOLUME",gb_osd_sound_vol_values,max_osd_sound_vol_values);
-   #ifdef use_lib_sound_ay8912
-    gbShiftLeftVolumen= aSelVol;
-   #endif 
-   break;
-  default: break;
+#ifdef use_lib_sound_ay8912  
+ void ShowTinySoundMenu()
+ { 
+  unsigned char aSelNum,aSelSoundON,aSelVol;
+  aSelNum = ShowTinyMenu("SOUND MENU",gb_osd_sound_menu,max_gb_osd_sound_menu); 
+  switch (aSelNum)
+  {
+   case 0:
+    aSelSoundON = ShowTinyMenu("SOUND ENABLED",gb_value_binary_menu,max_gb_value_binary_menu); 
+    #ifdef use_lib_sound_ay8912
+     switch (aSelSoundON)
+     {
+      case 0: gb_mute_sound=1; break;
+      case 1: gb_mute_sound=0; break;
+      default: break;
+     }
+    #endif
+    break;
+   case 1:
+    aSelVol = ShowTinyMenu("SOUND VOLUME",gb_osd_sound_vol_values,max_osd_sound_vol_values);
+    #ifdef use_lib_sound_ay8912
+     gbShiftLeftVolumen= aSelVol;
+    #endif 
+    break;
+   default: break;
+  } 
  }
-
-}
+#endif
 
 //***************************
 void ShowStatusWIFI(unsigned char aState)
@@ -816,7 +965,7 @@ void ShowTinySNAMenu()
     //strcat(cadUrl,".txt");
     PreparaURL(cadUrl, "/outlist/sna/48k", "", (char*)gb_sna_type_menu[aSelType], "txt");
     #ifdef use_lib_wifi_debug
-     Serial.printf("URL:%s\n",cadUrl);    
+     Serial.printf("URL:%s\r\n",cadUrl);    
     #endif 
     ShowStatusWIFI(1);
     //SetVideoInterrupt(0);
@@ -829,12 +978,12 @@ void ShowTinySNAMenu()
     //SetVideoInterrupt(1);    
     ShowStatusWIFI(0);
     #ifdef use_lib_wifi_debug
-     Serial.printf("Leidos:%d\n",leidos);
+     Serial.printf("Leidos:%d\r\n",leidos);
     #endif 
     //downloadURL("http://192.168.0.36/zxspectrum/outlist/sna/48k/arcade.txt",NULL,0);
     tope = gb_size_file_wifi>>3; //DIV 8    
     #ifdef use_lib_wifi_debug
-     Serial.printf("Tope:%d\n",tope);
+     Serial.printf("Tope:%d\r\n",tope);
     #endif 
     if (tope<1){
       return;
@@ -858,7 +1007,7 @@ void ShowTinySNAMenu()
 
     gb_cfg_arch_is48K = 1;  
     #ifdef use_lib_wifi_debug
-     Serial.printf("Select:%d\n",aSelNum);
+     Serial.printf("Select:%d\r\n",aSelNum);
     #endif 
     //strcpy(cadUrl, gb_wifi_url_base_path);
     //strcat(cadUrl, "/input/sna/48k/");
@@ -869,14 +1018,15 @@ void ShowTinySNAMenu()
     PreparaURL(cadUrl, "/outdat/sna/48k/", (char*)gb_sna_type_menu[aSelType], cadFile,"sna");
 
     #ifdef use_lib_wifi_debug
-     Serial.printf("URL:%s\n",cadUrl);    
+     Serial.printf("URL:%s\r\n",cadUrl);    
     #endif 
     ShowStatusWIFI(1);
     changeSna2FlashFromWIFI(cadUrl,1); //SNA 48K    
     ShowStatusWIFI(0);    
    }
   #else
-   aSelNum = ShowTinyMenu("48K SNA",gb_list_sna_48k_title,max_list_sna_48);
+   //aSelNum = ShowTinyMenu("48K SNA",gb_list_sna_48k_title,max_list_sna_48); //No se usa
+   aSelNum = ShowTinyMenu("48K SNA",gb_ptr_list_sna_48k_title,gb_max_list_sna_48);
    if (aSelNum == 255)
     return;
    //strcpy(cfg_arch,"48K");
@@ -889,7 +1039,8 @@ void ShowTinySNAMenu()
  {
   #ifdef use_lib_wifi
   #else
-   aSelNum = ShowTinyMenu("128K SNA",gb_list_sna_128k_title,max_list_sna_128);                
+   //aSelNum = ShowTinyMenu("128K SNA",gb_list_sna_128k_title,max_list_sna_128); //No se usa
+   aSelNum = ShowTinyMenu("128K SNA",gb_ptr_list_sna_128k_title,gb_max_list_sna_128);
    if (aSelNum == 255)
     return;  
    //strcpy(cfg_arch,"128K");
@@ -911,7 +1062,7 @@ void ShowTinyROMMenu()
  Z80EmuSelectTape(0);
  if (aSelNum == 0)
  {
-  aSelNum = ShowTinyMenu("48K ROM",gb_list_roms_48k_title,max_list_rom_48);
+  aSelNum = ShowTinyMenu("48K ROM",gb_ptr_list_roms_48k_title,gb_max_list_rom_48);
   if (aSelNum == 255)
    return;  
   //strcpy(cfg_arch,"48K");  
@@ -921,7 +1072,7 @@ void ShowTinyROMMenu()
  }
  else
  {
-  aSelNum = ShowTinyMenu("128K ROM",gb_list_roms_128k_title,max_list_rom_128);        
+  aSelNum = ShowTinyMenu("128K ROM",gb_ptr_list_roms_128k_title,gb_max_list_rom_128);        
   if (aSelNum == 255)
    return;  
   //strcpy(cfg_arch,"128K");
@@ -946,7 +1097,7 @@ void ShowTinyTAPEMenu()
 {
  #ifdef use_lib_core_linkefong
   unsigned char aSelNum;
-  aSelNum = ShowTinyMenu("48K TAPE",gb_list_tapes_48k_title,max_list_tape_48); 
+  aSelNum = ShowTinyMenu("48K TAPE",gb_ptr_list_tapes_48k_title,gb_max_list_tape_48); 
   if (aSelNum == 255)
    return;
   load_tape2Flash(aSelNum);
@@ -957,7 +1108,7 @@ void ShowTinyTAPEMenu()
 void ShowTinySelectTAPEMenu()
 {
  unsigned char aSelNum;
- aSelNum = ShowTinyMenu("48K TAPE",gb_list_tapes_48k_title,max_list_tape_48);
+ aSelNum = ShowTinyMenu("48K TAPE",gb_ptr_list_tapes_48k_title,gb_max_list_tape_48);
  if (aSelNum == 255)
   return;
  Z80EmuSelectTape(aSelNum);
@@ -986,7 +1137,7 @@ void ShowTinySCRMenu()
 
    PreparaURL(cadUrl, "/outlist/scr", "", (char*)gb_scr_type_menu[aSelType], "txt");
    #ifdef use_lib_wifi_debug
-    Serial.printf("URL:%s\n",cadUrl);   
+    Serial.printf("URL:%s\r\n",cadUrl);   
    #endif 
 
    //Asignar_URL_stream_WIFI("http://192.168.0.36/zxspectrum/outlist/scr/car.txt");
@@ -995,11 +1146,11 @@ void ShowTinySCRMenu()
    Leer_url_stream_WIFI(&leidos);
    ShowStatusWIFI(0);
    #ifdef use_lib_wifi_debug
-    Serial.printf("Leidos:%d\n",leidos);
+    Serial.printf("Leidos:%d\r\n",leidos);
    #endif 
    tope = gb_size_file_wifi>>3; //DIV 8
    #ifdef use_lib_wifi_debug
-    Serial.printf("Tope:%d\n",tope);
+    Serial.printf("Tope:%d\r\n",tope);
    #endif 
    if (tope<1){
     return;
@@ -1023,7 +1174,7 @@ void ShowTinySCRMenu()
    }
    cadFile[8]='\0';
    #ifdef use_lib_wifi_debug
-    Serial.printf("Select:%d\n",aSelNum);
+    Serial.printf("Select:%d\r\n",aSelNum);
    #endif 
 
    //strcpy(cadUrl, gb_wifi_url_base_path);
@@ -1035,7 +1186,7 @@ void ShowTinySCRMenu()
    PreparaURL(cadUrl, "/outdat/scr/", (char *)gb_scr_type_menu[aSelType], cadFile, "scr");
 
    #ifdef use_lib_wifi_debug
-    Serial.printf("URL:%s\n",cadUrl);
+    Serial.printf("URL:%s\r\n",cadUrl);
    #endif 
 
    //Leo fichero SCR en banco 5 video
@@ -1048,7 +1199,7 @@ void ShowTinySCRMenu()
    {
     Leer_url_stream_WIFI(&leidos);    
     #ifdef use_lib_wifi_debug
-     Serial.printf("Leidos:%d\n",leidos);        
+     Serial.printf("Leidos:%d\r\n",leidos);        
     #endif 
     //memcpy(&ram5[auxContWifi],gb_buffer_wifi,leidos);
 
@@ -1091,7 +1242,7 @@ void ShowTinySCRMenu()
 */
  #else
   unsigned char aSelNum;
-  aSelNum = ShowTinyMenu("48K SCREEN",gb_list_scr_48k_title,max_list_scr_48);
+  aSelNum = ShowTinyMenu("48K SCREEN",gb_ptr_list_scr_48k_title,gb_max_list_scr_48);
   if (aSelNum == 255)
    return;
   load_scr2Flash(aSelNum);
@@ -1282,7 +1433,7 @@ void Z80EmuSelectTape(unsigned char aux)
  gb_current_tape = aux;
  gb_tape_read = 0;
  gb_contTape = 3;
- char cadLog[200]="";
+ //char cadLog[200]=""; //No se usa
  numBlocks = LoadBlocksTape(aux,gb_local_arrayTape);
  gb_local_numBlocks = numBlocks;
  //sprintf(cadLog,"Tape %d  %d %d %d",numBlocks,gb_local_arrayTape[0],gb_local_arrayTape[1],gb_local_arrayTape[2]);
@@ -1378,7 +1529,11 @@ void do_tinyOSD()
      ShowTinyMouseMenu(); 
     #endif 
     break;
-   case 9: ShowTinySoundMenu(); break;
+   case 9:
+    #ifdef use_lib_sound_ay8912  
+     ShowTinySoundMenu(); 
+    #endif 
+    break;
    case 10: ShowTinyResetMenu(); break;
    default: break;
   }

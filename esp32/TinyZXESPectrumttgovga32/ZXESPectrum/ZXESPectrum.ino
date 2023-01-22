@@ -57,6 +57,8 @@
 #include "gbOptimice.h"
 #include "dataFlash/gbrom.h"
 #include "dataFlash/gbsna.h"
+#include "dataFlash/gbtape.h"
+#include "dataFlash/gbscr.h"
 #include "PS2Kbd.h"
 #include "Memory.h"
 #include "clock.h"
@@ -102,6 +104,37 @@
  #include "Memory.h"
  //#include "gbPrograma.h"
 #endif
+
+
+//Punteros a roms globales
+const char ** gb_ptr_list_roms_48k_title= gb_list_roms_48k_title;
+const unsigned char ** gb_ptr_list_roms_48k_data= gb_list_roms_48k_data;
+const char ** gb_ptr_list_roms_128k_title= gb_list_roms_128k_title;
+const array4rom * gb_ptr_list_roms_128k_data= gb_list_roms_128k_data;
+//const unsigned char ** gb_ptr_list_roms_128k_data= gb_list_roms_128k_data;
+unsigned char gb_max_list_rom_48= max_list_rom_48;
+unsigned char gb_max_list_rom_128= max_list_rom_128;
+
+//Punteros globales a SNA
+const char ** gb_ptr_list_sna_48k_title= gb_list_sna_48k_title;
+const unsigned char ** gb_ptr_list_sna_48k_data= gb_list_sna_48k_data;
+const char ** gb_ptr_list_sna_128k_title= gb_list_sna_128k_title;  
+const unsigned char ** gb_ptr_list_sna_128k_data= gb_list_sna_128k_data;
+unsigned char gb_max_list_sna_48= max_list_sna_48; //Maximo 256
+unsigned char gb_max_list_sna_128= max_list_sna_128; //Maximo 256
+//Punteros globales Cintas
+const char ** gb_ptr_list_tapes_48k_title= gb_list_tapes_48k_title;
+const int * gb_ptr_list_tapes_48k_size= gb_list_tapes_48k_size;
+const unsigned char ** gb_ptr_list_tapes_48k_data= gb_list_tapes_48k_data;
+const char ** gb_ptr_list_tapes_128k_title= gb_list_tapes_128k_title;
+const unsigned char ** gb_ptr_list_tapes_128k_data= gb_list_tapes_128k_data;
+unsigned char gb_max_list_tape_48= max_list_tape_48; //Maximo 256
+unsigned char gb_max_list_tape_128= max_list_tape_128; //Maximo 256
+//Punteros globales scr
+const char ** gb_ptr_list_scr_48k_title= gb_list_scr_48k_title;
+const unsigned char ** gb_ptr_list_scr_48k_data= gb_list_scr_48k_data;
+unsigned char gb_max_list_scr_48= max_list_scr_48; //Maximo 256
+
 
 #include "vga_6bit.h"
 
@@ -152,7 +185,7 @@ int gb_screen_yIni=0;
 unsigned char gbSoundSpeaker=0;
 unsigned char gbSoundSpeakerBefore=0;
 
-char gb_current_tape=0;
+unsigned char gb_current_tape=0;
 int gb_contTape=3;
 int gb_tape_read=0;
 int gb_local_arrayTape[32]; //32 bloques de cinta maximo
@@ -287,15 +320,22 @@ extern unsigned char gb_cache_zxcolor[8];
 //JJ void SetMode128K(void);
 
 volatile unsigned char gb_sdl_blit=0;
-static unsigned long gb_currentTime=0;
+//static unsigned long gb_currentTime=0;
+static unsigned int gb_currentTime=0;
 
 #ifdef use_lib_stats_time_unified
- static unsigned int gb_ini_cpu_micros_unified;
- static unsigned int gb_fin_cpu_micros_unified;
- static unsigned long gb_fps_time_ini_unified= 0;
- static unsigned long gb_fps_unified= 0;
- static unsigned long gb_fps_ini_unified= 0;
- static unsigned long gb_stats_time_cur_unified= 0;
+ #ifdef use_lib_core_linkefong 
+  static unsigned int gb_ini_cpu_micros_unified;
+  static unsigned int gb_fin_cpu_micros_unified;
+ #endif 
+ //static unsigned long gb_fps_time_ini_unified= 0;
+ //static unsigned long gb_fps_unified= 0;
+ //static unsigned long gb_fps_ini_unified= 0;
+ //static unsigned long gb_stats_time_cur_unified= 0;
+ static unsigned int gb_fps_time_ini_unified= 0;
+ static unsigned int gb_fps_unified= 0;
+ static unsigned int gb_fps_ini_unified= 0;
+ static unsigned int gb_stats_time_cur_unified= 0; 
  static unsigned int gb_stats_time_min_unified= 500000;
  static unsigned int gb_stats_time_max_unified= 0;
  static unsigned int gb_stats_video_cur_unified= 0;
@@ -307,7 +347,9 @@ static unsigned long gb_currentTime=0;
  static unsigned long gb_sdl_time_sound_before=0;
 #endif 
 static unsigned int gb_keyboardTime;
-static unsigned int gb_mouseTime=0;
+#ifdef use_lib_mouse_kempston
+ static unsigned int gb_mouseTime=0;
+#endif 
 static unsigned int gb_time_ini_espera;
 unsigned char gb_run_emulacion = 1; //Ejecuta la emulacion
 unsigned char gb_current_ms_poll_sound = gb_ms_sound-1;
@@ -326,16 +368,16 @@ volatile unsigned char gbFrameSkipVideoCurrentCont=0;
 // EXTERN METHODS
 //void setup_cpuspeed();
 
-#ifdef use_lib_core_linkefong
- static uint8_t * gb_local_cache_rom[4] = {
-  rom0,rom1,rom2,rom3
- };
-
- static uint8_t * gb_local_cache_ram[8] =
- {
-  ram0,ram1,ram2,ram3,ram4,ram5,ram6,ram7
- };
-#endif 
+//#ifdef use_lib_core_linkefong //No lo necesito aqui
+// static uint8_t * gb_local_cache_rom[4] = { //No lo necesito aqui
+//  rom0,rom1,rom2,rom3 //No lo necesito aqui
+// }; //No lo necesito aqui
+//
+// static uint8_t * gb_local_cache_ram[8] = //No lo necesito aqui
+// { //No lo necesito aqui
+//  ram0,ram1,ram2,ram3,ram4,ram5,ram6,ram7 //No lo necesito aqui
+// }; //No lo necesito aqui
+//#endif //No lo necesito aqui
 
 /*uint8_t local_fast_readbyte(uint16_t addr)
 {
@@ -371,6 +413,12 @@ volatile unsigned char gbFrameSkipVideoCurrentCont=0;
 inline void swap_flash(unsigned char *a, unsigned char *b);
 
 void PrepareColorsUltraFastVGA(void);
+
+#ifdef use_lib_keyboard_uart
+ unsigned int gb_curTime_keyboard_before_uart;
+ unsigned int gb_curTime_keyboard_uart;
+ void do_keyboard_uart(void);
+#endif 
 
 
 
@@ -480,15 +528,15 @@ int halfsec, sp_int_ctr, evenframe, updateframe;
  unsigned char vsync_jsanchezv=0;
  unsigned char interruptPend_jsanchezv = 0;
 
- int gbSDLVideoTimeBefore;
+ //int gbSDLVideoTimeBefore; //No se necesita
 
  //static unsigned char * gb_ram_z80Ram_jsanchezv;
  //static unsigned char * gb_ram_z80Ports_jsanchezv;
  //Medicion tiempos
  static unsigned int gb_time_state_jsanchez_ini=0;
  //static unsigned int gb_fps_jsanchezv=0;
- static unsigned int gb_fps_time_ini_jsanchezv=0;
- static unsigned int gb_fps_ini_jsanchezv=0;
+ //static unsigned int gb_fps_time_ini_jsanchezv=0; //No se necesita
+ //static unsigned int gb_fps_ini_jsanchezv=0; //No se necesita
  //static unsigned long antes_jsanchezv=0;
  //static unsigned long antes_jsanchezv=0;
  static unsigned int ahora_jsanchezv=0;
@@ -736,7 +784,8 @@ void videoTaskNoThread_jsanchezv()
    int zx_vidcalc, calc_y;    
 
    //word zx_fore_color, zx_back_color, tmp_color;
-   unsigned char zx_fore_color, zx_back_color, tmp_color;
+   unsigned char zx_fore_color, zx_back_color;
+   //, tmp_color; //No se usa
 
    unsigned char auxColor;    
    unsigned char * gb_ptr_ram_1800_video;
@@ -1173,7 +1222,7 @@ if (skipFrame == 1){
 
  void keyboard_do_jsanchezv()
  {
-    byte kempston = 0;
+    //byte kempston = 0; //No se usa
 
   #ifdef use_lib_remap_keyboardpc
    //Cursores menu en 128k
@@ -1293,7 +1342,7 @@ if (skipFrame == 1){
   byte sp_h, sp_l;
   uint16_t retaddr;
   bool auxIFF2=false;
-  unsigned char auxSwap;
+  //unsigned char auxSwap; //No se usa
 
   #ifdef use_lib_sound_ay8912
    ResetSound();
@@ -1374,11 +1423,12 @@ if (skipFrame == 1){
     byte retaddr_h = gb_list_sna_128k_data[id][contBuffer++];//lhandle.read();
     retaddr = retaddr_l + retaddr_h * 0x100;
     byte tmp_port = gb_list_sna_128k_data[id][contBuffer++];//lhandle.read();
-    unsigned char auxBank= (tmp_port&0x07);
+    //unsigned char auxBank= (tmp_port&0x07); //No se usa
     //printf("port 0x7ffd %x banco:%d\n",tmp_port,auxBank);
     //fflush(stdout);
     
-    byte tr_dos = gb_list_sna_128k_data[id][contBuffer++];//lhandle.read();
+    //byte tr_dos = gb_list_sna_128k_data[id][contBuffer++];//lhandle.read(); //No se usa
+    contBuffer++; //Incrementamos lectura aunque no usemos tr_dos
     byte tmp_latch = tmp_port & 0x7;
     bank_latch_jsanchezv = tmp_latch; gb_ptr_IdRomRam_jsanchezv[3] = bank_latch_jsanchezv;
     
@@ -1436,11 +1486,11 @@ if (skipFrame == 1){
   }
 
     int contBuffer=0; 
-    uint16_t size_read;
+    //uint16_t size_read; //No se usa
     byte sp_h, sp_l;
     uint16_t retaddr; 
 	bool auxIFF2=false;
-	unsigned char auxSwap; 
+	//unsigned char auxSwap;  //No se usa
     
     memset(ram0_jsanchezv,0,0x4000);
     memset(ram1_jsanchezv,0,0x4000);
@@ -1468,7 +1518,7 @@ if (skipFrame == 1){
         bank_latch_jsanchezv = 0; gb_ptr_IdRomRam_jsanchezv[3] = 0;
         paging_lock_jsanchezv = 1;
     }
-    size_read = 0;
+    //size_read = 0; //No se usa
     // Read in the registers        
     cpu.setRegI(gb_list_sna_48k_data[id][0]);
     cpu.setRegLx(gb_list_sna_48k_data[id][1]);
@@ -1539,7 +1589,7 @@ if (skipFrame == 1){
  void Z80sim::load_ram2Flash_jsanchezvFromWIFI(char * cadUrl,unsigned char isSNA48K)
  {
   #ifdef use_lib_wifi_debug
-   Serial.printf("load_ram2Flash_jsanchezvFromWIFI\n");
+   Serial.printf("load_ram2Flash_jsanchezvFromWIFI\r\n");
   #endif     
   if (isSNA48K != 1)
   {
@@ -1589,7 +1639,7 @@ if (skipFrame == 1){
     size_read = 0;
 
     #ifdef use_lib_wifi_debug
-     Serial.printf("Check WIFI\n");
+     Serial.printf("Check WIFI\r\n");
     #endif 
     if (Check_WIFI() == false)
     {
@@ -1597,12 +1647,12 @@ if (skipFrame == 1){
     }
     int leidos=0;
     #ifdef use_lib_wifi_debug
-     Serial.printf("URL:%s\n",cadUrl);
+     Serial.printf("URL:%s\r\n",cadUrl);
     #endif 
     Asignar_URL_stream_WIFI(cadUrl);    
     Leer_url_stream_WIFI(&leidos);
     #ifdef use_lib_wifi_debug
-     Serial.printf("Leidos:%d\n",leidos); //Leemos 1024 bytes
+     Serial.printf("Leidos:%d\r\n",leidos); //Leemos 1024 bytes
     #endif    
 
     // Read in the registers        
@@ -1668,7 +1718,7 @@ if (skipFrame == 1){
      {
       Leer_url_stream_WIFI(&leidos);
       #ifdef use_lib_wifi_debug
-       Serial.printf("Leidos:%d\n",leidos);
+       Serial.printf("Leidos:%d\r\n",leidos);
       #endif 
       cont1024= 0;
      }     
@@ -1814,7 +1864,7 @@ uint8_t Z80sim::inPort(uint16_t port) {
     // 4 clocks for read byte from bus
  //printf ("inPort port:%d\n",port);    
     tstates += 3;
- int16_t kbdarrno = 0;
+ //int16_t kbdarrno = 0; //No se usa
  unsigned portLow= port & 0xFF;
  unsigned portHigh= (port>>8) & 0xFF;
 
@@ -2240,11 +2290,18 @@ void setup()
 {
  //DO NOT turn off peripherals to recover some memory
  //esp_bt_controller_deinit(); //Reduzco consumo RAM
- //esp_bt_controller_mem_release(ESP_BT_MODE_BTDM); //Reduzco consumo RAM
+ //esp_bt_controller_mem_release(ESP_BT_MODE_BTDM); //Reduzco consumo RAM 
+ #if defined(use_lib_log_serial) || defined(use_lib_keyboard_uart)
+  Serial.begin(115200);
+ #endif
+
  #ifdef use_lib_log_serial
-  Serial.begin(115200);         
-  Serial.printf("HEAP BEGIN %d\n", ESP.getFreeHeap());
+  Serial.printf("HEAP BEGIN %d\r\n", ESP.getFreeHeap());
   //JJSerial.printf("PSRAM size: %d\n", ESP.getPsramSize());
+ #endif
+
+ #ifdef use_lib_keyboard_uart
+  Serial.setTimeout(use_lib_keyboard_uart_timeout);
  #endif
 
  #ifdef use_lib_lookup_ram
@@ -2309,7 +2366,7 @@ void setup()
 
  //SDL_Generate_lookup_calcY();
  #ifdef use_lib_log_serial
-  Serial.printf("HEAP AFTER RAM %d\n", ESP.getFreeHeap());
+  Serial.printf("HEAP AFTER RAM %d\r\n", ESP.getFreeHeap());
  #endif 
 
  #ifdef use_lib_vga320x200
@@ -2364,7 +2421,7 @@ void setup()
 //jjvga#endif
     
     #ifdef use_lib_log_serial
-     Serial.printf("HEAP after vga  %d \n", ESP.getFreeHeap());
+     Serial.printf("HEAP after vga  %d \r\n", ESP.getFreeHeap());
     #endif
     //jjvga vga.setFont(Font6x8);
     //jjvga vga.clear(BLACK);    
@@ -2471,7 +2528,7 @@ void setup()
     #endif 
         
     #ifdef use_lib_wifi
-     Serial.printf("RAM before WIFI %d\n",ESP.getFreeHeap());
+     Serial.printf("RAM before WIFI %d\r\n",ESP.getFreeHeap());
      //for(uint8_t t = 4; t > 0; t--) 
      //{
      //   Serial.printf("[SETUP] WAIT %d...\n", t);
@@ -2487,7 +2544,7 @@ void setup()
      for(unsigned char t = 4; t > 0; t--)
      {
       #ifdef use_lib_wifi_debug
-       Serial.printf("WIFI WAIT %d...\n", t);
+       Serial.printf("WIFI WAIT %d...\r\n", t);
        Serial.flush();
       #endif
       delay(1000);
@@ -2504,7 +2561,7 @@ void setup()
     #endif 
 
     #ifdef use_lib_log_serial
-     Serial.printf("End of setup RAM %d\n",ESP.getFreeHeap());
+     Serial.printf("End of setup RAM %d\r\n",ESP.getFreeHeap());
      //Serial.printf("mask %d bits %d\n",vga.RGBAXMask,vga.SBits);  
     #endif 
     gb_keyboardTime = millis();
@@ -2512,6 +2569,9 @@ void setup()
      gb_sdl_time_sound_before = gb_keyboardTime;
     #endif
 
+    #ifdef use_lib_keyboard_uart
+     gb_curTime_keyboard_before_uart= gb_curTime_keyboard_uart= gb_keyboardTime;
+    #endif
 }
 
 
@@ -2980,7 +3040,7 @@ void videoTask(void *unused)
         videoTaskIsRunning = false;
 
      time_prev = micros()-time_prev;
-     Serial.printf("Tiempo %d\n",time_prev);             
+     Serial.printf("Tiempo %d\r\n",time_prev);             
     }
     videoTaskIsRunning = false;
     vTaskDelete(NULL);
@@ -3081,7 +3141,7 @@ void videoTask(void *unused)
         xQueueReceive(vidQueue, &param, portMAX_DELAY);
         videoTaskIsRunning = false;
      time_prev = micros()-time_prev;
-     Serial.printf("Tiempo %d\n",time_prev);     
+     Serial.printf("Tiempo %d\r\n",time_prev);     
     }
     videoTaskIsRunning = false;
     vTaskDelete(NULL);
@@ -3693,7 +3753,8 @@ void videoTaskNoThread()
    int zx_vidcalc, calc_y;    
 
    //word zx_fore_color, zx_back_color, tmp_color;
-   unsigned char zx_fore_color, zx_back_color, tmp_color;
+   unsigned char zx_fore_color, zx_back_color;
+   //, tmp_color; //No se usa
 
    unsigned char auxColor;    
    unsigned char * gb_ptr_ram_1800_video;
@@ -4147,8 +4208,9 @@ inline void swap_flash(unsigned char *a, unsigned char *b)
 
 
 // Load zx keyboard lines from PS/2
-void do_keyboard() {
-    byte kempston = 0;
+void do_keyboard() 
+{
+  //byte kempston = 0; //No se usa
 
   #ifdef use_lib_remap_keyboardpc
    //Cursores menu en 128k
@@ -4168,53 +4230,53 @@ void do_keyboard() {
     // do_tinyOSD();
     //}     
 
-    bitWrite(z80ports_in[0], 0, keymap[0x12]);
-    bitWrite(z80ports_in[0], 1, keymap[0x1a]);
-    bitWrite(z80ports_in[0], 2, keymap[0x22]);
-    bitWrite(z80ports_in[0], 3, keymap[0x21]);
-    bitWrite(z80ports_in[0], 4, keymap[0x2a]);
+    bitWrite(z80ports_in[0], 0, keymap[0x12]); //SHIFT LEFT
+    bitWrite(z80ports_in[0], 1, keymap[0x1a]); //Z
+    bitWrite(z80ports_in[0], 2, keymap[0x22]); //X
+    bitWrite(z80ports_in[0], 3, keymap[0x21]); //C
+    bitWrite(z80ports_in[0], 4, keymap[0x2a]); //V
 
-    bitWrite(z80ports_in[1], 0, keymap[0x1c]);
-    bitWrite(z80ports_in[1], 1, keymap[0x1b]);
-    bitWrite(z80ports_in[1], 2, keymap[0x23]);
-    bitWrite(z80ports_in[1], 3, keymap[0x2b]);
-    bitWrite(z80ports_in[1], 4, keymap[0x34]);
+    bitWrite(z80ports_in[1], 0, keymap[0x1c]); //A
+    bitWrite(z80ports_in[1], 1, keymap[0x1b]); //S
+    bitWrite(z80ports_in[1], 2, keymap[0x23]); //D
+    bitWrite(z80ports_in[1], 3, keymap[0x2b]); //F
+    bitWrite(z80ports_in[1], 4, keymap[0x34]); //G
 
-    bitWrite(z80ports_in[2], 0, keymap[0x15]);
-    bitWrite(z80ports_in[2], 1, keymap[0x1d]);
-    bitWrite(z80ports_in[2], 2, keymap[0x24]);
-    bitWrite(z80ports_in[2], 3, keymap[0x2d]);
-    bitWrite(z80ports_in[2], 4, keymap[0x2c]);
+    bitWrite(z80ports_in[2], 0, keymap[0x15]); //Q
+    bitWrite(z80ports_in[2], 1, keymap[0x1d]); //W
+    bitWrite(z80ports_in[2], 2, keymap[0x24]); //E
+    bitWrite(z80ports_in[2], 3, keymap[0x2d]); //R
+    bitWrite(z80ports_in[2], 4, keymap[0x2c]); //T
 
-    bitWrite(z80ports_in[3], 0, keymap[0x16]);
-    bitWrite(z80ports_in[3], 1, keymap[0x1e]);
-    bitWrite(z80ports_in[3], 2, keymap[0x26]);
-    bitWrite(z80ports_in[3], 3, keymap[0x25]);
-    bitWrite(z80ports_in[3], 4, keymap[0x2e]);
+    bitWrite(z80ports_in[3], 0, keymap[0x16]); //1
+    bitWrite(z80ports_in[3], 1, keymap[0x1e]); //2
+    bitWrite(z80ports_in[3], 2, keymap[0x26]); //3
+    bitWrite(z80ports_in[3], 3, keymap[0x25]); //4
+    bitWrite(z80ports_in[3], 4, keymap[0x2e]); //5
 
-    bitWrite(z80ports_in[4], 0, keymap[0x45]);
-    bitWrite(z80ports_in[4], 1, keymap[0x46]);
-    bitWrite(z80ports_in[4], 2, keymap[0x3e]);
-    bitWrite(z80ports_in[4], 3, keymap[0x3d]);
-    bitWrite(z80ports_in[4], 4, keymap[0x36]);
+    bitWrite(z80ports_in[4], 0, keymap[0x45]); //0
+    bitWrite(z80ports_in[4], 1, keymap[0x46]); //9
+    bitWrite(z80ports_in[4], 2, keymap[0x3e]); //8
+    bitWrite(z80ports_in[4], 3, keymap[0x3d]); //7
+    bitWrite(z80ports_in[4], 4, keymap[0x36]); //6
 
-    bitWrite(z80ports_in[5], 0, keymap[0x4d]);
-    bitWrite(z80ports_in[5], 1, keymap[0x44]);
-    bitWrite(z80ports_in[5], 2, keymap[0x43]);
-    bitWrite(z80ports_in[5], 3, keymap[0x3c]);
-    bitWrite(z80ports_in[5], 4, keymap[0x35]);
+    bitWrite(z80ports_in[5], 0, keymap[0x4d]); //P
+    bitWrite(z80ports_in[5], 1, keymap[0x44]); //O
+    bitWrite(z80ports_in[5], 2, keymap[0x43]); //I
+    bitWrite(z80ports_in[5], 3, keymap[0x3c]); //U
+    bitWrite(z80ports_in[5], 4, keymap[0x35]); //Y
 
-    bitWrite(z80ports_in[6], 0, keymap[0x5a]);
-    bitWrite(z80ports_in[6], 1, keymap[0x4b]);
-    bitWrite(z80ports_in[6], 2, keymap[0x42]);
-    bitWrite(z80ports_in[6], 3, keymap[0x3b]);
-    bitWrite(z80ports_in[6], 4, keymap[0x33]);
+    bitWrite(z80ports_in[6], 0, keymap[0x5a]); //ENTER
+    bitWrite(z80ports_in[6], 1, keymap[0x4b]); //L
+    bitWrite(z80ports_in[6], 2, keymap[0x42]); //K
+    bitWrite(z80ports_in[6], 3, keymap[0x3b]); //J
+    bitWrite(z80ports_in[6], 4, keymap[0x33]); //H
 
-    bitWrite(z80ports_in[7], 0, keymap[0x29]);
-    bitWrite(z80ports_in[7], 1, keymap[0x14]);
-    bitWrite(z80ports_in[7], 2, keymap[0x3a]);
-    bitWrite(z80ports_in[7], 3, keymap[0x31]);
-    bitWrite(z80ports_in[7], 4, keymap[0x32]);
+    bitWrite(z80ports_in[7], 0, keymap[0x29]); //Barra espaciadora
+    bitWrite(z80ports_in[7], 1, keymap[0x14]); //CONTROL
+    bitWrite(z80ports_in[7], 2, keymap[0x3a]); //M
+    bitWrite(z80ports_in[7], 3, keymap[0x31]); //N
+    bitWrite(z80ports_in[7], 4, keymap[0x32]); //B
 
     //Serial.printf("Teclado %d %d\n",keymap[KEY_CURSOR_UP],keymap[KEY_CURSOR_DOWN]);
     // Kempston joystick
@@ -4236,6 +4298,343 @@ void do_keyboard() {
   }
  #endif 
 }
+
+#ifdef use_lib_keyboard_uart
+ //const int BUFFER_SIZE = 50;
+ char gb_buf_uart[BUFFER_SIZE_UART];
+ unsigned char gb_rlen_uart=0;
+
+ #ifdef use_lib_core_linkefong
+ void do_keyboard_uart()
+ {  
+  unsigned int contBuf=0;
+  //if(Serial.available() > 0)
+  if (gb_rlen_uart>0)
+  {
+//   gb_rlen_uart = Serial.readBytes(gb_buf_uart, BUFFER_SIZE_UART);
+
+   //Serial.print("I received: ");
+//   gb_buf_uart[gb_rlen_uart]='\0';
+   //Serial.printf("Tot:%d\nASCII:%s\n",gb_rlen_uart,gb_buf_uart);  
+   //Serial.printf("Buf:");   
+   //Serial.printf("\n"); 
+  //}
+   
+   while (contBuf < gb_rlen_uart)
+   {
+    //Serial.printf("%02X ",gb_buf_uart[contBuf]);
+    switch (gb_buf_uart[contBuf])
+    {
+     case 0x01: //F2   01 62 4F 51      
+      if ((contBuf+3) < gb_rlen_uart)
+      {
+       gb_show_osd_main_menu= 1;
+       #ifdef use_lib_sound_ay8912   
+        gb_silence_all_channels = 1;
+       #endif
+       contBuf+= 3;
+      }
+      break;
+
+     case 0x09: //TAB saco menu tambien
+      gb_show_osd_main_menu= 1;
+      #ifdef use_lib_sound_ay8912   
+       gb_silence_all_channels = 1;
+      #endif
+      break;
+
+     case 0x08: case 0x7F: //Borrar SHIFT+0
+       bitWrite(z80ports_in[0], 0, 0); //SHIFT
+       bitWrite(z80ports_in[4], 0, 0); //0
+       //0x08 en VStudio, 0x7F en putty
+      break;
+
+     case 0x0D: case 0x0A: //0D 0A ENTER
+      //if ((contBuf+1) < gb_rlen_uart)
+      //{
+      // contBuf++;
+      // if (gb_buf_uart[contBuf] == 0x0A)
+      // {
+      //  bitWrite(z80ports_in[6], 0, 0); //ENTER
+      //  //contBuf++;
+      // }
+      //}
+       bitWrite(z80ports_in[6], 0, 0); //ENTER
+       //Serial.printf("ENTER\r\n");
+       //OD 0A en VStudio, 0D en putty
+      break;
+
+     case 0x22: //Teclado PC Comillas shift+2 (zx48K control + p)       
+       bitWrite(z80ports_in[7], 1, 0); //CONTROL *
+       bitWrite(z80ports_in[5], 0, 0); //P
+      break;
+
+     case 0x2B: bitWrite(z80ports_in[0x1f], 4, 1); //El + como ALT_GR
+      break;
+     
+     case 0x1B: //Arriba 1B 5B 41
+      if ((contBuf+2) < gb_rlen_uart)
+      {
+       contBuf++;
+       if (gb_buf_uart[contBuf] == 0x5B)
+       {
+        contBuf++;
+        switch (gb_buf_uart[contBuf])
+        {
+         case 0x41: 
+          bitWrite(z80ports_in[0x1f], 3, 1); //kempston arriba
+          #ifdef use_lib_remap_keyboardpc
+           //shift+7
+           bitWrite(z80ports_in[0], 0, 0); //SHIFT
+           bitWrite(z80ports_in[4], 3, 0); //7
+          #endif
+          //arriba 1B 5B 41
+          break;
+         case 0x42: 
+          bitWrite(z80ports_in[0x1f], 2, 1);  //kempston abajo
+          #ifdef use_lib_remap_keyboardpc
+           //shift+6
+           bitWrite(z80ports_in[0], 0, 0); //SHIFT
+           bitWrite(z80ports_in[4], 4, 0); //6
+          #endif
+          break; //abajo 1B 5B 42
+         case 0x43: bitWrite(z80ports_in[0x1f], 0, 1); break; //derecha 1B 5B 43
+         case 0x44: bitWrite(z80ports_in[0x1f], 1, 1); break; //izquierda 1B 5B 44        
+         //z80ports_in[0x1f] = 0;
+         //bitWrite(z80ports_in[0x1f], 0, !keymap[KEY_CURSOR_RIGHT]);
+         //bitWrite(z80ports_in[0x1f], 1, !keymap[KEY_CURSOR_LEFT]);
+         //bitWrite(z80ports_in[0x1f], 2, !keymap[KEY_CURSOR_DOWN]);
+         //bitWrite(z80ports_in[0x1f], 3, !keymap[KEY_CURSOR_UP]);
+         //bitWrite(z80ports_in[0x1f], 4, !keymap[KEY_ALT_GR]);
+        }
+       }
+      }
+      break; 
+
+     //bitWrite(z80ports_in[0], 0, keymap[0x12]); //SHIFT LEFT
+     case 0x2D: bitWrite(z80ports_in[0], 0, 0); break; //SHIFT LEFT -
+     case 0x7A: bitWrite(z80ports_in[0], 1, 0); break; //Z
+     case 0x78: bitWrite(z80ports_in[0], 2, 0); break; //X
+     case 0x63: bitWrite(z80ports_in[0], 3, 0); break; //C
+     case 0x76: bitWrite(z80ports_in[0], 4, 0); break; //V
+
+     case 0x61: bitWrite(z80ports_in[1], 0, 0); break; //A
+     case 0x73: bitWrite(z80ports_in[1], 1, 0); break; //S
+     case 0x64: bitWrite(z80ports_in[1], 2, 0); break; //D
+     case 0x66: bitWrite(z80ports_in[1], 3, 0); break; //F
+     case 0x67: bitWrite(z80ports_in[1], 4, 0); break; //G
+
+     case 0x71: bitWrite(z80ports_in[2], 0, 0); break; //Q
+     case 0x77: bitWrite(z80ports_in[2], 1, 0); break; //W
+     case 0x65: bitWrite(z80ports_in[2], 2, 0); break; //E
+     case 0x72: bitWrite(z80ports_in[2], 3, 0); break; //R
+     case 0x74: bitWrite(z80ports_in[2], 4, 0); break; //T
+
+     case 0x31: bitWrite(z80ports_in[3], 0, 0); break; //1
+     case 0x32: bitWrite(z80ports_in[3], 1, 0); break; //2
+     case 0x33: bitWrite(z80ports_in[3], 2, 0); break; //3
+     case 0x34: bitWrite(z80ports_in[3], 3, 0); break; //4
+     case 0x35: bitWrite(z80ports_in[3], 4, 0); break; //5
+
+     case 0x30: bitWrite(z80ports_in[4], 0, 0); break; //0
+     case 0x39: bitWrite(z80ports_in[4], 1, 0); break; //9
+     case 0x38: bitWrite(z80ports_in[4], 2, 0); break; //8
+     case 0x37: bitWrite(z80ports_in[4], 3, 0); break; //7
+     case 0x36: bitWrite(z80ports_in[4], 4, 0); break; //6
+
+     case 0x70: bitWrite(z80ports_in[5], 0, 0); break; //P
+     case 0x6F: bitWrite(z80ports_in[5], 1, 0); break; //O
+     case 0x69: bitWrite(z80ports_in[5], 2, 0); break; //I
+     case 0x75: bitWrite(z80ports_in[5], 3, 0); break; //U
+     case 0x79: bitWrite(z80ports_in[5], 4, 0); break; //Y
+
+     //bitWrite(z80ports_in[6], 0, 0); //ENTER
+     case 0x6C: bitWrite(z80ports_in[6], 1, 0); break; //L
+     case 0x6B: bitWrite(z80ports_in[6], 2, 0); break; //K
+     case 0x6A: bitWrite(z80ports_in[6], 3, 0); break; //J
+     case 0x68: bitWrite(z80ports_in[6], 4, 0); break; //H
+
+     case 0x20: bitWrite(z80ports_in[7], 0, 0); break; //Barra espaciadora
+     //bitWrite(z80ports_in[7], 1, 0); break; //CONTROL
+     case 0x2A: bitWrite(z80ports_in[7], 1, 0); break; //CONTROL *
+     case 0x6D: bitWrite(z80ports_in[7], 2, 0); break; //M
+     case 0x6E: bitWrite(z80ports_in[7], 3, 0); break; //N
+     case 0x62: bitWrite(z80ports_in[7], 4, 0); break; //B
+    }
+
+    contBuf++;
+   }
+    //bitWrite(z80ports_in[0], 0, keymap[0x12]);
+    //bitWrite(z80ports_in[0], 1, keymap[0x1a]); //Z
+    //bitWrite(z80ports_in[0], 2, keymap[0x22]); //X
+    //bitWrite(z80ports_in[0], 3, keymap[0x21]); //C
+    //bitWrite(z80ports_in[0], 4, keymap[0x2a]); //V
+
+    //bitWrite(z80ports_in[1], 0, keymap[0x1c]); //A
+    //bitWrite(z80ports_in[1], 1, keymap[0x1b]); //S
+    //bitWrite(z80ports_in[1], 2, keymap[0x23]); //D
+    //bitWrite(z80ports_in[1], 3, keymap[0x2b]); //F
+    //bitWrite(z80ports_in[1], 4, keymap[0x34]); //G    
+  }
+ }
+ #else
+  #ifdef use_lib_core_jsanchezv
+ void do_keyboard_uart()
+ {  
+  unsigned int contBuf=0;  
+  if (gb_rlen_uart>0)
+  {   
+   while (contBuf < gb_rlen_uart)
+   {
+    //Serial.printf("%02X ",gb_buf_uart[contBuf]);
+    switch (gb_buf_uart[contBuf])
+    {
+     case 0x01: //F2   01 62 4F 51      
+      if ((contBuf+3) < gb_rlen_uart)
+      {
+       gb_show_osd_main_menu= 1;
+       #ifdef use_lib_sound_ay8912   
+        gb_silence_all_channels = 1;
+       #endif
+       contBuf+= 3;
+      }
+      break;
+
+     case 0x09: //TAB saco menu tambien
+      gb_show_osd_main_menu= 1;
+      #ifdef use_lib_sound_ay8912   
+       gb_silence_all_channels = 1;
+      #endif
+      break;
+
+     case 0x08: case 0x7F: //Borrar SHIFT+0
+       bitWrite(z80Ports_jsanchezv[0], 0, 0); //SHIFT
+       bitWrite(z80Ports_jsanchezv[4], 0, 0); //0
+       //0x08 en VStudio, 0x7F en putty
+      break;
+
+     case 0x0D: case 0x0A: //0D 0A ENTER
+       bitWrite(z80Ports_jsanchezv[6], 0, 0); //ENTER
+       //Serial.printf("ENTER\r\n");
+       //OD 0A en VStudio, 0D en putty
+      break;
+
+     case 0x22: //Teclado PC Comillas shift+2 (zx48K control + p)       
+       bitWrite(z80Ports_jsanchezv[7], 1, 0); //CONTROL *
+       bitWrite(z80Ports_jsanchezv[5], 0, 0); //P
+      break;      
+
+     case 0x2B: bitWrite(z80Ports_jsanchezv[0x1f], 4, 1); //El + como ALT_GR
+      break;
+
+     case 0x1B: //Arriba 1B 5B 41
+      if ((contBuf+2) < gb_rlen_uart)
+      {
+       contBuf++;
+       if (gb_buf_uart[contBuf] == 0x5B)
+       {
+        contBuf++;
+        switch (gb_buf_uart[contBuf])
+        {
+         case 0x41: 
+          bitWrite(z80Ports_jsanchezv[0x1f], 3, 1); //kempston arriba
+          #ifdef use_lib_remap_keyboardpc
+           //shift+7
+           bitWrite(z80Ports_jsanchezv[0], 0, 0); //SHIFT
+           bitWrite(z80Ports_jsanchezv[4], 3, 0); //7
+          #endif
+          //arriba 1B 5B 41
+          break;
+         case 0x42: 
+          bitWrite(z80Ports_jsanchezv[0x1f], 2, 1);  //kempston abajo
+          #ifdef use_lib_remap_keyboardpc
+           //shift+6
+           bitWrite(z80Ports_jsanchezv[0], 0, 0); //SHIFT
+           bitWrite(z80Ports_jsanchezv[4], 4, 0); //6
+          #endif
+          break; //abajo 1B 5B 42
+         case 0x43: bitWrite(z80Ports_jsanchezv[0x1f], 0, 1); break; //derecha 1B 5B 43
+         case 0x44: bitWrite(z80Ports_jsanchezv[0x1f], 1, 1); break; //izquierda 1B 5B 44        
+         //z80ports_in[0x1f] = 0;
+         //bitWrite(z80ports_in[0x1f], 0, !keymap[KEY_CURSOR_RIGHT]);
+         //bitWrite(z80ports_in[0x1f], 1, !keymap[KEY_CURSOR_LEFT]);
+         //bitWrite(z80ports_in[0x1f], 2, !keymap[KEY_CURSOR_DOWN]);
+         //bitWrite(z80ports_in[0x1f], 3, !keymap[KEY_CURSOR_UP]);
+         //bitWrite(z80ports_in[0x1f], 4, !keymap[KEY_ALT_GR]);
+        }
+       }
+      }
+      break; 
+
+     //bitWrite(z80ports_in[0], 0, keymap[0x12]); //SHIFT LEFT
+     case 0x2D: bitWrite(z80Ports_jsanchezv[0], 0, 0); break; //SHIFT LEFT -
+     case 0x7A: bitWrite(z80Ports_jsanchezv[0], 1, 0); break; //Z
+     case 0x78: bitWrite(z80Ports_jsanchezv[0], 2, 0); break; //X
+     case 0x63: bitWrite(z80Ports_jsanchezv[0], 3, 0); break; //C
+     case 0x76: bitWrite(z80Ports_jsanchezv[0], 4, 0); break; //V
+
+     case 0x61: bitWrite(z80Ports_jsanchezv[1], 0, 0); break; //A
+     case 0x73: bitWrite(z80Ports_jsanchezv[1], 1, 0); break; //S
+     case 0x64: bitWrite(z80Ports_jsanchezv[1], 2, 0); break; //D
+     case 0x66: bitWrite(z80Ports_jsanchezv[1], 3, 0); break; //F
+     case 0x67: bitWrite(z80Ports_jsanchezv[1], 4, 0); break; //G
+
+     case 0x71: bitWrite(z80Ports_jsanchezv[2], 0, 0); break; //Q
+     case 0x77: bitWrite(z80Ports_jsanchezv[2], 1, 0); break; //W
+     case 0x65: bitWrite(z80Ports_jsanchezv[2], 2, 0); break; //E
+     case 0x72: bitWrite(z80Ports_jsanchezv[2], 3, 0); break; //R
+     case 0x74: bitWrite(z80Ports_jsanchezv[2], 4, 0); break; //T
+
+     case 0x31: bitWrite(z80Ports_jsanchezv[3], 0, 0); break; //1
+     case 0x32: bitWrite(z80Ports_jsanchezv[3], 1, 0); break; //2
+     case 0x33: bitWrite(z80Ports_jsanchezv[3], 2, 0); break; //3
+     case 0x34: bitWrite(z80Ports_jsanchezv[3], 3, 0); break; //4
+     case 0x35: bitWrite(z80Ports_jsanchezv[3], 4, 0); break; //5
+
+     case 0x30: bitWrite(z80Ports_jsanchezv[4], 0, 0); break; //0
+     case 0x39: bitWrite(z80Ports_jsanchezv[4], 1, 0); break; //9
+     case 0x38: bitWrite(z80Ports_jsanchezv[4], 2, 0); break; //8
+     case 0x37: bitWrite(z80Ports_jsanchezv[4], 3, 0); break; //7
+     case 0x36: bitWrite(z80Ports_jsanchezv[4], 4, 0); break; //6
+
+     case 0x70: bitWrite(z80Ports_jsanchezv[5], 0, 0); break; //P
+     case 0x6F: bitWrite(z80Ports_jsanchezv[5], 1, 0); break; //O
+     case 0x69: bitWrite(z80Ports_jsanchezv[5], 2, 0); break; //I
+     case 0x75: bitWrite(z80Ports_jsanchezv[5], 3, 0); break; //U
+     case 0x79: bitWrite(z80Ports_jsanchezv[5], 4, 0); break; //Y
+
+     //bitWrite(z80ports_in[6], 0, 0); //ENTER
+     case 0x6C: bitWrite(z80Ports_jsanchezv[6], 1, 0); break; //L
+     case 0x6B: bitWrite(z80Ports_jsanchezv[6], 2, 0); break; //K
+     case 0x6A: bitWrite(z80Ports_jsanchezv[6], 3, 0); break; //J
+     case 0x68: bitWrite(z80Ports_jsanchezv[6], 4, 0); break; //H
+
+     case 0x20: bitWrite(z80Ports_jsanchezv[7], 0, 0); break; //Barra espaciadora
+     //bitWrite(z80ports_in[7], 1, 0); break; //CONTROL
+     case 0x2A: bitWrite(z80Ports_jsanchezv[7], 1, 0); break; //CONTROL *
+     case 0x6D: bitWrite(z80Ports_jsanchezv[7], 2, 0); break; //M
+     case 0x6E: bitWrite(z80Ports_jsanchezv[7], 3, 0); break; //N
+     case 0x62: bitWrite(z80Ports_jsanchezv[7], 4, 0); break; //B
+    }
+
+    contBuf++;
+   }
+    //bitWrite(z80ports_in[0], 0, keymap[0x12]);
+    //bitWrite(z80ports_in[0], 1, keymap[0x1a]); //Z
+    //bitWrite(z80ports_in[0], 2, keymap[0x22]); //X
+    //bitWrite(z80ports_in[0], 3, keymap[0x21]); //C
+    //bitWrite(z80ports_in[0], 4, keymap[0x2a]); //V
+
+    //bitWrite(z80ports_in[1], 0, keymap[0x1c]); //A
+    //bitWrite(z80ports_in[1], 1, keymap[0x1b]); //S
+    //bitWrite(z80ports_in[1], 2, keymap[0x23]); //D
+    //bitWrite(z80ports_in[1], 3, keymap[0x2b]); //F
+    //bitWrite(z80ports_in[1], 4, keymap[0x34]); //G    
+  }
+ }  
+  #endif
+ #endif
+#endif 
 
 #ifdef use_lib_remap_keyboardpc 
  //Cursores menu en 128k
@@ -4285,7 +4684,16 @@ void loop() {
       #ifdef use_lib_remap_keyboardpc 
        do_keyboard_remap_pc();
       #endif
-      do_keyboard();      
+      do_keyboard();
+      #ifdef use_lib_keyboard_uart       
+       gb_curTime_keyboard_uart= gb_currentTime;
+       if ((gb_curTime_keyboard_uart - gb_curTime_keyboard_before_uart) >= gb_current_ms_poll_keyboard_uart)
+       {
+        gb_curTime_keyboard_before_uart= gb_curTime_keyboard_uart;
+        keyboard_uart_poll();
+       }
+       do_keyboard_uart();       
+      #endif
       //if (gb_show_osd_main_menu == 1)
       //{
       // do_tinyOSD();
@@ -4295,6 +4703,15 @@ void loop() {
        do_keyboard_remap_pc();
       #endif     
       keyboard_do_jsanchezv();
+      #ifdef use_lib_keyboard_uart       
+       gb_curTime_keyboard_uart= gb_currentTime;
+       if ((gb_curTime_keyboard_uart - gb_curTime_keyboard_before_uart) >= gb_current_ms_poll_keyboard_uart)
+       {
+        gb_curTime_keyboard_before_uart= gb_curTime_keyboard_uart;
+        keyboard_uart_poll();
+       }
+       do_keyboard_uart();       
+      #endif      
       //if (gb_show_osd_main_menu == 1)
       //{
       // do_tinyOSD();
@@ -4452,7 +4869,7 @@ void loop() {
       gb_fps_time_ini_unified= gb_currentTime;
       unsigned int aux_fps= gb_fps_unified - gb_fps_ini_unified;
       gb_fps_ini_unified = gb_fps_unified;
-      Serial.printf ("fps:%d %d m:%d mx:%d v %d m:%d mx:%d\n",aux_fps,gb_stats_time_cur_unified,gb_stats_time_min_unified,gb_stats_time_max_unified,gb_stats_video_cur_unified,gb_stats_video_min_unified,gb_stats_video_max_unified);
+      Serial.printf ("fps:%d %d m:%d mx:%d v %d m:%d mx:%d\r\n",aux_fps,gb_stats_time_cur_unified,gb_stats_time_min_unified,gb_stats_time_max_unified,gb_stats_video_cur_unified,gb_stats_video_min_unified,gb_stats_video_max_unified);
       gb_stats_time_min_unified = 500000;
       gb_stats_time_max_unified = 0;
       gb_stats_video_min_unified = 500000;

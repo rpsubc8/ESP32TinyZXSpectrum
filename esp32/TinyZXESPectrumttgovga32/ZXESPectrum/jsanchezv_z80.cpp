@@ -135,7 +135,7 @@ inline uint8_t jj_fast_fetchOpcode(uint16_t address)
 uint8_t jj_fast_inPort(uint16_t port)
 {
  *gb_addr_states_jsanchezv += 3;  
- int16_t kbdarrno = 0;
+ //int16_t kbdarrno = 0; //No se usa
  unsigned portLow= port & 0xFF;
  unsigned portHigh= (port>>8) & 0xFF;
 
@@ -311,7 +311,9 @@ void jj_fast_outPort(uint16_t port, uint8_t value)
               gb_ay8912_C_frec_course= gb_ay8912_reg_value & 0x0F;
               gb_ay8912_C_frec = ((gb_ay8912_C_frec_fine|((gb_ay8912_C_frec_course<<8)&0xF00)))+1;
               break;
-             case 6: gb_ay8912_noise_pitch; break;             
+             case 6: 
+              //gb_ay8912_noise_pitch; 
+              break;             
              case 7: 
               //printf("Mixer %d\n",gb_ay8912_reg_value);
               gb_ay8912_mixer= gb_ay8912_reg_value;
@@ -446,7 +448,7 @@ Z80::Z80(Z80operations *ops) {
     reset();
     
     #ifdef use_lib_log_serial
-     Serial.printf("contructor Z80operations\n");
+     Serial.printf("contructor Z80operations\r\n");
     #endif 
 }
 

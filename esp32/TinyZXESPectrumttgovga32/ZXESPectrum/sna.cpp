@@ -1,6 +1,6 @@
 #include "gbConfig.h"
 #include "gbGlobals.h"
-#include "dataFlash/gbsna.h"
+//#include "dataFlash/gbsna.h" //No se usa
 #include "Disk.h"
 #include "PS2Kbd.h"
 #include "z80main.h"

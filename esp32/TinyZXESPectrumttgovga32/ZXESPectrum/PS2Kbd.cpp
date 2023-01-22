@@ -58,7 +58,7 @@ void IRAM_ATTR kb_interruptHandler(void) {
 
 #ifdef DEBUG_LOG_KEYSTROKES
                 #ifdef use_lib_log_serial
-                Serial.printf("PS2Kbd[%s]: %02X\n",
+                Serial.printf("PS2Kbd[%s]: %02X\r\n",
                     keyup ? " up " : "down", incoming);
                 #endif    
 #endif

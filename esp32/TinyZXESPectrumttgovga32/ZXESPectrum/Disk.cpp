@@ -1,13 +1,13 @@
 #include "gbConfig.h"
 #include "gbGlobals.h"
-#include "dataFlash/gbtape.h"
-#ifndef use_lib_wifi
- #include "dataFlash/gbscr.h"
-#endif 
-#include "dataFlash/gbrom.h"
-#ifndef use_lib_wifi
- #include "dataFlash/gbsna.h"
-#endif 
+//#include "dataFlash/gbtape.h" //No se usa
+//#ifndef use_lib_wifi //No se usa
+// #include "dataFlash/gbscr.h" //No se usa
+//#endif //No se usa
+//#include "dataFlash/gbrom.h" //No se necesita
+//#ifndef use_lib_wifi //No se usa
+// #include "dataFlash/gbsna.h" //No se usa
+//#endif //No se usa
 #include "PS2Kbd.h"
 #include "Memory.h"
 #include "z80main.h"
@@ -57,10 +57,10 @@
  // for (int i=0;i<6912;i++)
  //  writebyte((16384+i),gb_list_scr_48k_data[id][i]); //screen
   #ifdef use_lib_core_linkefong
-   memcpy(ram5,&gb_list_scr_48k_data[id][0],6912); //optimizado
+   memcpy(ram5,&gb_ptr_list_scr_48k_data[id][0],6912); //optimizado
   #else 
    #ifdef use_lib_core_jsanchezv
-    memcpy(ram5_jsanchezv,&gb_list_scr_48k_data[id][0],6912); //optimizado
+    memcpy(ram5_jsanchezv,&gb_ptr_list_scr_48k_data[id][0],6912); //optimizado
    #endif
   #endif
  
@@ -71,20 +71,20 @@
 void LoadTapeName(unsigned char id,char *cad,int * cont)
 {for (unsigned char i=0;i<10;i++) 
  {
-  cad[i]= gb_list_tapes_48k_data[id][*cont];
+  cad[i]= gb_ptr_list_tapes_48k_data[id][*cont];
   *cont = *cont+1;
  }
  cad[10]='\0'; 
 }
 
 unsigned char LoadTapeByte(unsigned char id,int * cont)
-{unsigned char aReturn = gb_list_tapes_48k_data[id][*cont];
+{unsigned char aReturn = gb_ptr_list_tapes_48k_data[id][*cont];
  *cont = *cont + 1;
  return aReturn;
 }
 
 unsigned short int LoadTapeWord(unsigned char id,int * cont)
-{unsigned short int aReturn = (gb_list_tapes_48k_data[id][*cont]) | (gb_list_tapes_48k_data[id][(*cont)+1]<<8);
+{unsigned short int aReturn = (gb_ptr_list_tapes_48k_data[id][*cont]) | (gb_ptr_list_tapes_48k_data[id][(*cont)+1]<<8);
  *cont = *cont + 2;
  return aReturn;    
 }
@@ -93,7 +93,7 @@ unsigned char SearchTapeByte(unsigned char id,unsigned char aData,int * cont)
 {unsigned char salir=0;
  while (salir == 0)
  {
-  if ((gb_list_tapes_48k_data[id][*cont] != aData) && ((*cont)<gb_list_tapes_48k_size[id]))
+  if ((gb_ptr_list_tapes_48k_data[id][*cont] != aData) && ((*cont)<gb_ptr_list_tapes_48k_size[id]))
    *cont = *cont + 1;
   else
    salir = 1;
@@ -102,9 +102,9 @@ unsigned char SearchTapeByte(unsigned char id,unsigned char aData,int * cont)
 }
 
 //Devuelve el numero de bloques y lista con el contador del bloque
-int GetListBlocks(unsigned char id,int *auxList)
-{
-}
+//int GetListBlocks(unsigned char id,int *auxList)
+//{
+//}
 
 #ifdef use_lib_core_linkefong
 //Lee una cinta a memoria
@@ -112,13 +112,15 @@ void load_tape2Flash(unsigned char id)
 {
  int cont=2;
  char cad_name[11]="";
- int auxLen,auxParam1,auxParam2,auxLenVar,auxLenScreen;
- int auxFlag,auxCRC,auxSize,auxPgrSize;
- int contHead;
+ int auxLen,auxParam1,auxParam2;
+ //,auxLenVar,auxLenScreen; //No se usa
+ int auxFlag,auxCRC;
+ //auxSize,auxPgrSize; //No se usa
+ //int contHead; //No se usa
  unsigned char tipo;
  char cad_dest[255];
- int x_ini=5;
- int y_ini=440; 
+ //int x_ini=5; //No se usa
+ //int y_ini=440; //No se usa
 
  #ifdef use_lib_sound_ay8912
   ResetSound();
@@ -168,10 +170,10 @@ void load_tape2Flash(unsigned char id)
  {
   //SDLprintText(SDLOSDGetSurface(),"SCREEN FILE",x_ini,y_ini,gb_cache_zxcolor[id_cache_WHITE],gb_cache_zxcolor[id_cache_BLACK],0); y_ini+= 8;
   #ifdef use_lib_core_linkefong
-   memcpy(ram5,&gb_list_tapes_48k_data[id][cont],6912); //optimizado
+   memcpy(ram5,&gb_ptr_list_tapes_48k_data[id][cont],6912); //optimizado
   #else
    #ifdef use_lib_core_jsanchezv
-    memcpy(ram5_jsanchezv,&gb_list_tapes_48k_data[id][cont],6912); //optimizado
+    memcpy(ram5_jsanchezv,&gb_ptr_list_tapes_48k_data[id][cont],6912); //optimizado
    #endif 
   #endif 
  }
@@ -181,10 +183,10 @@ void load_tape2Flash(unsigned char id)
   {
    //SDLprintText(SDLOSDGetSurface(),"POSIBLE SCREEN GAME",x_ini,y_ini,gb_cache_zxcolor[id_cache_WHITE],gb_cache_zxcolor[id_cache_BLACK],0); y_ini+= 8;
    #ifdef use_lib_core_linkefong   
-    memcpy(ram5,&gb_list_tapes_48k_data[id][cont],6912); //optimizado
+    memcpy(ram5,&gb_ptr_list_tapes_48k_data[id][cont],6912); //optimizado
    #else
     #ifdef use_lib_core_jsanchezv
-     memcpy(ram5_jsanchezv,&gb_list_tapes_48k_data[id][cont],6912); //optimizado
+     memcpy(ram5_jsanchezv,&gb_ptr_list_tapes_48k_data[id][cont],6912); //optimizado
     #endif
    #endif 
 
@@ -210,7 +212,7 @@ void load_tape2Flash(unsigned char id)
    
    for (int i=0;i<auxLen;i++)
    {
-    writebyte(auxParam1,gb_list_tapes_48k_data[id][(cont+i)]);
+    writebyte(auxParam1,gb_ptr_list_tapes_48k_data[id][(cont+i)]);
    }
    
     //if (strcmp(cfg_arch,"48K") == 0)
@@ -248,8 +250,11 @@ void load_tape2Flash(unsigned char id)
    #ifdef use_lib_sound_ay8912
     ResetSound();
    #endif
-   if (id >= max_list_sna_128)
+   //if (id >= max_list_sna_128) //No se usa
+   if (id >= gb_max_list_sna_128)
+   {
     return;
+   }
    zx_reset();
 
     #ifdef use_lib_only_48k
@@ -268,45 +273,77 @@ void load_tape2Flash(unsigned char id)
     #endif   
 
     // Read in the registers    
-    _zxCpu.i = gb_list_sna_128k_data[id][0]; //lhandle.read();
-    _zxCpu.registers.byte[Z80_L] = gb_list_sna_128k_data[id][1];//lhandle.read();
-    _zxCpu.registers.byte[Z80_H] = gb_list_sna_128k_data[id][2];//lhandle.read();
-    _zxCpu.registers.byte[Z80_E] = gb_list_sna_128k_data[id][3];//lhandle.read();
-    _zxCpu.registers.byte[Z80_D] = gb_list_sna_128k_data[id][4];//lhandle.read();
-    _zxCpu.registers.byte[Z80_C] = gb_list_sna_128k_data[id][5];//lhandle.read();
-    _zxCpu.registers.byte[Z80_B] = gb_list_sna_128k_data[id][6];//lhandle.read();
-    _zxCpu.registers.byte[Z80_F] = gb_list_sna_128k_data[id][7];//lhandle.read();
-    _zxCpu.registers.byte[Z80_A] = gb_list_sna_128k_data[id][8];//lhandle.read();
+    //_zxCpu.i = gb_list_sna_128k_data[id][0]; //lhandle.read(); //No se usa
+    //_zxCpu.registers.byte[Z80_L] = gb_list_sna_128k_data[id][1];//lhandle.read(); //No se usa
+    //_zxCpu.registers.byte[Z80_H] = gb_list_sna_128k_data[id][2];//lhandle.read(); //No se usa
+    //_zxCpu.registers.byte[Z80_E] = gb_list_sna_128k_data[id][3];//lhandle.read(); //No se usa
+    //_zxCpu.registers.byte[Z80_D] = gb_list_sna_128k_data[id][4];//lhandle.read(); //No se usa
+    //_zxCpu.registers.byte[Z80_C] = gb_list_sna_128k_data[id][5];//lhandle.read(); //No se usa
+    //_zxCpu.registers.byte[Z80_B] = gb_list_sna_128k_data[id][6];//lhandle.read(); //No se usa
+    //_zxCpu.registers.byte[Z80_F] = gb_list_sna_128k_data[id][7];//lhandle.read(); //No se usa
+    //_zxCpu.registers.byte[Z80_A] = gb_list_sna_128k_data[id][8];//lhandle.read(); //No se usa
+
+    _zxCpu.i = gb_ptr_list_sna_128k_data[id][0]; //lhandle.read();    
+    _zxCpu.registers.byte[Z80_L] = gb_ptr_list_sna_128k_data[id][1];//lhandle.read();
+    _zxCpu.registers.byte[Z80_H] = gb_ptr_list_sna_128k_data[id][2];//lhandle.read();
+    _zxCpu.registers.byte[Z80_E] = gb_ptr_list_sna_128k_data[id][3];//lhandle.read();
+    _zxCpu.registers.byte[Z80_D] = gb_ptr_list_sna_128k_data[id][4];//lhandle.read();
+    _zxCpu.registers.byte[Z80_C] = gb_ptr_list_sna_128k_data[id][5];//lhandle.read();
+    _zxCpu.registers.byte[Z80_B] = gb_ptr_list_sna_128k_data[id][6];//lhandle.read();
+    _zxCpu.registers.byte[Z80_F] = gb_ptr_list_sna_128k_data[id][7];//lhandle.read();
+    _zxCpu.registers.byte[Z80_A] = gb_ptr_list_sna_128k_data[id][8];//lhandle.read();
+
 
     _zxCpu.alternates[Z80_HL] = _zxCpu.registers.word[Z80_HL];
     _zxCpu.alternates[Z80_DE] = _zxCpu.registers.word[Z80_DE];
     _zxCpu.alternates[Z80_BC] = _zxCpu.registers.word[Z80_BC];
     _zxCpu.alternates[Z80_AF] = _zxCpu.registers.word[Z80_AF];
 
-    _zxCpu.registers.byte[Z80_L] = gb_list_sna_128k_data[id][9];//lhandle.read();
-    _zxCpu.registers.byte[Z80_H] = gb_list_sna_128k_data[id][10];//lhandle.read();
-    _zxCpu.registers.byte[Z80_E] = gb_list_sna_128k_data[id][11];//lhandle.read();
-    _zxCpu.registers.byte[Z80_D] = gb_list_sna_128k_data[id][12];//lhandle.read();
-    _zxCpu.registers.byte[Z80_C] = gb_list_sna_128k_data[id][13];//lhandle.read();
-    _zxCpu.registers.byte[Z80_B] = gb_list_sna_128k_data[id][14];//lhandle.read();
-    _zxCpu.registers.byte[Z80_IYL] = gb_list_sna_128k_data[id][15];//lhandle.read();
-    _zxCpu.registers.byte[Z80_IYH] = gb_list_sna_128k_data[id][16];//lhandle.read();
-    _zxCpu.registers.byte[Z80_IXL] = gb_list_sna_128k_data[id][17];//lhandle.read();
-    _zxCpu.registers.byte[Z80_IXH] = gb_list_sna_128k_data[id][18];//lhandle.read();
+    //_zxCpu.registers.byte[Z80_L] = gb_list_sna_128k_data[id][9];//lhandle.read(); //No se usa
+    //_zxCpu.registers.byte[Z80_H] = gb_list_sna_128k_data[id][10];//lhandle.read(); //No se usa
+    //_zxCpu.registers.byte[Z80_E] = gb_list_sna_128k_data[id][11];//lhandle.read(); //No se usa
+    //_zxCpu.registers.byte[Z80_D] = gb_list_sna_128k_data[id][12];//lhandle.read(); //No se usa
+    //_zxCpu.registers.byte[Z80_C] = gb_list_sna_128k_data[id][13];//lhandle.read(); //No se usa
+    //_zxCpu.registers.byte[Z80_B] = gb_list_sna_128k_data[id][14];//lhandle.read(); //No se usa
+    //_zxCpu.registers.byte[Z80_IYL] = gb_list_sna_128k_data[id][15];//lhandle.read(); //No se usa
+    //_zxCpu.registers.byte[Z80_IYH] = gb_list_sna_128k_data[id][16];//lhandle.read(); //No se usa
+    //_zxCpu.registers.byte[Z80_IXL] = gb_list_sna_128k_data[id][17];//lhandle.read(); //No se usa
+    //_zxCpu.registers.byte[Z80_IXH] = gb_list_sna_128k_data[id][18];//lhandle.read(); //No se usa
 
-    byte inter = gb_list_sna_128k_data[id][19];//lhandle.read();
+    _zxCpu.registers.byte[Z80_L] = gb_ptr_list_sna_128k_data[id][9];//lhandle.read();
+    _zxCpu.registers.byte[Z80_H] = gb_ptr_list_sna_128k_data[id][10];//lhandle.read();
+    _zxCpu.registers.byte[Z80_E] = gb_ptr_list_sna_128k_data[id][11];//lhandle.read();
+    _zxCpu.registers.byte[Z80_D] = gb_ptr_list_sna_128k_data[id][12];//lhandle.read();
+    _zxCpu.registers.byte[Z80_C] = gb_ptr_list_sna_128k_data[id][13];//lhandle.read();
+    _zxCpu.registers.byte[Z80_B] = gb_ptr_list_sna_128k_data[id][14];//lhandle.read();
+    _zxCpu.registers.byte[Z80_IYL] = gb_ptr_list_sna_128k_data[id][15];//lhandle.read();
+    _zxCpu.registers.byte[Z80_IYH] = gb_ptr_list_sna_128k_data[id][16];//lhandle.read();
+    _zxCpu.registers.byte[Z80_IXL] = gb_ptr_list_sna_128k_data[id][17];//lhandle.read();
+    _zxCpu.registers.byte[Z80_IXH] = gb_ptr_list_sna_128k_data[id][18];//lhandle.read();    
+
+    //byte inter = gb_list_sna_128k_data[id][19];//lhandle.read(); //No se usa
+    byte inter = gb_ptr_list_sna_128k_data[id][19];//lhandle.read();
     _zxCpu.iff2 = (inter & 0x04) ? 1 : 0;
-    _zxCpu.r = gb_list_sna_128k_data[id][20];//lhandle.read();
+    //_zxCpu.r = gb_list_sna_128k_data[id][20];//lhandle.read(); //No se usa
+    _zxCpu.r = gb_ptr_list_sna_128k_data[id][20];//lhandle.read();
 
-    _zxCpu.registers.byte[Z80_F] = gb_list_sna_128k_data[id][21];//lhandle.read();
-    _zxCpu.registers.byte[Z80_A] = gb_list_sna_128k_data[id][22];//lhandle.read();
+    //_zxCpu.registers.byte[Z80_F] = gb_list_sna_128k_data[id][21];//lhandle.read(); //No se usa
+    //_zxCpu.registers.byte[Z80_A] = gb_list_sna_128k_data[id][22];//lhandle.read(); //No se usa
+    
+    _zxCpu.registers.byte[Z80_F] = gb_ptr_list_sna_128k_data[id][21];//lhandle.read();
+    _zxCpu.registers.byte[Z80_A] = gb_ptr_list_sna_128k_data[id][22];//lhandle.read();
 
-    sp_l = gb_list_sna_128k_data[id][23];//lhandle.read();
-    sp_h = gb_list_sna_128k_data[id][24];//lhandle.read();
+
+    //sp_l = gb_list_sna_128k_data[id][23];//lhandle.read(); //No se usa
+    //sp_h = gb_list_sna_128k_data[id][24];//lhandle.read(); //No se usa
+    sp_l = gb_ptr_list_sna_128k_data[id][23];//lhandle.read();
+    sp_h = gb_ptr_list_sna_128k_data[id][24];//lhandle.read();    
     _zxCpu.registers.word[Z80_SP] = sp_l + sp_h * 0x100;
 
-    _zxCpu.im = gb_list_sna_128k_data[id][25];//lhandle.read();
-    byte bordercol = gb_list_sna_128k_data[id][26];//lhandle.read();
+    //_zxCpu.im = gb_list_sna_128k_data[id][25];//lhandle.read(); //No se usa
+    //byte bordercol = gb_list_sna_128k_data[id][26];//lhandle.read(); //No se usa
+    _zxCpu.im = gb_ptr_list_sna_128k_data[id][25];//lhandle.read();
+    byte bordercol = gb_ptr_list_sna_128k_data[id][26];//lhandle.read();    
 
     borderTemp = bordercol;
 
@@ -316,34 +353,35 @@ void load_tape2Flash(unsigned char id)
     contBuffer = 27;
     //uint16_t buf_p = 0x4000;
         
-    memcpy(ram5,&gb_list_sna_128k_data[id][contBuffer],0x4000);
+    memcpy(ram5,&gb_ptr_list_sna_128k_data[id][contBuffer],0x4000);
     contBuffer+= 0x4000;
-    memcpy(ram2,&gb_list_sna_128k_data[id][contBuffer],0x4000); //0x4000 + 17d
+    memcpy(ram2,&gb_ptr_list_sna_128k_data[id][contBuffer],0x4000); //0x4000 + 17d
     contBuffer+= 0x8000; //Saltamos el banco cacheado 0x4000+0x4000
     
-    byte retaddr_l = gb_list_sna_128k_data[id][contBuffer++];//lhandle.read();
-    byte retaddr_h = gb_list_sna_128k_data[id][contBuffer++];//lhandle.read();
+    byte retaddr_l = gb_ptr_list_sna_128k_data[id][contBuffer++];//lhandle.read();
+    byte retaddr_h = gb_ptr_list_sna_128k_data[id][contBuffer++];//lhandle.read();
     retaddr = retaddr_l + retaddr_h * 0x100;
-    byte tmp_port = gb_list_sna_128k_data[id][contBuffer++];//lhandle.read();
-    unsigned char auxBank= (tmp_port&0x07);
+    byte tmp_port = gb_ptr_list_sna_128k_data[id][contBuffer++];//lhandle.read();
+    //unsigned char auxBank= (tmp_port&0x07); //No se usa
     //printf("port 0x7ffd %x banco:%d\n",tmp_port,auxBank);
     //fflush(stdout);
     
-    byte tr_dos = gb_list_sna_128k_data[id][contBuffer++];//lhandle.read();
+    //byte tr_dos = gb_list_sna_128k_data[id][contBuffer++];//lhandle.read();
+    contBuffer++; //No se usa tr_dos pero esta en SNA
     byte tmp_latch = tmp_port & 0x7;
     bank_latch = tmp_latch; gb_ptr_IdRomRam[3] = bank_latch;
     
     contBuffer= 0x801B; //27+0x4000+0x4000
     switch (bank_latch)
     {     
-     case 0: memcpy(ram0,&gb_list_sna_128k_data[id][contBuffer],0x4000); break;
-     case 1: memcpy(ram1,&gb_list_sna_128k_data[id][contBuffer],0x4000); break;
-     case 2: memcpy(ram2,&gb_list_sna_128k_data[id][contBuffer],0x4000); break;
-     case 3: memcpy(ram3,&gb_list_sna_128k_data[id][contBuffer],0x4000); break;
-     case 4: memcpy(ram4,&gb_list_sna_128k_data[id][contBuffer],0x4000); break;
-     case 5: memcpy(ram5,&gb_list_sna_128k_data[id][contBuffer],0x4000); break;
-     case 6: memcpy(ram6,&gb_list_sna_128k_data[id][contBuffer],0x4000); break;
-     case 7: memcpy(ram7,&gb_list_sna_128k_data[id][contBuffer],0x4000); break;
+     case 0: memcpy(ram0,&gb_ptr_list_sna_128k_data[id][contBuffer],0x4000); break;
+     case 1: memcpy(ram1,&gb_ptr_list_sna_128k_data[id][contBuffer],0x4000); break;
+     case 2: memcpy(ram2,&gb_ptr_list_sna_128k_data[id][contBuffer],0x4000); break;
+     case 3: memcpy(ram3,&gb_ptr_list_sna_128k_data[id][contBuffer],0x4000); break;
+     case 4: memcpy(ram4,&gb_ptr_list_sna_128k_data[id][contBuffer],0x4000); break;
+     case 5: memcpy(ram5,&gb_ptr_list_sna_128k_data[id][contBuffer],0x4000); break;
+     case 6: memcpy(ram6,&gb_ptr_list_sna_128k_data[id][contBuffer],0x4000); break;
+     case 7: memcpy(ram7,&gb_ptr_list_sna_128k_data[id][contBuffer],0x4000); break;
     }
     contBuffer+= 0x4004; //0x4000+4    
     //131103 bytes de SNA 128                
@@ -354,12 +392,12 @@ void load_tape2Flash(unsigned char id)
      {
       switch (i)
       {
-       case 0: memcpy(ram0,&gb_list_sna_128k_data[id][contBuffer],0x4000); break;
-       case 1: memcpy(ram1,&gb_list_sna_128k_data[id][contBuffer],0x4000); break;
-       case 3: memcpy(ram3,&gb_list_sna_128k_data[id][contBuffer],0x4000); break;
-       case 4: memcpy(ram4,&gb_list_sna_128k_data[id][contBuffer],0x4000); break;
-       case 6: memcpy(ram6,&gb_list_sna_128k_data[id][contBuffer],0x4000); break;
-       case 7: memcpy(ram7,&gb_list_sna_128k_data[id][contBuffer],0x4000); break;                            
+       case 0: memcpy(ram0,&gb_ptr_list_sna_128k_data[id][contBuffer],0x4000); break;
+       case 1: memcpy(ram1,&gb_ptr_list_sna_128k_data[id][contBuffer],0x4000); break;
+       case 3: memcpy(ram3,&gb_ptr_list_sna_128k_data[id][contBuffer],0x4000); break;
+       case 4: memcpy(ram4,&gb_ptr_list_sna_128k_data[id][contBuffer],0x4000); break;
+       case 6: memcpy(ram6,&gb_ptr_list_sna_128k_data[id][contBuffer],0x4000); break;
+       case 7: memcpy(ram7,&gb_ptr_list_sna_128k_data[id][contBuffer],0x4000); break;                            
       }
       contBuffer+= 0x4000;           
      }
@@ -392,7 +430,7 @@ void load_tape2Flash(unsigned char id)
    }    
     int contBuffer=0;
     //JJ File lhandle;
-    uint16_t size_read;
+    //uint16_t size_read; //No se usa
     byte sp_h, sp_l;
     uint16_t retaddr;
     //int sna_size;
@@ -400,8 +438,11 @@ void load_tape2Flash(unsigned char id)
      ResetSound();
     #endif 
 
-    if (id >= max_list_sna_48)
+    //if (id >= max_list_sna_48) //No se usa
+    if (id >= gb_max_list_sna_48)
+    {
      return;
+    }
 
     zx_reset();
 
@@ -447,47 +488,47 @@ void load_tape2Flash(unsigned char id)
         bank_latch = 0; gb_ptr_IdRomRam[3]=0;
         video_latch = 0;
     }
-    size_read = 0;
+    //size_read = 0; //No se usa
     // Read in the registers    
-    _zxCpu.i = gb_list_sna_48k_data[id][0]; //lhandle.read();
-    _zxCpu.registers.byte[Z80_L] = gb_list_sna_48k_data[id][1];//lhandle.read();
-    _zxCpu.registers.byte[Z80_H] = gb_list_sna_48k_data[id][2];//lhandle.read();
-    _zxCpu.registers.byte[Z80_E] = gb_list_sna_48k_data[id][3];//lhandle.read();
-    _zxCpu.registers.byte[Z80_D] = gb_list_sna_48k_data[id][4];//lhandle.read();
-    _zxCpu.registers.byte[Z80_C] = gb_list_sna_48k_data[id][5];//lhandle.read();
-    _zxCpu.registers.byte[Z80_B] = gb_list_sna_48k_data[id][6];//lhandle.read();
-    _zxCpu.registers.byte[Z80_F] = gb_list_sna_48k_data[id][7];//lhandle.read();
-    _zxCpu.registers.byte[Z80_A] = gb_list_sna_48k_data[id][8];//lhandle.read();
+    _zxCpu.i = gb_ptr_list_sna_48k_data[id][0]; //lhandle.read();
+    _zxCpu.registers.byte[Z80_L] = gb_ptr_list_sna_48k_data[id][1];//lhandle.read();
+    _zxCpu.registers.byte[Z80_H] = gb_ptr_list_sna_48k_data[id][2];//lhandle.read();
+    _zxCpu.registers.byte[Z80_E] = gb_ptr_list_sna_48k_data[id][3];//lhandle.read();
+    _zxCpu.registers.byte[Z80_D] = gb_ptr_list_sna_48k_data[id][4];//lhandle.read();
+    _zxCpu.registers.byte[Z80_C] = gb_ptr_list_sna_48k_data[id][5];//lhandle.read();
+    _zxCpu.registers.byte[Z80_B] = gb_ptr_list_sna_48k_data[id][6];//lhandle.read();
+    _zxCpu.registers.byte[Z80_F] = gb_ptr_list_sna_48k_data[id][7];//lhandle.read();
+    _zxCpu.registers.byte[Z80_A] = gb_ptr_list_sna_48k_data[id][8];//lhandle.read();
 
     _zxCpu.alternates[Z80_HL] = _zxCpu.registers.word[Z80_HL];
     _zxCpu.alternates[Z80_DE] = _zxCpu.registers.word[Z80_DE];
     _zxCpu.alternates[Z80_BC] = _zxCpu.registers.word[Z80_BC];
     _zxCpu.alternates[Z80_AF] = _zxCpu.registers.word[Z80_AF];
 
-    _zxCpu.registers.byte[Z80_L] = gb_list_sna_48k_data[id][9];//lhandle.read();
-    _zxCpu.registers.byte[Z80_H] = gb_list_sna_48k_data[id][10];//lhandle.read();
-    _zxCpu.registers.byte[Z80_E] = gb_list_sna_48k_data[id][11];//lhandle.read();
-    _zxCpu.registers.byte[Z80_D] = gb_list_sna_48k_data[id][12];//lhandle.read();
-    _zxCpu.registers.byte[Z80_C] = gb_list_sna_48k_data[id][13];//lhandle.read();
-    _zxCpu.registers.byte[Z80_B] = gb_list_sna_48k_data[id][14];//lhandle.read();
-    _zxCpu.registers.byte[Z80_IYL] = gb_list_sna_48k_data[id][15];//lhandle.read();
-    _zxCpu.registers.byte[Z80_IYH] = gb_list_sna_48k_data[id][16];//lhandle.read();
-    _zxCpu.registers.byte[Z80_IXL] = gb_list_sna_48k_data[id][17];//lhandle.read();
-    _zxCpu.registers.byte[Z80_IXH] = gb_list_sna_48k_data[id][18];//lhandle.read();
+    _zxCpu.registers.byte[Z80_L] = gb_ptr_list_sna_48k_data[id][9];//lhandle.read();
+    _zxCpu.registers.byte[Z80_H] = gb_ptr_list_sna_48k_data[id][10];//lhandle.read();
+    _zxCpu.registers.byte[Z80_E] = gb_ptr_list_sna_48k_data[id][11];//lhandle.read();
+    _zxCpu.registers.byte[Z80_D] = gb_ptr_list_sna_48k_data[id][12];//lhandle.read();
+    _zxCpu.registers.byte[Z80_C] = gb_ptr_list_sna_48k_data[id][13];//lhandle.read();
+    _zxCpu.registers.byte[Z80_B] = gb_ptr_list_sna_48k_data[id][14];//lhandle.read();
+    _zxCpu.registers.byte[Z80_IYL] = gb_ptr_list_sna_48k_data[id][15];//lhandle.read();
+    _zxCpu.registers.byte[Z80_IYH] = gb_ptr_list_sna_48k_data[id][16];//lhandle.read();
+    _zxCpu.registers.byte[Z80_IXL] = gb_ptr_list_sna_48k_data[id][17];//lhandle.read();
+    _zxCpu.registers.byte[Z80_IXH] = gb_ptr_list_sna_48k_data[id][18];//lhandle.read();
 
-    byte inter = gb_list_sna_48k_data[id][19];//lhandle.read();
+    byte inter = gb_ptr_list_sna_48k_data[id][19];//lhandle.read();
     _zxCpu.iff2 = (inter & 0x04) ? 1 : 0;
-    _zxCpu.r = gb_list_sna_48k_data[id][20];//lhandle.read();
+    _zxCpu.r = gb_ptr_list_sna_48k_data[id][20];//lhandle.read();
 
-    _zxCpu.registers.byte[Z80_F] = gb_list_sna_48k_data[id][21];//lhandle.read();
-    _zxCpu.registers.byte[Z80_A] = gb_list_sna_48k_data[id][22];//lhandle.read();
+    _zxCpu.registers.byte[Z80_F] = gb_ptr_list_sna_48k_data[id][21];//lhandle.read();
+    _zxCpu.registers.byte[Z80_A] = gb_ptr_list_sna_48k_data[id][22];//lhandle.read();
 
-    sp_l = gb_list_sna_48k_data[id][23];//lhandle.read();
-    sp_h = gb_list_sna_48k_data[id][24];//lhandle.read();
+    sp_l = gb_ptr_list_sna_48k_data[id][23];//lhandle.read();
+    sp_h = gb_ptr_list_sna_48k_data[id][24];//lhandle.read();
     _zxCpu.registers.word[Z80_SP] = sp_l + sp_h * 0x100;
 
-    _zxCpu.im = gb_list_sna_48k_data[id][25];//lhandle.read();
-    byte bordercol = gb_list_sna_48k_data[id][26];//lhandle.read();
+    _zxCpu.im = gb_ptr_list_sna_48k_data[id][25];//lhandle.read();
+    byte bordercol = gb_ptr_list_sna_48k_data[id][26];//lhandle.read();
 
     borderTemp = bordercol;
 
@@ -502,7 +543,7 @@ void load_tape2Flash(unsigned char id)
         while (contBuffer< 50000)
         {
             //JJ writebyte(buf_p, lhandle.read());
-            writebyte(buf_p, gb_list_sna_48k_data[id][contBuffer]);
+            writebyte(buf_p, gb_ptr_list_sna_48k_data[id][contBuffer]);
             contBuffer++;
             buf_p++;
         }
@@ -511,7 +552,7 @@ void load_tape2Flash(unsigned char id)
         // retaddr = ram5[offset] + 0x100 * ram5[offset + 1];
         retaddr = readword(thestack);
         #ifdef use_lib_log_serial
-         Serial.printf("retaddr %x\n", retaddr);
+         Serial.printf("retaddr %x\r\n", retaddr);
         #endif
         _zxCpu.registers.word[Z80_SP]++;
         _zxCpu.registers.word[Z80_SP]++;
@@ -596,7 +637,7 @@ void load_tape2Flash(unsigned char id)
  void load_ram2FlashFromWIFI(char *cadUrl,unsigned char isSNA48K)
  {
   #ifdef use_lib_wifi_debug
-   Serial.printf("loadram2FlashFromWIFI\n");
+   Serial.printf("loadram2FlashFromWIFI\r\n");
   #endif
   if (isSNA48K != 1)
   {
@@ -604,7 +645,7 @@ void load_tape2Flash(unsigned char id)
    return;
   }    
     int contBuffer=0;    
-    uint16_t size_read;
+    //uint16_t size_read; //No se usa
     byte sp_h, sp_l;
     uint16_t retaddr;    
     #ifdef use_lib_sound_ay8912
@@ -653,10 +694,10 @@ void load_tape2Flash(unsigned char id)
         bank_latch = 0; gb_ptr_IdRomRam[3]=0;
         video_latch = 0;
     }
-    size_read = 0;
+    //size_read = 0; //No se usa
 
     #ifdef use_lib_wifi_debug
-     Serial.printf("Check WIFI\n");
+     Serial.printf("Check WIFI\r\n");
     #endif 
     if (Check_WIFI() == false)
     {
@@ -666,12 +707,12 @@ void load_tape2Flash(unsigned char id)
     int leidos=0;    
     //Asignar_URL_stream_WIFI("http://192.168.0.36/zxspectrum/input/sna/48k/scene/Dream.sna");
     #ifdef use_lib_wifi_debug
-     Serial.printf("URL:%s\n",cadUrl);
+     Serial.printf("URL:%s\r\n",cadUrl);
     #endif 
     Asignar_URL_stream_WIFI(cadUrl);    
     Leer_url_stream_WIFI(&leidos);    
     #ifdef use_lib_wifi_debug
-     Serial.printf("Leidos:%d\n",leidos); //Leemos 1024 bytes
+     Serial.printf("Leidos:%d\r\n",leidos); //Leemos 1024 bytes
     #endif 
 
     // Read in the registers    
@@ -735,7 +776,7 @@ void load_tape2Flash(unsigned char id)
          {
           Leer_url_stream_WIFI(&leidos);
           #ifdef use_lib_wifi_debug
-           Serial.printf("Leidos:%d\n",leidos);
+           Serial.printf("Leidos:%d\r\n",leidos);
           #endif 
           cont1024= 0;
          }
@@ -743,7 +784,7 @@ void load_tape2Flash(unsigned char id)
 
         retaddr = readword(thestack);
         #ifdef use_lib_log_serial
-         Serial.printf("retaddr:%x\n", retaddr);
+         Serial.printf("retaddr:%x\r\n", retaddr);
         #endif
         _zxCpu.registers.word[Z80_SP]++;
         _zxCpu.registers.word[Z80_SP]++;
@@ -768,18 +809,18 @@ void load_rom2flash(unsigned char is48k,unsigned char id)
  #endif 
  if (is48k == 1)
  {//Para 48K
-  if (id < max_list_rom_48)
+  if (id < gb_max_list_rom_48)
   {  
    #ifdef use_lib_core_jsanchezv
     #ifdef use_lib_rom0_inRAM_jsanchezv
      memcpy(rom0_inRAM_jsanchezv,gb_list_roms_48k_data[id],0x4000);
      rom0_jsanchezv= rom0_inRAM_jsanchezv;
     #else 
-     rom0_jsanchezv= (uint8_t*)gb_list_roms_48k_data[id];
+     rom0_jsanchezv= (uint8_t*)gb_ptr_list_roms_48k_data[id];
      ReloadLocalCacheROMram_jsanchezv();
     #endif
    #else      
-    rom0= (uint8_t*)gb_list_roms_48k_data[id];    
+    rom0= (uint8_t*)gb_ptr_list_roms_48k_data[id];    
     ReloadLocalCacheROMram(); //Recargo punteros rom ram
    #endif 
    //SetMode48K();
@@ -787,19 +828,19 @@ void load_rom2flash(unsigned char is48k,unsigned char id)
  }
  else
  {//128k
-  if (id < max_list_rom_128)
+  if (id < gb_max_list_rom_128)
   {
    #ifdef use_lib_core_jsanchezv      
-    rom0_jsanchezv= (uint8_t*)gb_list_roms_128k_data[id][0];
-    rom1_jsanchezv= (uint8_t*)gb_list_roms_128k_data[id][1];
-    rom2_jsanchezv= (uint8_t*)gb_list_roms_128k_data[id][2];
-    rom3_jsanchezv= (uint8_t*)gb_list_roms_128k_data[id][3];   
+    rom0_jsanchezv= (uint8_t*)gb_ptr_list_roms_128k_data[id][0];
+    rom1_jsanchezv= (uint8_t*)gb_ptr_list_roms_128k_data[id][1];
+    rom2_jsanchezv= (uint8_t*)gb_ptr_list_roms_128k_data[id][2];
+    rom3_jsanchezv= (uint8_t*)gb_ptr_list_roms_128k_data[id][3];   
     ReloadLocalCacheROMram_jsanchezv();
    #else
-    rom0= (uint8_t*)gb_list_roms_128k_data[id][0];
-    rom1= (uint8_t*)gb_list_roms_128k_data[id][1];
-    rom2= (uint8_t*)gb_list_roms_128k_data[id][2];
-    rom3= (uint8_t*)gb_list_roms_128k_data[id][3];
+    rom0= (uint8_t*)gb_ptr_list_roms_128k_data[id][0];
+    rom1= (uint8_t*)gb_ptr_list_roms_128k_data[id][1];
+    rom2= (uint8_t*)gb_ptr_list_roms_128k_data[id][2];
+    rom3= (uint8_t*)gb_ptr_list_roms_128k_data[id][3];
     ReloadLocalCacheROMram(); //Recargo punteros rom ram   
    #endif
    //SetMode128K();

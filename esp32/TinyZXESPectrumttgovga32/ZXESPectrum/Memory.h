@@ -1,6 +1,6 @@
 #ifndef _MEMORY_H
  #define _MEMORY_H
- #include <Arduino.h>
+ #include <Arduino.h> //No lo necesito
  
  #include "gbConfig.h"
  #ifdef use_lib_core_jsanchezv

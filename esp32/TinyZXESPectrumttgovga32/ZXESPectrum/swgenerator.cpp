@@ -111,7 +111,7 @@ void GPIOStream::setupGPIO(gpio_num_t gpio, int bit, gpio_mode_t mode)
   }
 }
 
-
+/* No se usa
 void GPIOStream::play(int freq, lldesc_t volatile * dmaBuffers)
 {
   if (!m_DMAStarted) {
@@ -176,6 +176,7 @@ void GPIOStream::play(int freq, lldesc_t volatile * dmaBuffers)
 
   }
 }
+*/
 
 
 void GPIOStream::stop()
@@ -347,6 +348,7 @@ void floatToFraction(double value, int maxDen, int * num, int * den)
 //
 //  MIN 5303030Hz - sdm0 = 0 sdm1 = 192 sdm2 = 4 o_div = 31
 //  MAX 7575757Hz - sdm0 = 0 sdm1 = 128 sdm2 = 8 o_div = 31
+/* No se usa
 static void APLLCalcParams(double freq, APLLParams * params, uint8_t * a, uint8_t * b, double * out_freq, double * error)
 {
   double FXTAL = FABGLIB_XTAL;
@@ -421,8 +423,9 @@ static void APLLCalcParams(double freq, APLLParams * params, uint8_t * a, uint8_
     }
   }
 }
+*/
 
-
+/* No se usa
 void GPIOStream::setupClock(int freq)
 {
   APLLParams p = {0, 0, 0, 0};
@@ -446,7 +449,7 @@ void GPIOStream::setupClock(int freq)
 
   I2S1.clkm_conf.clka_en = 1;
 }
-
+*/
 
 
 

@@ -124,7 +124,7 @@ public:
 
 private:
 
-  void setupClock(int freq);
+  //void setupClock(int freq); //No se usa
   static void setupGPIO(gpio_num_t gpio, int bit, gpio_mode_t mode);
 
   bool                m_DMAStarted;

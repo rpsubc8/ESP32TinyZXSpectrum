@@ -383,7 +383,7 @@ static void allocate_vga_i2s_buffers()
   for (int i = 0; i < v_pixels; i++) {
     set_dma_buf_desc_buffer(&dma_buf_desc[d++], dma_buf_hblank_vnorm, hblank_len);
     set_dma_buf_desc_buffer(&dma_buf_desc[d++], (uint8_t *) 0, h_pixels);  // set later with set_vga_i2s_active_framebuffer()
-  }
+  } 
 }
 
 //Set the framebuffer memory as the buffers for the DMA buffer
@@ -392,7 +392,7 @@ static void set_vga_i2s_active_framebuffer(unsigned char **fb)
 {
   for (int i = 0; i < v_pixels; i++) {
     set_dma_buf_desc_buffer(&dma_buf_desc[2*(v_front+v_sync+v_back+i)+1], fb[i/v_div], h_pixels);
-  }
+  }  
 }
 
 
@@ -498,7 +498,7 @@ static void setup_i2s_output(const unsigned char *pin_map)
     
   // clock setup
   #ifdef use_lib_fix_double_precision   
-   #ifdef use_lib_vga360x200
+   #ifdef use_lib_vga360x200x70hz_bitluni
     //sdm:0x8BEB1 odir:0x0007
     //(sdm & 0xff):0x00B1 (sdm >> 8):0x00BE (sdm >> 16):0x0008
     unsigned int p0= 0x00B1;
@@ -506,28 +506,65 @@ static void setup_i2s_output(const unsigned char *pin_map)
     unsigned int p2= 0x0008;
     unsigned int p3= 0x0007;
    #else
-    #ifdef use_lib_vga320x200
+    #ifdef use_lib_vga320x200x70hz_bitluni
      //sdm:0x9D8A3 odir:0x0009
      //(sdm & 0xff):0x00A3 (sdm >> 8):0x00D8 (sdm >> 16):0x0009    
      unsigned int p0= 0x00A3;
      unsigned int p1= 0x00D8;
      unsigned int p2= 0x0009;
      unsigned int p3= 0x0009;
+
+     //Datos fabgl 320x200 75 Hz freq:12930000 Da fuera de rango
+     //p0=0x000E;
+     //p1=0x000D;
+     //p2=0x0005;
+     //p3=0x0005;
+     //Datos fabgl 320x200 70Hz freq:12587500 funciona
+     //p0=0x00AE;
+     //p1=0x00CF;
+     //p2=0x0004;
+     //p3=0x0005;
+     //Datos fabgl 320x200@60HzD 60Hz freq:25175000 fuera de rango
+     //p0=0x00EB;
+     //p1=0x0011;
+     //p2=0x0006;
+     //p3=0x0002;
     #else
-     #ifdef use_lib_vga320x240
+     #ifdef use_lib_vga320x240x60hz_bitluni
       //sdm:0x9D8A3 odir:0x0009
       //(sdm & 0xff):0x00A3 (sdm >> 8):0x00D8 (sdm >> 16):0x0009
       unsigned int p0= 0x00A3;
       unsigned int p1= 0x00D8;
       unsigned int p2= 0x0009;
       unsigned int p3= 0x0009;
+
+      //Datos fabgl QVGA 320x240@60Hz 60Hz freq:12600000 Funciona
+      //sdm0:000A sdm1:0057 sdm2:0007 o_div:0007
+      //p0=0x000A;
+      //p1=0x0057;
+      //p2=0x0007;
+      //p3=0x0007;
+     #else
+      #ifdef use_lib_vga320x200x70hz_fabgl
+       unsigned int p0= 0x00AE;
+       unsigned int p1= 0x00CF;
+       unsigned int p2= 0x0004;
+       unsigned int p3= 0x0005;          
+      #else
+       #ifdef use_lib_vga320x240x60hz_fabgl
+        unsigned int p0= 0x000A;
+        unsigned int p1= 0x0057;
+        unsigned int p2= 0x0007;
+        unsigned int p3= 0x0007;       
+       #endif
+      #endif
      #endif
     #endif
    #endif
 
    #ifdef use_lib_debug_i2s
-    Serial.printf("bitluni pixel_clock:%d\n",pixel_clock);
-    Serial.printf("bitluni p0:0x%04X p1:0x%04X p2:0x%04X p3:0x%04X \n",p0,p1,p2,p3);
+    Serial.printf("bitluni pixel_clock:%d\r\n",pixel_clock);
+    Serial.printf("bitluni p0:0x%04X p1:0x%04X p2:0x%04X p3:0x%04X \r\n",p0,p1,p2,p3);
    #endif
 
    rtc_clk_apll_enable(true, p0, p1, p2, p3);
@@ -545,9 +582,9 @@ static void setup_i2s_output(const unsigned char *pin_map)
    if (sdm > 0xA1fff) sdm = 0xA1fff;
 
    #ifdef use_lib_debug_i2s
-    Serial.printf("bitluni freq:%ld pixel_clock:%d\n",freq,pixel_clock);
-    Serial.printf("bitluni sdm:0x%04X odir:0x%04X\n",sdm,odir);
-    Serial.printf("bitluni (sdm & 0xff):0x%04X (sdm >> 8):0x%04X (sdm >> 16):0x%04X\n",sdm & 0xff, (sdm >> 8) & 0xff, sdm >> 16);      
+    Serial.printf("bitluni freq:%ld pixel_clock:%d\r\n",freq,pixel_clock);
+    Serial.printf("bitluni sdm:0x%04X odir:0x%04X\r\n",sdm,odir);
+    Serial.printf("bitluni (sdm & 0xff):0x%04X (sdm >> 8):0x%04X (sdm >> 16):0x%04X\r\n",sdm & 0xff, (sdm >> 8) & 0xff, sdm >> 16);      
    #endif
 
    rtc_clk_apll_enable(true, sdm & 0xff, (sdm >> 8) & 0xff, sdm >> 16, odir);
@@ -630,7 +667,7 @@ static void start_i2s_output()
   esp_intr_enable(i2s_isr_handle);
 
   // start output
-  I2S1.conf.tx_start = 1;
+  I2S1.conf.tx_start = 1; 
 }
 
 

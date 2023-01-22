@@ -2,6 +2,47 @@
  #define _GB_GLOBALS_H
  #include "gbConfig.h"
 
+ //Punteros globales roms
+ extern const char ** gb_ptr_list_roms_48k_title;
+ extern const unsigned char ** gb_ptr_list_roms_48k_data;
+ extern const char ** gb_ptr_list_roms_128k_title;
+ typedef const unsigned char * array4rom[4];
+ //extern const unsigned char ** gb_ptr_list_roms_128k_data;
+ extern const array4rom * gb_ptr_list_roms_128k_data;
+ extern unsigned char gb_max_list_rom_48; //Maximo 256
+ extern unsigned char gb_max_list_rom_128; //Maximo 256
+ 
+ //Punteros globales SNA
+ extern const char ** gb_ptr_list_sna_48k_title;
+ extern const unsigned char ** gb_ptr_list_sna_48k_data;
+ extern const char ** gb_ptr_list_sna_128k_title;  
+ extern const unsigned char ** gb_ptr_list_sna_128k_data;
+ extern unsigned char gb_max_list_sna_48; //Maximo 256
+ extern unsigned char gb_max_list_sna_128; //Maximo 256
+
+ //Punteros globales cintas
+ extern const char ** gb_ptr_list_tapes_48k_title;
+ extern const int * gb_ptr_list_tapes_48k_size;
+ extern const unsigned char ** gb_ptr_list_tapes_48k_data;
+ extern const char ** gb_ptr_list_tapes_128k_title;
+ extern const unsigned char ** gb_ptr_list_tapes_128k_data;
+ extern unsigned char gb_max_list_tape_48; //Maximo 256
+ extern unsigned char gb_max_list_tape_128; //Maximo 256
+
+ //Punteros globales scr
+ extern const char ** gb_ptr_list_scr_48k_title;
+ extern const unsigned char ** gb_ptr_list_scr_48k_data;
+ extern unsigned char gb_max_list_scr_48; //Maximo 256
+
+
+ #ifdef use_lib_keyboard_uart
+  #define BUFFER_SIZE_UART 50
+  extern char gb_buf_uart[BUFFER_SIZE_UART];
+  extern unsigned char gb_rlen_uart;
+  extern unsigned int gb_curTime_keyboard_before_uart;
+  extern unsigned int gb_curTime_keyboard_uart;
+ #endif
+
  #ifdef use_lib_wifi
   extern unsigned char gb_buffer_wifi[1024]; //128 * 8
   extern int gb_size_file_wifi;  
@@ -70,7 +111,7 @@
 
  extern unsigned char gbDelayVideo;
 
- extern char gb_current_tape;
+ extern unsigned char gb_current_tape;
  extern int gb_contTape;
  extern int gb_tape_read;
  extern int gb_local_arrayTape[32]; //32 bloques de cinta maximo
@@ -161,9 +202,10 @@
   extern unsigned char interruptPend_jsanchezv;
   
   extern unsigned char gbSoundSpeaker;
-  #define bitRead(value, bit) (((value) >> (bit)) & 0x01)
-  #define bitSet(value, bit) ((value) |= (1UL << (bit)))
-  #define bitClear(value, bit) ((value) &= ~(1UL << (bit)))
-  #define bitWrite(value, bit, bitvalue) (bitvalue ? bitSet(value, bit) : bitClear(value, bit))    
+  //No se necesita esta en Arduino.h
+  //#define bitRead(value, bit) (((value) >> (bit)) & 0x01)
+  //#define bitSet(value, bit) ((value) |= (1UL << (bit)))
+  //#define bitClear(value, bit) ((value) &= ~(1UL << (bit)))
+  //#define bitWrite(value, bit, bitvalue) (bitvalue ? bitSet(value, bit) : bitClear(value, bit))    
  #endif 
 #endif

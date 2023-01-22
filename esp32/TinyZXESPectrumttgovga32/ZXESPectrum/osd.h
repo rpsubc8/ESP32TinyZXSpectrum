@@ -50,4 +50,9 @@ unsigned char ShowTinyMenu(const char *cadTitle,const char **ptrValue,unsigned c
  //void AsignarOSD_WIFI(HTTPClient * ptr_http, WiFiClient * ptr_stream);
 #endif 
 
+
+#ifdef use_lib_keyboard_uart
+ void keyboard_uart_poll(void);
+#endif 
+
 #endif

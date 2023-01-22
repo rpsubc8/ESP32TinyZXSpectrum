@@ -22,7 +22,9 @@
 #define HC_FLAGS        (Z80_H_FLAG | Z80_C_FLAG)
 
 #define A               (state->registers.byte[Z80_A])
-#define F               (state->registers.byte[Z80_F])
+//Quitar warning usar Arduino
+//#define F               (state->registers.byte[Z80_F])
+#define FNOTWARNING     (state->registers.byte[Z80_F])
 #define B               (state->registers.byte[Z80_B])
 #define C               (state->registers.byte[Z80_C])
 
@@ -51,7 +53,7 @@
 #define S(s)            *((unsigned char *) state->register_table[(s)])
 #define RR(rr)          *((unsigned short *) registers[(rr) + 8])
 #define SS(ss)          *((unsigned short *) registers[(ss) + 12])
-#define CC(cc)          ((F ^ XOR_CONDITION_TABLE[(cc)])                \
+#define CC(cc)          ((FNOTWARNING ^ XOR_CONDITION_TABLE[(cc)])                \
                                 & AND_CONDITION_TABLE[(cc)])
 #define DD(dd)          CC(dd)
 
@@ -188,7 +190,7 @@
         f |= z >> (8 - Z80_C_FLAG_SHIFT);                               \
                                                                         \
         A = z;                                                          \
-        F = f;                                                          \
+        FNOTWARNING = f;                                                          \
 }
 
 #define ADC(x)                                                          \
@@ -196,7 +198,7 @@
         int     a, z, c, f;                                             \
                                                                         \
         a = A;                                                          \
-        z = a + (x) + (F & Z80_C_FLAG);                                 \
+        z = a + (x) + (FNOTWARNING & Z80_C_FLAG);                                 \
                                                                         \
         c = a ^ (x) ^ z;                                                \
         f = c & Z80_H_FLAG;                                             \
@@ -205,7 +207,7 @@
         f |= z >> (8 - Z80_C_FLAG_SHIFT);                               \
                                                                         \
         A = z;                                                          \
-        F = f;                                                          \
+        FNOTWARNING = f;                                                          \
 }               
 
 #define SUB(x)                                                          \
@@ -223,7 +225,7 @@
         f |= c >> (8 - Z80_C_FLAG_SHIFT);                               \
                                                                         \
         A = z;                                                          \
-        F = f;                                                          \
+        FNOTWARNING = f;                                                          \
 }
 
 #define SBC(x)                                                          \
@@ -231,7 +233,7 @@
         int     a, z, c, f;                                             \
                                                                         \
         a = A;                                                          \
-        z = a - (x) - (F & Z80_C_FLAG);                                 \
+        z = a - (x) - (FNOTWARNING & Z80_C_FLAG);                                 \
                                                                         \
         c = a ^ (x) ^ z;                                                \
         f = Z80_N_FLAG | (c & Z80_H_FLAG);                              \
@@ -241,22 +243,22 @@
         f |= c >> (8 - Z80_C_FLAG_SHIFT);                               \
                                                                         \
         A = z;                                                          \
-        F = f;                                                          \
+        FNOTWARNING = f;                                                          \
 }
 
 #define AND(x)                                                          \
 {                                                                       \
-        F = SZYXP_FLAGS_TABLE[A &= (x)] | Z80_H_FLAG;                   \
+        FNOTWARNING = SZYXP_FLAGS_TABLE[A &= (x)] | Z80_H_FLAG;                   \
 }       
 
 #define OR(x)                                                           \
 {                                                                       \
-        F = SZYXP_FLAGS_TABLE[A |= (x)];                                \
+        FNOTWARNING = SZYXP_FLAGS_TABLE[A |= (x)];                                \
 }
 
 #define XOR(x)                                                          \
 {                                                                       \
-        F = SZYXP_FLAGS_TABLE[A ^= (x)];                                \
+        FNOTWARNING = SZYXP_FLAGS_TABLE[A ^= (x)];                                \
 }
          
 #define CP(x)                                                           \
@@ -274,7 +276,7 @@
         f |= OVERFLOW_TABLE[c >> 7];                                    \
         f |= c >> (8 - Z80_C_FLAG_SHIFT);                               \
                                                                         \
-        F = f;                                                          \
+        FNOTWARNING = f;                                                          \
 }
 
 #define INC(x)                                                          \
@@ -284,29 +286,32 @@
         z = (x) + 1;                                                    \
         c = (x) ^ z;                                                    \
                                                                         \
-        f = F & Z80_C_FLAG;                                             \
+        f = FNOTWARNING & Z80_C_FLAG;                                             \
         f |= c & Z80_H_FLAG;                                            \
         f |= SZYX_FLAGS_TABLE[z & 0xff];                                \
         f |= OVERFLOW_TABLE[(c >> 7) & 0x03];                           \
                                                                         \
         (x) = z;                                                        \
-        F = f;                                                          \
+        FNOTWARNING = f;                                                          \
 }
 
-#define DEC(x)                                                          \
+//Quitar warning al usar Arduino
+//#define DEC(x)
+//
+#define DECNOTWARNING(x)                                                \
 {                                                                       \
         int     z, c, f;                                                \
                                                                         \
         z = (x) - 1;                                                    \
         c = (x) ^ z;                                                    \
                                                                         \
-        f = Z80_N_FLAG | (F & Z80_C_FLAG);                              \
+        f = Z80_N_FLAG | (FNOTWARNING & Z80_C_FLAG);                              \
         f |= c & Z80_H_FLAG;                                            \
         f |= SZYX_FLAGS_TABLE[z & 0xff];                                \
         f |= OVERFLOW_TABLE[(c >> 7) & 0x03];                           \
                                                                         \
         (x) = z;                                                        \
-        F = f;                                                          \
+        FNOTWARNING = f;                                                          \
 }
 
 /* 0xcb prefixed logical operations. */
@@ -317,7 +322,7 @@
                                                                         \
         c = (x) >> 7;                                                   \
         (x) = ((x) << 1) | c;                                           \
-        F = SZYXP_FLAGS_TABLE[(x) & 0xff] | c;                          \
+        FNOTWARNING = SZYXP_FLAGS_TABLE[(x) & 0xff] | c;                          \
 }
 
 #define RL(x)                                                           \
@@ -325,8 +330,8 @@
         int     c;                                                      \
                                                                         \
         c = (x) >> 7;                                                   \
-        (x) = ((x) << 1) | (F & Z80_C_FLAG);                            \
-        F = SZYXP_FLAGS_TABLE[(x) & 0xff] | c;                          \
+        (x) = ((x) << 1) | (FNOTWARNING & Z80_C_FLAG);                            \
+        FNOTWARNING = SZYXP_FLAGS_TABLE[(x) & 0xff] | c;                          \
 }
 
 #define RRC(x)                                                          \
@@ -335,7 +340,7 @@
                                                                         \
         c = (x) & 0x01;                                                 \
         (x) = ((x) >> 1) | (c << 7);                                    \
-        F = SZYXP_FLAGS_TABLE[(x) & 0xff] | c;                          \
+        FNOTWARNING = SZYXP_FLAGS_TABLE[(x) & 0xff] | c;                          \
 }
 
 #define RR_INSTRUCTION(x)                                               \
@@ -343,8 +348,8 @@
         int     c;                                                      \
                                                                         \
         c = (x) & 0x01;                                                 \
-        (x) = ((x) >> 1) | ((F & Z80_C_FLAG) << 7);                     \
-        F = SZYXP_FLAGS_TABLE[(x) & 0xff] | c;                          \
+        (x) = ((x) >> 1) | ((FNOTWARNING & Z80_C_FLAG) << 7);                     \
+        FNOTWARNING = SZYXP_FLAGS_TABLE[(x) & 0xff] | c;                          \
 }
 
 #define SLA(x)                                                          \
@@ -353,7 +358,7 @@
                                                                         \
         c = (x) >> 7;                                                   \
         (x) <<= 1;                                                      \
-        F = SZYXP_FLAGS_TABLE[(x) & 0xff] | c;                          \
+        FNOTWARNING = SZYXP_FLAGS_TABLE[(x) & 0xff] | c;                          \
 }
 
 #define SLL(x)                                                          \
@@ -362,7 +367,7 @@
                                                                         \
         c = (x) >> 7;                                                   \
         (x) = ((x) << 1) | 0x01;                                        \
-        F = SZYXP_FLAGS_TABLE[(x) & 0xff] | c;                          \
+        FNOTWARNING = SZYXP_FLAGS_TABLE[(x) & 0xff] | c;                          \
 }
 
 #define SRA(x)                                                          \
@@ -371,7 +376,7 @@
                                                                         \
         c = (x) & 0x01;                                                 \
         (x) = ((signed char) (x)) >> 1;  				\
-        F = SZYXP_FLAGS_TABLE[(x) & 0xff] | c;                          \
+        FNOTWARNING = SZYXP_FLAGS_TABLE[(x) & 0xff] | c;                          \
 }
         
 #define SRL(x)                                                          \
@@ -380,7 +385,7 @@
                                                                         \
         c = (x) & 0x01;                                                 \
         (x) >>= 1;                                                      \
-        F = SZYXP_FLAGS_TABLE[(x) & 0xff] | c;                          \
+        FNOTWARNING = SZYXP_FLAGS_TABLE[(x) & 0xff] | c;                          \
 }
 
 #endif
