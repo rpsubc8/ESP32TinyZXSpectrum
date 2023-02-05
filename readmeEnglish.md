@@ -126,7 +126,7 @@ We can do key combinations at exactly the same time, such as * and P, so it woul
 <br><br>
 <h1>SNA and SCR UART</h1>
 Enabling the <b>use_lib_scr_uart</b> option will allow SCR files (6912 bytes) to be read from the screen by the terminal. Likewise, if the option <b>use_lib_sna_uart</b> is activated, it will allow to read 48K snapshots (49179 bytes), for now.<br>
-If this option is activated, when we want to load an SCR or an SNA, the OSC menu will ask us if we want to use UART or Flash. If we choose UART, a message will appear on the screen waiting for data from the UART, and if it exceeds a certain timeout, it will stop reading. As soon as we send the data, it will start to display the loaded bytes.<br>
+If this option is activated, when we want to load an SCR or an SNA, the OSD menu will ask us if we want to use UART or Flash. If we choose UART, a message will appear on the screen waiting for data from the UART, and if it exceeds a certain timeout, it will stop reading. As soon as we send the data, it will start to display the loaded bytes.<br>
 The way to send the data is by converting the binary file to ASCII hexadecimal format, without 0x, commas or strange characters. An example for a valid SCR would be:
 <pre>
 0000000000003000000038070000E001
