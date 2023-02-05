@@ -190,6 +190,8 @@ The file <b>gbConfig.h</b> options are selected:
  <li><b>use_lib_wifi: </b> WIFI mode support for loading SCR's and SNA's. (48K mode only)</li>
  <li><b>use_lib_only_48k: </b> Only supports 48K mode, rom0, ram0, ram2 and ram5.</li> 
  <li><b>use_lib_fix_double_precision: </b> It doesn't use the VGA video frequency calculation with the ESP32 itself, avoiding possible accuracy problems with the mantissa. This is useful for ESP32's that miscalculate the frequency.</li>
+ <li><b>use_lib_scr_uart</b> Allows loading SCR (6912 bytes) by VStudio terminal monitor or from putty</li>
+ <li><b>use_lib_sna_uart</b> Allows to load SNA 48K (49179 bytes) via VStudio terminal monitor or from putty</li>
 </ul>
 
 
