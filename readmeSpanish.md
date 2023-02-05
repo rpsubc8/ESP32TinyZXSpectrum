@@ -37,6 +37,7 @@ He realizado varias modificaciones:
  <li>Opción de eliminar el cálculo de redondeo IEEE (double) de la VGA, para evitar problemas de precisión. Encontrada esta anomalía a partir del fallo encontrado por David Crespo Tascón al no sacar video.</li>
  <li>Añadidos 2 modos de video 320x200 70Hz y 320x240 con los datos de fabgl</li>
  <li>Añadido soporte de teclado desde terminal serie usb, monitor VStudio o putty.</li>
+ <li>Añadido soporte de lectura SNA (sólo de 48K) y SCR desde terminal serie usb, monitor VStudio o putty.</li>
 </ul>
 
 <br><br>
@@ -100,7 +101,7 @@ Se permite cargar:
 <h1>Teclado UART</h1>
 Se se activa la opción <b>use_lib_keyboard_uart</b>, se permite usar el teclado del PC desde el monitor VStudio o desde el putty (115200 bauds), de manera simple, dado que no es mediante lectura SCANCODE down, up:
 <ul>
- <li><b>TAB, F2:</b> Muestra OSD</li>
+ <li><b>Tecla TAB o tecla F2:</b> Muestra OSD</li>
  <li><b>SHIFT+2 ("):</b> Envia CONTROL + P al ZX48K</li>
  <li><b>BackSpace (borrar):</b> Envia SHIFT + 0 al ZX48K</li>
  <li><b>ENTER</b>: Envía ENTER en el ZX48K</li>
@@ -110,10 +111,39 @@ Se se activa la opción <b>use_lib_keyboard_uart</b>, se permite usar el teclado
  <li><b>Arriba:</b> SHIFT + 7 y Kempston Arriba</li>
  <li><b>Abajo:</b> SHIFT + 6 y Kempston Abajo</li>
  <li><b>Derecha:</b> Kempston derecha</li>
- <li><b>Izquierda:</b> Kempston izquierda</li> 
+ <li><b>Izquierda:</b> Kempston izquierda</li>
+ <li><b>A..Z, a..z: </b> a..z</li>
+ 
 </ul>
 Podemos realizar combinaciones de teclas exactamente al mismo tiempo, como por ejemplo * y P, de manera que sería como pulsar el CONTROL y P del zx48K, lo que equivale a que muestre ".
 Desde el Arduino IDE, no se permite dicha funcionalidad, dado que el monitor serie requiere el envio del ENTER por cada acción.
+ 
+
+<br><br>
+<h1>SNA y SCR UART</h1>
+Se se activa la opción <b>use_lib_scr_uart</b> se permitirá leer archivos SCR (6912 bytes) de pantalla por el terminal. Así mismo si se activa la opción <b>use_lib_sna_uart</b>, se permitirá leer snapshots de 48K (49179 bytes), por ahora.<br>
+Al tener activa está opción, en el menú del OSC cuando queramos cargar un SCR o un SNA nos preguntará si queremos de UART o de Flash. Al elegir UART, nos aparecerá un mensaje en pantalla de esperando por datos de la UART, que si supera un timeout determinado, dejará de leer. En el momento que le enviemos los datos, empezará a mostrar los bytes cargados.<br>
+La forma de enviar los datos, es mediante conversión del archivo binario a formato hexadecimal ASCII, sin 0x, ni comas ni caracteres raros. Un ejemplo para un SCR válido sería:
+<pre>
+0000000000003000000038070000E001
+C1C03800070E0E0E0E00383800E0E387
+
+02020202020202020202020202020202
+02020202020202020202020202020202
+</pre>
+Como se puede ver, un byte, contiene 2 nibbles hexadecimales, por ejemplo el valor de un byte 193, sería el C1.<br>
+Lo normal es componer cada línea con 16 bytes, es decir, 32 nibbles. Cada línea contendrá un retorno de carro. Esta conversión se puede realizar de manera cómoda con la utilidad:
+
+<a href='https://tomeko.net/online_tools/file_to_hex.php?lang=en'>https://tomeko.net/online_tools/file_to_hex.php?lang=en</a>
+
+Debemos desmarcar la opción de incluir 0x y separador de comas, y podemos dejar la opción de incluir nuevas líneas.
+<center><img src='https://raw.githubusercontent.com/rpsubc8/ESP32TinyZXSpectrum/main/preview/tooltomeko.gif'></center>
+
+Un SCR (6912) en este formato ocuparía unos 14688 bytes, que se pueden copiar y pegar en el terminal. Un SNA de 48K (49179 bytes) en este formato suele ocupar 104504 bytes.<br>
+Si usamos <b>putty</b>, debemos elegir la conexión Serie con 115200 baudios:
+<center><img src='https://raw.githubusercontent.com/rpsubc8/ESP32TinyZXSpectrum/main/preview/puttyconfig.gif'></center>
+Y una vez veamos que todo va bien, es copiar y pegar los datos.
+ 
  
 <br><br>
 <h1>Opciones</h1>
