@@ -250,6 +250,15 @@ const char * gb_machine_menu[max_gb_machine_menu]={
  "128K"
 };
 
+
+#if (defined use_lib_sna_uart) || (defined use_lib_scr_uart)
+ #define max_gb_uart_menu 2
+ const char * gb_uart_menu[max_gb_uart_menu]={
+  "UART",
+  "Flash"
+ };
+#endif 
+
 #ifdef use_lib_wifi
  #define max_gb_sna_type_menu 29
  const char * gb_sna_type_menu[max_gb_sna_type_menu]={
@@ -941,8 +950,9 @@ void ShowTinySNAMenu()
  #else
   aSelNum = ShowTinyMenu("Machine SNA",gb_machine_menu,max_gb_machine_menu);
  #endif
- if (aSelNum == 255)
+ if (aSelNum == 255){
   return;
+ }
  Z80EmuSelectTape(0);
  if (aSelNum == 0)
  {   
@@ -1024,29 +1034,74 @@ void ShowTinySNAMenu()
     changeSna2FlashFromWIFI(cadUrl,1); //SNA 48K    
     ShowStatusWIFI(0);    
    }
-  #else
-   //aSelNum = ShowTinyMenu("48K SNA",gb_list_sna_48k_title,max_list_sna_48); //No se usa
-   aSelNum = ShowTinyMenu("48K SNA",gb_ptr_list_sna_48k_title,gb_max_list_sna_48);
-   if (aSelNum == 255)
-    return;
-   //strcpy(cfg_arch,"48K");
-   //cfg_arch = "48K";
-   gb_cfg_arch_is48K = 1;  
-   changeSna2Flash(aSelNum,1); //SNA 48K
+  #else  
+   #ifdef use_lib_sna_uart
+    unsigned char aSelUART = ShowTinyMenu("Machine SNA UART",gb_uart_menu,max_gb_uart_menu);
+    if (aSelUART==255){
+     return;
+    }
+    switch(aSelUART)
+    {
+     case 0:
+      gb_cfg_arch_is48K = 1;
+      changeSna2UART(1); //SNA 48K
+      break;
+     case 1:
+      aSelNum = ShowTinyMenu("48K SNA",gb_ptr_list_sna_48k_title,gb_max_list_sna_48);
+      if (aSelNum == 255){
+       return;
+      }
+      gb_cfg_arch_is48K = 1;
+      changeSna2Flash(aSelNum,1); //SNA 48K
+      break;
+    }
+   #else
+    //aSelNum = ShowTinyMenu("48K SNA",gb_list_sna_48k_title,max_list_sna_48); //No se usa
+    aSelNum = ShowTinyMenu("48K SNA",gb_ptr_list_sna_48k_title,gb_max_list_sna_48);
+    if (aSelNum == 255)
+     return;
+    //strcpy(cfg_arch,"48K");
+    //cfg_arch = "48K";
+    gb_cfg_arch_is48K = 1;  
+    changeSna2Flash(aSelNum,1); //SNA 48K
+   #endif 
   #endif 
  }
  else
  {
   #ifdef use_lib_wifi
   #else
-   //aSelNum = ShowTinyMenu("128K SNA",gb_list_sna_128k_title,max_list_sna_128); //No se usa
-   aSelNum = ShowTinyMenu("128K SNA",gb_ptr_list_sna_128k_title,gb_max_list_sna_128);
-   if (aSelNum == 255)
-    return;  
-   //strcpy(cfg_arch,"128K");
-   //cfg_arch = "128K";
-   gb_cfg_arch_is48K = 0;
-   changeSna2Flash(aSelNum,0); //SNA 128K 
+   #ifdef use_lib_sna_uart
+    unsigned char aSelUART = ShowTinyMenu("Machine SNA UART",gb_uart_menu,max_gb_uart_menu);
+    if (aSelUART==255){
+     return;
+    }
+    switch(aSelUART)
+    {
+     case 0:
+      gb_cfg_arch_is48K = 0;
+      changeSna2UART(0); //SNA 128K
+      break;
+     case 1:
+      aSelNum = ShowTinyMenu("128K SNA",gb_ptr_list_sna_128k_title,gb_max_list_sna_128);
+      if (aSelNum == 255){
+       return;
+      }
+      gb_cfg_arch_is48K = 0;
+      changeSna2Flash(aSelNum,0); //SNA 128K
+      break;
+    }   
+   #else
+    //aSelNum = ShowTinyMenu("128K SNA",gb_list_sna_128k_title,max_list_sna_128); //No se usa
+    aSelNum = ShowTinyMenu("128K SNA",gb_ptr_list_sna_128k_title,gb_max_list_sna_128);
+    if (aSelNum == 255){
+     return;
+    }
+    //strcpy(cfg_arch,"128K");
+    //cfg_arch = "128K";
+    gb_cfg_arch_is48K = 0;
+    changeSna2Flash(aSelNum,0); //SNA 128K 
+   #endif
   #endif
  }
  //vTaskDelay(2);
@@ -1113,6 +1168,185 @@ void ShowTinySelectTAPEMenu()
   return;
  Z80EmuSelectTape(aSelNum);
 }
+
+
+
+#ifdef use_lib_scr_uart
+ unsigned short int UartProcessNibbleByte(unsigned char dato,unsigned int *cont_byte,unsigned short int tope,unsigned int tope_byte);
+
+
+
+ unsigned char CharHexToDec(char a)
+ {
+  unsigned char aReturn=255; //255 es error
+  if ((a=='\r')||(a=='\n'))
+   return 255;
+  if (a>=97) aReturn= a-87; //ABCDEF
+  else if (a>=65) aReturn= a-55; //abcdef
+   else if (a>=48) aReturn=a-48; //0123456789
+  return aReturn;
+ }
+
+ //#define max_buffer_uart 1024
+ unsigned char gb_buffer_uart[max_buffer_uart]; //1KB buffer
+ unsigned char gb_buffer_uart_dest[max_buffer_uart]; //1KB buffer
+ unsigned char gb_buffer_uart_bit=0;
+ unsigned char gb_buffer_uart_a[2]={0,0};
+ unsigned short int gb_buffer_uart_contDest=0;
+
+
+ unsigned short int Leer_stream_UART(unsigned short int topeLeer, unsigned short int topeTimeOut,unsigned char *isTimeOut)
+ {
+  unsigned short int toReturn=0;
+   short int rlen;
+   unsigned int tiempoInicio= millis(); //20 segundos
+   unsigned int cont_byte_scr=0;
+   unsigned char primeraVez= 1; //Primera vez ejecutar
+   unsigned int tiempoInicioUART=0;
+   unsigned int tiempoUARTnow;
+   int leidos;
+
+   unsigned char finUART=0;
+   gb_buffer_uart_bit= 0; //Reseteamos bit  
+   gb_buffer_uart_a[0]= gb_buffer_uart_a[1]= 0; //Reseteamos bits  
+   gb_buffer_uart_contDest= 0;//reseteamos buffer destino
+   memset(gb_buffer_uart_dest,0,sizeof(gb_buffer_uart_dest));
+   //SDLprintText("WAIT UART",50,20,ID_COLOR_WHITE,ID_COLOR_BLACK);
+
+   while (finUART == 0)
+   {
+    tiempoUARTnow= millis();
+    if ((tiempoUARTnow - tiempoInicio) >= 20000)
+    {
+     finUART= 1;
+     *isTimeOut= 1;
+    }
+    else
+    {
+     if (primeraVez == 0)
+     {
+      if ((tiempoUARTnow - tiempoInicioUART) >= 2000)
+      {
+       finUART= 1;
+       *isTimeOut= 1;
+      }
+     }
+    }
+
+    if(Serial.available() > 0)
+    {
+     //rlen = Serial.readBytes(gb_buffer_uart, max_buffer_uart); //Leemos con timeout     
+     rlen = Serial.readBytes(gb_buffer_uart, 1); //Leemos sin timeout 1 byte(1 nibble)
+     if (rlen>0)
+     {
+      primeraVez= 0;
+      tiempoInicioUART= millis();
+      //totBuffer= SerialProcesaBufferPoll(rlen);
+      unsigned char dato= gb_buffer_uart[0];
+      //if (UartProcessNibbleByte(dato,gb_buffer_uart_bit,gb_buffer_uart_contDest,1024) == 1)
+      //6912 bytes de SCREEN tope
+      leidos= UartProcessNibbleByte(dato,&cont_byte_scr,1024,topeLeer); //6912
+      if (leidos > 0)
+      {//Hemos leido 1024 bytes o si se llega al tope       
+       toReturn= leidos;
+       finUART= 1;
+      }
+      
+      //if (cont_byte_scr >= topeSCRbytes) //6912 bytes
+      //{
+      // finUART= 1;
+      //}
+
+     }
+    }  
+   }
+   return toReturn;
+ }
+
+ //totBuffer= UartProcessNibbleByte(dato,gb_buffer_uart_bit,gb_buffer_uart_contDest,1024);
+ unsigned short int UartProcessNibbleByte(unsigned char dato,unsigned int *cont_byte,unsigned short int tope,unsigned int tope_byte)
+ {
+  unsigned short int toReturn=0;   
+  unsigned char a= CharHexToDec(dato);
+  //Los bits de peso son alreves al llegar por UART ASCII. Primero va A1, luego A0
+  if (a==255)
+  {
+   return 0;
+  }
+  gb_buffer_uart_a[gb_buffer_uart_bit]= a;
+  gb_buffer_uart_bit++;
+
+  if (gb_buffer_uart_bit > 1)
+  {  
+   gb_buffer_uart_dest[gb_buffer_uart_contDest]= (gb_buffer_uart_a[0]<<4)|gb_buffer_uart_a[1];
+   gb_buffer_uart_contDest++;
+   (*cont_byte)++;
+   if ((*cont_byte) >= tope_byte)
+   {
+    toReturn= gb_buffer_uart_contDest;
+    gb_buffer_uart_contDest= 0; //Reseteamos contador destino
+    //toReturn= 1;    
+   }
+   if (gb_buffer_uart_contDest >= tope)
+   {
+    toReturn= gb_buffer_uart_contDest;
+    gb_buffer_uart_contDest= 0; //Reseteamos contador destino
+    //toReturn= 1;
+   }
+   gb_buffer_uart_bit= 0;
+   gb_buffer_uart_a[0]= gb_buffer_uart_a[1]= 0;
+  }    
+  return toReturn;
+ }
+
+ short int SerialProcesaBufferPoll(short int rlen)
+ {
+  //unsigned char a0,a1;
+  unsigned char a;
+  short int contOri;//,contDest;
+  short int toReturn= -1;
+  if (rlen>0)
+  {
+   //contOri= contDest=0;
+   contOri= 0;   
+   while (contOri<rlen) //DIV 2
+   { 
+    /*     
+    a1= a0= 255;
+    while ((a1 == 255) && (contOri<rlen))
+    {
+     a1= CharHexToDec(gb_buffer_uart[contOri++]);    
+    }
+    while ((a0 == 255) && (contOri<rlen))
+    {
+     a0= CharHexToDec(gb_buffer_uart[contOri++]);
+    }
+    */
+
+    a= 255;
+    while ((a == 255) && (contOri<rlen))
+    {
+     a= CharHexToDec(gb_buffer_uart[contOri++]);
+    }
+    gb_buffer_uart_a[gb_buffer_uart_bit]= a;
+    gb_buffer_uart_bit++;
+
+    if (gb_buffer_uart_bit > 1)
+    {
+     //gb_buffer_uart_dest[contDest]= (a1<<4)|a0;
+     gb_buffer_uart_dest[gb_buffer_uart_contDest]= (gb_buffer_uart_a[1]<<4)|gb_buffer_uart_a[0];
+     gb_buffer_uart_contDest++;
+     gb_buffer_uart_bit=0;
+    }  
+    //gb_buffer_uart_bit++;
+   }
+   toReturn= gb_buffer_uart_contDest;
+  }
+  return toReturn;
+ }
+#endif 
+
+
 
 //Menu SCREEN
 void ShowTinySCRMenu()
@@ -1241,12 +1475,89 @@ void ShowTinySCRMenu()
   //#endif
 */
  #else
-  unsigned char aSelNum;
-  aSelNum = ShowTinyMenu("48K SCREEN",gb_ptr_list_scr_48k_title,gb_max_list_scr_48);
-  if (aSelNum == 255)
-   return;
-  load_scr2Flash(aSelNum);
- #endif
+  #ifdef use_lib_scr_uart
+   
+   //Leo screen desde putty
+   char cadout[32];
+   //SCR 6912 bytes multiplo 256
+   unsigned int cont_byte_scr=0;
+   int auxContUARTfile = 0;
+   int leidos=0;
+   unsigned char finUART= 0;
+   unsigned int timeout_uart_scr= 2000; //2 segundos limite entre lecturas UART
+   #define topeSCRbytes 6912
+
+   //Elegir UART o Flash
+   unsigned char aSelUART = ShowTinyMenu("Machine SCR UART",gb_uart_menu,max_gb_uart_menu);
+   if (aSelUART==255){
+    return;
+   }
+    
+   if (aSelUART == 1)
+   {//Si es Flash
+    unsigned char aSelNum;
+    aSelNum = ShowTinyMenu("48K SCREEN",gb_ptr_list_scr_48k_title,gb_max_list_scr_48);
+    if (aSelNum == 255)
+    {
+     return;
+    }
+    load_scr2Flash(aSelNum);
+    return;
+   }   
+
+   //Si no es Flash, lee UART
+   Serial.setTimeout(0);
+   Serial.flush();
+   gb_buffer_uart_bit= 0; //Reseteamos bit  
+   gb_buffer_uart_a[0]= gb_buffer_uart_a[1]= 0; //Reseteamos bits  
+   gb_buffer_uart_contDest= 0;//reseteamos buffer destino
+   memset(gb_buffer_uart_dest,0,sizeof(gb_buffer_uart_dest));
+   //while ((millis()-tiempoInicio)<20000)
+   SDLprintText("WAIT UART",50,20,ID_COLOR_BLACK,ID_COLOR_WHITE);
+   while (finUART == 0)
+   {
+    unsigned char isTimeOut=0;
+    unsigned short int bytesLeer= (6912-auxContUARTfile)>=1024 ? 1024 : (6912-auxContUARTfile); 
+    leidos= Leer_stream_UART(bytesLeer,timeout_uart_scr,&isTimeOut);
+    if (leidos>0)
+    {
+     #ifdef use_lib_core_linkefong     
+      memcpy(&ram5[auxContUARTfile],gb_buffer_uart_dest,leidos); //optimizado
+     #else 
+      #ifdef use_lib_core_jsanchezv
+       memcpy(&ram5_jsanchezv[auxContUARTfile],gb_buffer_uart_dest,leidos); //optimizado
+      #endif
+     #endif
+     auxContUARTfile += leidos;       
+     cont_byte_scr += leidos;
+     sprintf(cadout,"6912/%04d",cont_byte_scr);
+     cadout[16]='\0';
+     SDLprintText(cadout,50,20,ID_COLOR_WHITE,ID_COLOR_BLACK);
+     //Serial.printf("UART:%d\r\n",leidos);
+    }
+    
+    if ((cont_byte_scr >= topeSCRbytes)||(isTimeOut == 1))
+    {//6912 bytes o timeout
+     finUART= 1;
+    }
+   }
+
+   #ifdef use_lib_keyboard_uart
+    Serial.setTimeout(use_lib_keyboard_uart_timeout);
+   #endif 
+
+
+  #else
+   //Lectura desde flash de toda la vida
+   unsigned char aSelNum;
+   aSelNum = ShowTinyMenu("48K SCREEN",gb_ptr_list_scr_48k_title,gb_max_list_scr_48);
+   if (aSelNum == 255)
+   {
+    return;
+   }
+   load_scr2Flash(aSelNum);
+  #endif
+ #endif 
 }
 
 //Menu velocidad emulador

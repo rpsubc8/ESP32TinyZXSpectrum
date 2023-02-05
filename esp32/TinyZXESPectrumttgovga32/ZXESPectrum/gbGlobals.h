@@ -43,6 +43,13 @@
   extern unsigned int gb_curTime_keyboard_uart;
  #endif
 
+ #if (defined use_lib_scr_uart) || (defined use_lib_sna_uart)
+  #define max_buffer_uart 1024
+  extern unsigned char gb_buffer_uart[max_buffer_uart]; //1KB buffer
+  extern unsigned char gb_buffer_uart_dest[max_buffer_uart]; //1KB buffer
+ #endif 
+
+
  #ifdef use_lib_wifi
   extern unsigned char gb_buffer_wifi[1024]; //128 * 8
   extern int gb_size_file_wifi;  
@@ -208,4 +215,10 @@
   //#define bitClear(value, bit) ((value) &= ~(1UL << (bit)))
   //#define bitWrite(value, bit, bitvalue) (bitvalue ? bitSet(value, bit) : bitClear(value, bit))    
  #endif 
+
+ //49179 bytes el SNA del 48K
+ #define SIZE_SNA_48K 49179
+ //131103 bytes el SNA del 128K
+ #define SIZE_SNA_128K 131103
+
 #endif

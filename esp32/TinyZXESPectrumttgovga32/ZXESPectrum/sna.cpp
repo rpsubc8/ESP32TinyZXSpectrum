@@ -29,7 +29,7 @@
    //JJ osdCenteredMsg(MSG_SAVE_CONFIG, LEVEL_WARN);
    //JJ cfg_ram_file = (String)gb_list_sna_48k_title[id];
   #endif
- }
+ } 
 #endif 
 
 #ifdef use_lib_wifi
@@ -45,3 +45,17 @@
   #endif
  }
 #endif
+
+#ifdef use_lib_sna_uart
+ void changeSna2UART(unsigned char isSNA48K)
+ {
+  #ifdef use_lib_core_jsanchezv
+   zx_reset_jsanchezv();
+   gb_ptrSim->load_ram2FlashFromUART_jsanchezv(isSNA48K);
+  #else    
+   zx_reset();   
+   load_ram2FlashFromUART(isSNA48K);
+  #endif
+ }
+#endif 
+

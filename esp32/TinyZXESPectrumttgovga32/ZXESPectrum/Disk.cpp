@@ -540,7 +540,8 @@ void load_tape2Flash(unsigned char id)
         uint16_t buf_p = 0x4000;
         contBuffer = 27;
         //JJ while (lhandle.available()) {
-        while (contBuffer< 50000)
+        //while (contBuffer< 50000)
+        while (contBuffer < SIZE_SNA_48K)
         {
             //JJ writebyte(buf_p, lhandle.read());
             writebyte(buf_p, gb_ptr_list_sna_48k_data[id][contBuffer]);
@@ -628,10 +629,391 @@ void load_tape2Flash(unsigned char id)
     //              bank_latch);
     #endif                  
     KB_INT_START;
-  }
+  } 
  #endif 
 
+ #ifdef use_lib_sna_uart  
+  //Lee SNA 128K desde UART 131103 bytes
+  void load_ram2FlashFromUART128()
+  {
+   /*Pendiente      
+   int contBuffer=0;   
+   byte sp_h, sp_l;
+   uint16_t retaddr;   
+   #ifdef use_lib_sound_ay8912
+    ResetSound();
+   #endif
 
+   Serial.setTimeout(0);
+   Serial.flush();
+   SDLprintText("WAIT UART",50,20,0,7);
+
+   zx_reset();
+
+    #ifdef use_lib_only_48k
+     memset(ram0,0,0x4000);
+     memset(ram2,0,0x4000);
+     memset(ram5,0,0x4000);
+    #else
+     memset(ram0,0,0x4000);
+     memset(ram1,0,0x4000);
+     memset(ram2,0,0x4000);
+     memset(ram3,0,0x4000);
+     memset(ram4,0,0x4000);
+     memset(ram5,0,0x4000);
+     memset(ram6,0,0x4000);
+     memset(ram7,0,0x4000);
+    #endif   
+
+   unsigned short int leidos=0;             
+   unsigned short int bytesLeer= 27; //Leemos 27 bytes de cabecera
+   unsigned short int timeout_uart_sna= 2000; //2000 ms
+   unsigned char isTimeOut=0;
+   leidos= Leer_stream_UART(bytesLeer,timeout_uart_sna,&isTimeOut);
+   if (leidos>0)
+   {    
+    SDLprintText("131103/1024",50,20,7,0);
+
+    _zxCpu.i = gb_buffer_uart_dest[0];
+    _zxCpu.registers.byte[Z80_L] = gb_buffer_uart_dest[1];
+    _zxCpu.registers.byte[Z80_H] = gb_buffer_uart_dest[2];
+    _zxCpu.registers.byte[Z80_E] = gb_buffer_uart_dest[3];
+    _zxCpu.registers.byte[Z80_D] = gb_buffer_uart_dest[4];
+    _zxCpu.registers.byte[Z80_C] = gb_buffer_uart_dest[5];
+    _zxCpu.registers.byte[Z80_B] = gb_buffer_uart_dest[6];
+    _zxCpu.registers.byte[Z80_F] = gb_buffer_uart_dest[7];
+    _zxCpu.registers.byte[Z80_A] = gb_buffer_uart_dest[8];
+
+
+    _zxCpu.alternates[Z80_HL] = _zxCpu.registers.word[Z80_HL];
+    _zxCpu.alternates[Z80_DE] = _zxCpu.registers.word[Z80_DE];
+    _zxCpu.alternates[Z80_BC] = _zxCpu.registers.word[Z80_BC];
+    _zxCpu.alternates[Z80_AF] = _zxCpu.registers.word[Z80_AF];
+
+
+    _zxCpu.registers.byte[Z80_L] = gb_buffer_uart_dest[9];
+    _zxCpu.registers.byte[Z80_H] = gb_buffer_uart_dest[10];
+    _zxCpu.registers.byte[Z80_E] = gb_buffer_uart_dest[11];
+    _zxCpu.registers.byte[Z80_D] = gb_buffer_uart_dest[12];
+    _zxCpu.registers.byte[Z80_C] = gb_buffer_uart_dest[13];
+    _zxCpu.registers.byte[Z80_B] = gb_buffer_uart_dest[14];
+    _zxCpu.registers.byte[Z80_IYL] = gb_buffer_uart_dest[15];
+    _zxCpu.registers.byte[Z80_IYH] = gb_buffer_uart_dest[16];
+    _zxCpu.registers.byte[Z80_IXL] = gb_buffer_uart_dest[17];
+    _zxCpu.registers.byte[Z80_IXH] = gb_buffer_uart_dest[18];
+    
+    byte inter = gb_buffer_uart_dest[19];
+    _zxCpu.iff2 = (inter & 0x04) ? 1 : 0;
+    _zxCpu.r = gb_buffer_uart_dest[20];
+       
+    _zxCpu.registers.byte[Z80_F] = gb_buffer_uart_dest[21];
+    _zxCpu.registers.byte[Z80_A] = gb_buffer_uart_dest[22];
+
+
+    sp_l = gb_buffer_uart_dest[23];
+    sp_h = gb_buffer_uart_dest[24];
+    _zxCpu.registers.word[Z80_SP] = sp_l + sp_h * 0x100;
+    
+    _zxCpu.im = gb_buffer_uart_dest[25];
+    byte bordercol = gb_buffer_uart_dest[26];
+
+    borderTemp = bordercol;
+
+    _zxCpu.iff1 = _zxCpu.iff2; 
+ 
+ 
+    contBuffer = 27;    
+
+
+   
+   #ifdef use_lib_keyboard_uart
+    Serial.setTimeout(use_lib_keyboard_uart_timeout);
+   #endif
+         
+
+   //Pendiente uint16_t buf_p = 0x4000;
+   //buf_p= ram5;
+   //LoadWriteMemUARTBlock(buf_p,contBuffer,0x4000);
+   //contBuffer+= 0x4000;
+*/
+
+
+/*
+    //He leido 27 bytes. Lee resto
+    int cont1024= 0;
+    
+    contBuffer+= 27;
+    unsigned int quieroLeer= 0x4000;
+    while (contBuffer< quieroLeer)
+    {
+     writebyte(buf_p, gb_buffer_uart_dest[cont1024]);
+     contBuffer++;
+     buf_p++;
+     cont1024++;
+     if (cont1024 >= 1024)
+     {      
+      isTimeOut=0;
+      bytesLeer= (quieroLeer-contBuffer)>=1024 ? 1024 : (quieroLeer-contBuffer);           
+      leidos= Leer_stream_UART(bytesLeer,timeout_uart_sna,&isTimeOut);          
+      if (leidos>0)
+      {        
+       sprintf(cadout,"%06d/%06d",SIZE_SNA_128K,contBuffer);
+       cadout[14]='\0';
+       SDLprintText(cadout,50,20,7,0);          
+      }
+
+      cont1024= 0;      
+     }     
+     
+     if (isTimeOut)
+     {
+      break;
+     }
+    }
+
+*/
+/*JJ        
+    memcpy(ram5,&gb_ptr_list_sna_128k_data[id][contBuffer],0x4000);
+    contBuffer+= 0x4000;
+    memcpy(ram2,&gb_ptr_list_sna_128k_data[id][contBuffer],0x4000); //0x4000 + 17d
+    contBuffer+= 0x8000; //Saltamos el banco cacheado 0x4000+0x4000
+    
+    byte retaddr_l = gb_ptr_list_sna_128k_data[id][contBuffer++];//lhandle.read();
+    byte retaddr_h = gb_ptr_list_sna_128k_data[id][contBuffer++];//lhandle.read();
+    retaddr = retaddr_l + retaddr_h * 0x100;
+    byte tmp_port = gb_ptr_list_sna_128k_data[id][contBuffer++];//lhandle.read();
+    //unsigned char auxBank= (tmp_port&0x07); //No se usa
+    //printf("port 0x7ffd %x banco:%d\n",tmp_port,auxBank);
+    //fflush(stdout);
+    
+    //byte tr_dos = gb_list_sna_128k_data[id][contBuffer++];//lhandle.read();
+    contBuffer++; //No se usa tr_dos pero esta en SNA
+    byte tmp_latch = tmp_port & 0x7;
+    bank_latch = tmp_latch; gb_ptr_IdRomRam[3] = bank_latch;
+    
+    contBuffer= 0x801B; //27+0x4000+0x4000
+    switch (bank_latch)
+    {     
+     case 0: memcpy(ram0,&gb_ptr_list_sna_128k_data[id][contBuffer],0x4000); break;
+     case 1: memcpy(ram1,&gb_ptr_list_sna_128k_data[id][contBuffer],0x4000); break;
+     case 2: memcpy(ram2,&gb_ptr_list_sna_128k_data[id][contBuffer],0x4000); break;
+     case 3: memcpy(ram3,&gb_ptr_list_sna_128k_data[id][contBuffer],0x4000); break;
+     case 4: memcpy(ram4,&gb_ptr_list_sna_128k_data[id][contBuffer],0x4000); break;
+     case 5: memcpy(ram5,&gb_ptr_list_sna_128k_data[id][contBuffer],0x4000); break;
+     case 6: memcpy(ram6,&gb_ptr_list_sna_128k_data[id][contBuffer],0x4000); break;
+     case 7: memcpy(ram7,&gb_ptr_list_sna_128k_data[id][contBuffer],0x4000); break;
+    }
+    contBuffer+= 0x4004; //0x4000+4    
+    //131103 bytes de SNA 128                
+    //Abadia banco 4 latch, luego 0, 1, 3, 6 y 7
+    for (unsigned char i=0;i<8;i++)
+    {
+     if (i != 2 && i != 5 && i != bank_latch)
+     {
+      switch (i)
+      {
+       case 0: memcpy(ram0,&gb_ptr_list_sna_128k_data[id][contBuffer],0x4000); break;
+       case 1: memcpy(ram1,&gb_ptr_list_sna_128k_data[id][contBuffer],0x4000); break;
+       case 3: memcpy(ram3,&gb_ptr_list_sna_128k_data[id][contBuffer],0x4000); break;
+       case 4: memcpy(ram4,&gb_ptr_list_sna_128k_data[id][contBuffer],0x4000); break;
+       case 6: memcpy(ram6,&gb_ptr_list_sna_128k_data[id][contBuffer],0x4000); break;
+       case 7: memcpy(ram7,&gb_ptr_list_sna_128k_data[id][contBuffer],0x4000); break;                            
+      }
+      contBuffer+= 0x4000;           
+     }
+    }
+
+    video_latch = bitRead(tmp_port, 3);
+    rom_latch = bitRead(tmp_port, 4);
+    paging_lock = bitRead(tmp_port, 5);
+    bank_latch = tmp_latch; gb_ptr_IdRomRam[3] = tmp_latch;
+    rom_in_use = rom_latch; 
+        
+    _zxCpu.pc = retaddr;
+    //printf("SNA Ret address: %x\n",retaddr);
+    //fflush(stdout);
+    //printf("SNA Ret address: %x Stack: %x AF: %x Border: %x sna_size: %d rom: %d bank: %x\n", retaddr, _zxCpu.registers.word[Z80_SP], _zxCpu.registers.word[Z80_AF], borderTemp, sna_size, rom_in_use, bank_latch);
+*/
+
+/* Pendiente
+   }
+*/
+
+  }
+
+  //Lee 48K SNA 49179 bytes
+  void load_ram2FlashFromUART(unsigned char isSNA48K)
+  {
+   char cadout[32];
+   if (isSNA48K != 1)
+   {
+    //Pendiente load_ram2FlashFromUART128();
+    return;
+   }
+   
+   Serial.setTimeout(0);
+   Serial.flush();
+   SDLprintText("WAIT UART",50,20,0,7);
+
+   int contBuffer=0;       
+   byte sp_h, sp_l;
+   uint16_t retaddr;    
+   #ifdef use_lib_sound_ay8912
+    ResetSound();
+   #endif    
+   zx_reset();    
+
+   KB_INT_STOP;
+
+   #ifdef use_lib_only_48k
+    memset(ram0,0,0x4000);
+    memset(ram2,0,0x4000);
+    memset(ram5,0,0x4000);
+   #else
+    memset(ram0,0,0x4000);
+    memset(ram1,0,0x4000);
+    memset(ram2,0,0x4000);
+    memset(ram3,0,0x4000);
+    memset(ram4,0,0x4000);
+    memset(ram5,0,0x4000);
+    memset(ram6,0,0x4000);
+    memset(ram7,0,0x4000);
+   #endif
+
+   if (gb_cfg_arch_is48K == 1)
+   {
+    rom_latch = 0;
+    rom_in_use = 0;
+    bank_latch = 0; gb_ptr_IdRomRam[3]=0;
+    paging_lock = 1;
+   }
+
+   if (gb_cfg_arch_is48K != 1)
+   {
+    rom_in_use = 1;
+    rom_latch = 1;
+    paging_lock = 1;
+    bank_latch = 0; gb_ptr_IdRomRam[3]=0;
+    video_latch = 0;
+    paging_lock = 1;
+    bank_latch = 0; gb_ptr_IdRomRam[3]=0;
+    video_latch = 0;
+   }
+
+   unsigned short int leidos=0;             
+   unsigned short int bytesLeer= 1024; //Leemos 1024 bytes
+   unsigned short int timeout_uart_sna= 2000; //2000 ms
+   unsigned char isTimeOut=0;
+   leidos= Leer_stream_UART(bytesLeer,timeout_uart_sna,&isTimeOut);
+   if (leidos>0)
+   {    
+    SDLprintText("49179/1024",50,20,7,0);
+
+    // Read in the registers    
+    _zxCpu.i = gb_buffer_uart_dest[0];
+    _zxCpu.registers.byte[Z80_L] = gb_buffer_uart_dest[1];
+    _zxCpu.registers.byte[Z80_H] = gb_buffer_uart_dest[2];
+    _zxCpu.registers.byte[Z80_E] = gb_buffer_uart_dest[3];
+    _zxCpu.registers.byte[Z80_D] = gb_buffer_uart_dest[4];
+    _zxCpu.registers.byte[Z80_C] = gb_buffer_uart_dest[5];
+    _zxCpu.registers.byte[Z80_B] = gb_buffer_uart_dest[6];
+    _zxCpu.registers.byte[Z80_F] = gb_buffer_uart_dest[7];
+    _zxCpu.registers.byte[Z80_A] = gb_buffer_uart_dest[8];
+
+    _zxCpu.alternates[Z80_HL] = _zxCpu.registers.word[Z80_HL];
+    _zxCpu.alternates[Z80_DE] = _zxCpu.registers.word[Z80_DE];
+    _zxCpu.alternates[Z80_BC] = _zxCpu.registers.word[Z80_BC];
+    _zxCpu.alternates[Z80_AF] = _zxCpu.registers.word[Z80_AF];
+
+    _zxCpu.registers.byte[Z80_L] = gb_buffer_uart_dest[9];
+    _zxCpu.registers.byte[Z80_H] = gb_buffer_uart_dest[10];
+    _zxCpu.registers.byte[Z80_E] = gb_buffer_uart_dest[11];
+    _zxCpu.registers.byte[Z80_D] = gb_buffer_uart_dest[12];
+    _zxCpu.registers.byte[Z80_C] = gb_buffer_uart_dest[13];
+    _zxCpu.registers.byte[Z80_B] = gb_buffer_uart_dest[14];
+    _zxCpu.registers.byte[Z80_IYL] = gb_buffer_uart_dest[15];
+    _zxCpu.registers.byte[Z80_IYH] = gb_buffer_uart_dest[16];
+    _zxCpu.registers.byte[Z80_IXL] = gb_buffer_uart_dest[17];
+    _zxCpu.registers.byte[Z80_IXH] = gb_buffer_uart_dest[18];
+
+    byte inter = gb_buffer_uart_dest[19];
+    _zxCpu.iff2 = (inter & 0x04) ? 1 : 0;
+    _zxCpu.r = gb_buffer_uart_dest[20];
+
+    _zxCpu.registers.byte[Z80_F] = gb_buffer_uart_dest[21];
+    _zxCpu.registers.byte[Z80_A] = gb_buffer_uart_dest[22];
+
+    sp_l = gb_buffer_uart_dest[23];
+    sp_h = gb_buffer_uart_dest[24];
+    _zxCpu.registers.word[Z80_SP] = sp_l + sp_h * 0x100;
+
+    _zxCpu.im = gb_buffer_uart_dest[25];
+    byte bordercol = gb_buffer_uart_dest[26];
+
+    borderTemp = bordercol;
+
+    _zxCpu.iff1 = _zxCpu.iff2;
+
+        uint16_t thestack = _zxCpu.registers.word[Z80_SP];
+        uint16_t buf_p = 0x4000;
+        contBuffer = 27;
+        
+        //He leido 1024 bytes. Lee resto 27
+        int cont1024= 27;
+        //while (contBuffer< 50000)
+        while (contBuffer< SIZE_SNA_48K)
+        {//49179 bytes
+         writebyte(buf_p, gb_buffer_uart_dest[cont1024]);
+         contBuffer++;
+         buf_p++;
+         cont1024++;
+         if (cont1024 >= 1024)
+         {
+          //Leer_url_stream_WIFI(&leidos);
+          isTimeOut=0;
+          bytesLeer= (SIZE_SNA_48K-contBuffer)>=1024 ? 1024 : (SIZE_SNA_48K-contBuffer);           
+          leidos= Leer_stream_UART(bytesLeer,timeout_uart_sna,&isTimeOut);          
+          if (leidos>0)
+          {           
+           sprintf(cadout,"%05d/%05d",SIZE_SNA_48K,contBuffer);
+           cadout[12]='\0';
+           SDLprintText(cadout,50,20,7,0);
+          }
+
+          //#ifdef use_lib_wifi_debug
+          // Serial.printf("Leidos:%d\r\n",leidos);
+          //#endif 
+          cont1024= 0;
+         }
+
+         if (isTimeOut)
+         {
+          break;
+         }
+        }
+
+        retaddr = readword(thestack);
+        //#ifdef use_lib_log_serial
+        // Serial.printf("retaddr:%x\r\n", retaddr);
+        //#endif
+        _zxCpu.registers.word[Z80_SP]++;
+        _zxCpu.registers.word[Z80_SP]++;
+
+    _zxCpu.pc = retaddr;
+
+    //FlushStreamWIFI();
+
+    KB_INT_START;    
+
+    #ifdef use_lib_keyboard_uart
+     Serial.setTimeout(use_lib_keyboard_uart_timeout);
+    #endif 
+
+   }   
+
+
+  }
+ #endif
 
  #ifdef use_lib_wifi
  void load_ram2FlashFromWIFI(char *cadUrl,unsigned char isSNA48K)
@@ -766,7 +1148,8 @@ void load_tape2Flash(unsigned char id)
         
         //He leido 1024 bytes. Lee resto 27
         int cont1024= 27;
-        while (contBuffer< 50000)
+        //while (contBuffer< 50000)
+        while (contBuffer< SIZE_SNA_48K)
         {
          writebyte(buf_p, gb_buffer_wifi[cont1024]);
          contBuffer++;

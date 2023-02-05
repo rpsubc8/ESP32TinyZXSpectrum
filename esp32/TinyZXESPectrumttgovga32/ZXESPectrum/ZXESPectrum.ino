@@ -1475,6 +1475,154 @@ if (skipFrame == 1){
  }
  #endif
 
+ #ifdef use_lib_sna_uart
+  //Lee SNA desde UART
+  void Z80sim::load_ram2FlashFromUART_jsanchezv(unsigned char isSNA48K)
+  {
+   char cadout[32];    
+   if (isSNA48K != 1)
+   {
+    //Pendiente load_ram2Flash128FromUART_jsanchezv();
+    return;
+   }
+
+   Serial.setTimeout(0);
+   Serial.flush();
+   SDLprintText("WAIT UART",50,20,0,7);
+
+   int contBuffer=0; 
+   //uint16_t size_read; //No se usa
+   byte sp_h, sp_l;
+   uint16_t retaddr; 
+	 bool auxIFF2=false;
+	 //unsigned char auxSwap;  //No se usa
+    
+    #ifdef use_lib_only_48k
+     memset(ram0_jsanchezv,0,0x4000);
+     memset(ram2_jsanchezv,0,0x4000);
+     memset(ram5_jsanchezv,0,0x4000);
+    #else
+     memset(ram0_jsanchezv,0,0x4000);
+     memset(ram1_jsanchezv,0,0x4000);
+     memset(ram2_jsanchezv,0,0x4000);
+     memset(ram3_jsanchezv,0,0x4000);
+     memset(ram4_jsanchezv,0,0x4000);
+     memset(ram5_jsanchezv,0,0x4000);
+     memset(ram6_jsanchezv,0,0x4000);
+     memset(ram7_jsanchezv,0,0x4000);
+    #endif 
+               
+    cpu.reset(); //zx_reset();        
+    //Hago lo mismo que zx_reset
+    zx_reset_jsanchezv();    
+    //Fin lo mismo zx_reset
+
+    if (gb_cfg_arch_is48K == 1)
+    {
+        rom_latch_jsanchezv = 0;
+        rom_in_use_jsanchezv = 0;
+        bank_latch_jsanchezv = 0; gb_ptr_IdRomRam_jsanchezv[3] = 0;
+        paging_lock_jsanchezv = 1;
+    }
+    //size_read = 0; //No se usa
+
+    //int leidos=0;    
+   unsigned short int leidos=0;
+   unsigned short int bytesLeer= 1024; //Leemos 1024 bytes
+   unsigned short int timeout_uart_sna= 2000; //2000 ms
+   unsigned char isTimeOut=0;    
+   leidos= Leer_stream_UART(bytesLeer,timeout_uart_sna,&isTimeOut);    
+   if (leidos>0)
+   {
+
+    // Read in the registers        
+    cpu.setRegI(gb_buffer_uart_dest[0]);
+    cpu.setRegLx(gb_buffer_uart_dest[1]);
+    cpu.setRegHx(gb_buffer_uart_dest[2]);
+    cpu.setRegEx(gb_buffer_uart_dest[3]);
+    cpu.setRegDx(gb_buffer_uart_dest[4]);
+    cpu.setRegCx(gb_buffer_uart_dest[5]);
+    cpu.setRegBx(gb_buffer_uart_dest[6]);
+    cpu.setRegFx(gb_buffer_uart_dest[7]);
+    cpu.setRegAx(gb_buffer_uart_dest[8]);
+
+    cpu.setRegL(gb_buffer_uart_dest[9]);
+    cpu.setRegH(gb_buffer_uart_dest[10]);
+    cpu.setRegE(gb_buffer_uart_dest[11]);
+    cpu.setRegD(gb_buffer_uart_dest[12]);
+    cpu.setRegC(gb_buffer_uart_dest[13]);
+    cpu.setRegB(gb_buffer_uart_dest[14]);    
+
+    sp_l= gb_buffer_uart_dest[15];
+    sp_h= gb_buffer_uart_dest[16];    
+    cpu.setRegIY(sp_l + sp_h * 0x100);
+    sp_l= gb_buffer_uart_dest[17];
+    sp_h= gb_buffer_uart_dest[18];
+    cpu.setRegIX(sp_l + sp_h * 0x100);
+    byte inter = gb_buffer_uart_dest[19];//lhandle.read();
+    auxIFF2 = (inter & 0x04) ? true : false;
+    cpu.setIFF2(auxIFF2);
+    cpu.setRegR(gb_buffer_uart_dest[20]);
+    cpu.setFlags(gb_buffer_uart_dest[21]);
+    cpu.setRegA(gb_buffer_uart_dest[22]);
+    sp_l = gb_buffer_uart_dest[23];//lhandle.read();
+    sp_h = gb_buffer_uart_dest[24];//lhandle.read();
+    cpu.setRegSP(sp_l + sp_h * 0x100);
+
+    switch (gb_buffer_uart_dest[25])
+    {
+     case 0: cpu.setIM(cpu.IM0); break;
+     case 1: cpu.setIM(cpu.IM1); break;
+     case 2: cpu.setIM(cpu.IM2); break;
+	  }
+
+    byte bordercol = gb_buffer_uart_dest[26];//lhandle.read();
+    borderTemp_jsanchezv = bordercol;
+    cpu.setIFF1(auxIFF2);
+
+    uint16_t thestack = cpu.getRegSP();
+    uint16_t buf_p = 0x4000;
+    contBuffer = 27;
+    
+    //He leido 1024 bytes. Lee resto 27
+    int cont1024= 27;
+    //while (contBuffer< 50000)
+    while (contBuffer< SIZE_SNA_48K)
+    {
+     //JJ writebyte(buf_p, lhandle.read());
+     poke8(buf_p, gb_buffer_uart_dest[cont1024]);
+     contBuffer++;
+     buf_p++;
+     
+     cont1024++;
+     if (cont1024 >= 1024)
+     {
+      isTimeOut=0;
+      bytesLeer= (SIZE_SNA_48K-contBuffer)>=1024 ? 1024 : (SIZE_SNA_48K-contBuffer);
+      leidos= Leer_stream_UART(bytesLeer,timeout_uart_sna,&isTimeOut);
+      if (leidos>0)
+      {
+       sprintf(cadout,"%05d/%05d",SIZE_SNA_48K,contBuffer);
+       cadout[12]='\0';
+       SDLprintText(cadout,50,20,7,0);
+      }
+      cont1024= 0;
+     }
+     if (isTimeOut)
+     {
+      break;
+     }     
+    }    
+    retaddr = peek16(thestack);    
+    unsigned short int auxSP = cpu.getRegSP();
+    auxSP++;
+    auxSP++;
+    cpu.setRegSP(auxSP);
+    cpu.setRegPC(retaddr);
+   }
+  }
+ #endif
+
  #ifndef use_lib_wifi
  //Lee SNA desde flash core jsanchez
  void Z80sim::load_ram2Flash_jsanchezv(unsigned char id,unsigned char isSNA48K)
@@ -1567,7 +1715,8 @@ if (skipFrame == 1){
     uint16_t thestack = cpu.getRegSP();
     uint16_t buf_p = 0x4000;
     contBuffer = 27;
-    while (contBuffer< 50000)        
+    //while (contBuffer< 50000)        
+    while (contBuffer< SIZE_SNA_48K)
     {
      //JJ writebyte(buf_p, lhandle.read());
      poke8(buf_p, gb_list_sna_48k_data[id][contBuffer]);
@@ -1706,7 +1855,8 @@ if (skipFrame == 1){
     
     //He leido 1024 bytes. Lee resto 27
     int cont1024= 27;
-    while (contBuffer< 50000)
+    //while (contBuffer< 50000)
+    while (contBuffer< SIZE_SNA_48K)
     {
      //JJ writebyte(buf_p, lhandle.read());
      poke8(buf_p, gb_buffer_wifi[cont1024]);
@@ -4413,22 +4563,22 @@ void do_keyboard()
 
      //bitWrite(z80ports_in[0], 0, keymap[0x12]); //SHIFT LEFT
      case 0x2D: bitWrite(z80ports_in[0], 0, 0); break; //SHIFT LEFT -
-     case 0x7A: bitWrite(z80ports_in[0], 1, 0); break; //Z
-     case 0x78: bitWrite(z80ports_in[0], 2, 0); break; //X
-     case 0x63: bitWrite(z80ports_in[0], 3, 0); break; //C
-     case 0x76: bitWrite(z80ports_in[0], 4, 0); break; //V
+     case 0x7A: case 0x5A: bitWrite(z80ports_in[0], 1, 0); break; //Z
+     case 0x78: case 0x58: bitWrite(z80ports_in[0], 2, 0); break; //X
+     case 0x63: case 0x43: bitWrite(z80ports_in[0], 3, 0); break; //C
+     case 0x76: case 0x56: bitWrite(z80ports_in[0], 4, 0); break; //V
 
-     case 0x61: bitWrite(z80ports_in[1], 0, 0); break; //A
-     case 0x73: bitWrite(z80ports_in[1], 1, 0); break; //S
-     case 0x64: bitWrite(z80ports_in[1], 2, 0); break; //D
-     case 0x66: bitWrite(z80ports_in[1], 3, 0); break; //F
-     case 0x67: bitWrite(z80ports_in[1], 4, 0); break; //G
+     case 0x61: case 0x41: bitWrite(z80ports_in[1], 0, 0); break; //A
+     case 0x73: case 0x53: bitWrite(z80ports_in[1], 1, 0); break; //S
+     case 0x64: case 0x44: bitWrite(z80ports_in[1], 2, 0); break; //D
+     case 0x66: case 0x46: bitWrite(z80ports_in[1], 3, 0); break; //F
+     case 0x67: case 0x47: bitWrite(z80ports_in[1], 4, 0); break; //G
 
-     case 0x71: bitWrite(z80ports_in[2], 0, 0); break; //Q
-     case 0x77: bitWrite(z80ports_in[2], 1, 0); break; //W
-     case 0x65: bitWrite(z80ports_in[2], 2, 0); break; //E
-     case 0x72: bitWrite(z80ports_in[2], 3, 0); break; //R
-     case 0x74: bitWrite(z80ports_in[2], 4, 0); break; //T
+     case 0x71: case 0x51: bitWrite(z80ports_in[2], 0, 0); break; //Q
+     case 0x77: case 0x57: bitWrite(z80ports_in[2], 1, 0); break; //W
+     case 0x65: case 0x45: bitWrite(z80ports_in[2], 2, 0); break; //E
+     case 0x72: case 0x52: bitWrite(z80ports_in[2], 3, 0); break; //R
+     case 0x74: case 0x54: bitWrite(z80ports_in[2], 4, 0); break; //T
 
      case 0x31: bitWrite(z80ports_in[3], 0, 0); break; //1
      case 0x32: bitWrite(z80ports_in[3], 1, 0); break; //2
@@ -4442,24 +4592,24 @@ void do_keyboard()
      case 0x37: bitWrite(z80ports_in[4], 3, 0); break; //7
      case 0x36: bitWrite(z80ports_in[4], 4, 0); break; //6
 
-     case 0x70: bitWrite(z80ports_in[5], 0, 0); break; //P
-     case 0x6F: bitWrite(z80ports_in[5], 1, 0); break; //O
-     case 0x69: bitWrite(z80ports_in[5], 2, 0); break; //I
-     case 0x75: bitWrite(z80ports_in[5], 3, 0); break; //U
-     case 0x79: bitWrite(z80ports_in[5], 4, 0); break; //Y
+     case 0x70: case 0x50: bitWrite(z80ports_in[5], 0, 0); break; //P
+     case 0x6F: case 0x4F: bitWrite(z80ports_in[5], 1, 0); break; //O
+     case 0x69: case 0x49: bitWrite(z80ports_in[5], 2, 0); break; //I
+     case 0x75: case 0x55: bitWrite(z80ports_in[5], 3, 0); break; //U
+     case 0x79: case 0x59: bitWrite(z80ports_in[5], 4, 0); break; //Y
 
      //bitWrite(z80ports_in[6], 0, 0); //ENTER
-     case 0x6C: bitWrite(z80ports_in[6], 1, 0); break; //L
-     case 0x6B: bitWrite(z80ports_in[6], 2, 0); break; //K
-     case 0x6A: bitWrite(z80ports_in[6], 3, 0); break; //J
-     case 0x68: bitWrite(z80ports_in[6], 4, 0); break; //H
+     case 0x6C: case 0x4C: bitWrite(z80ports_in[6], 1, 0); break; //L
+     case 0x6B: case 0x4B: bitWrite(z80ports_in[6], 2, 0); break; //K
+     case 0x6A: case 0x4A: bitWrite(z80ports_in[6], 3, 0); break; //J
+     case 0x68: case 0x48: bitWrite(z80ports_in[6], 4, 0); break; //H
 
      case 0x20: bitWrite(z80ports_in[7], 0, 0); break; //Barra espaciadora
      //bitWrite(z80ports_in[7], 1, 0); break; //CONTROL
      case 0x2A: bitWrite(z80ports_in[7], 1, 0); break; //CONTROL *
-     case 0x6D: bitWrite(z80ports_in[7], 2, 0); break; //M
-     case 0x6E: bitWrite(z80ports_in[7], 3, 0); break; //N
-     case 0x62: bitWrite(z80ports_in[7], 4, 0); break; //B
+     case 0x6D: case 0x4D: bitWrite(z80ports_in[7], 2, 0); break; //M
+     case 0x6E: case 0x4E: bitWrite(z80ports_in[7], 3, 0); break; //N
+     case 0x62: case 0x42: bitWrite(z80ports_in[7], 4, 0); break; //B
     }
 
     contBuf++;
@@ -4568,22 +4718,22 @@ void do_keyboard()
 
      //bitWrite(z80ports_in[0], 0, keymap[0x12]); //SHIFT LEFT
      case 0x2D: bitWrite(z80Ports_jsanchezv[0], 0, 0); break; //SHIFT LEFT -
-     case 0x7A: bitWrite(z80Ports_jsanchezv[0], 1, 0); break; //Z
-     case 0x78: bitWrite(z80Ports_jsanchezv[0], 2, 0); break; //X
-     case 0x63: bitWrite(z80Ports_jsanchezv[0], 3, 0); break; //C
-     case 0x76: bitWrite(z80Ports_jsanchezv[0], 4, 0); break; //V
+     case 0x7A: case 0x5A: bitWrite(z80Ports_jsanchezv[0], 1, 0); break; //Z
+     case 0x78: case 0x58: bitWrite(z80Ports_jsanchezv[0], 2, 0); break; //X
+     case 0x63: case 0x43: bitWrite(z80Ports_jsanchezv[0], 3, 0); break; //C
+     case 0x76: case 0x56: bitWrite(z80Ports_jsanchezv[0], 4, 0); break; //V
 
-     case 0x61: bitWrite(z80Ports_jsanchezv[1], 0, 0); break; //A
-     case 0x73: bitWrite(z80Ports_jsanchezv[1], 1, 0); break; //S
-     case 0x64: bitWrite(z80Ports_jsanchezv[1], 2, 0); break; //D
-     case 0x66: bitWrite(z80Ports_jsanchezv[1], 3, 0); break; //F
-     case 0x67: bitWrite(z80Ports_jsanchezv[1], 4, 0); break; //G
+     case 0x61: case 0x41: bitWrite(z80Ports_jsanchezv[1], 0, 0); break; //A
+     case 0x73: case 0x53: bitWrite(z80Ports_jsanchezv[1], 1, 0); break; //S
+     case 0x64: case 0x44: bitWrite(z80Ports_jsanchezv[1], 2, 0); break; //D
+     case 0x66: case 0x46: bitWrite(z80Ports_jsanchezv[1], 3, 0); break; //F
+     case 0x67: case 0x47: bitWrite(z80Ports_jsanchezv[1], 4, 0); break; //G
 
-     case 0x71: bitWrite(z80Ports_jsanchezv[2], 0, 0); break; //Q
-     case 0x77: bitWrite(z80Ports_jsanchezv[2], 1, 0); break; //W
-     case 0x65: bitWrite(z80Ports_jsanchezv[2], 2, 0); break; //E
-     case 0x72: bitWrite(z80Ports_jsanchezv[2], 3, 0); break; //R
-     case 0x74: bitWrite(z80Ports_jsanchezv[2], 4, 0); break; //T
+     case 0x71: case 0x51: bitWrite(z80Ports_jsanchezv[2], 0, 0); break; //Q
+     case 0x77: case 0x57: bitWrite(z80Ports_jsanchezv[2], 1, 0); break; //W
+     case 0x65: case 0x45: bitWrite(z80Ports_jsanchezv[2], 2, 0); break; //E
+     case 0x72: case 0x52: bitWrite(z80Ports_jsanchezv[2], 3, 0); break; //R
+     case 0x74: case 0x54: bitWrite(z80Ports_jsanchezv[2], 4, 0); break; //T
 
      case 0x31: bitWrite(z80Ports_jsanchezv[3], 0, 0); break; //1
      case 0x32: bitWrite(z80Ports_jsanchezv[3], 1, 0); break; //2
@@ -4597,24 +4747,24 @@ void do_keyboard()
      case 0x37: bitWrite(z80Ports_jsanchezv[4], 3, 0); break; //7
      case 0x36: bitWrite(z80Ports_jsanchezv[4], 4, 0); break; //6
 
-     case 0x70: bitWrite(z80Ports_jsanchezv[5], 0, 0); break; //P
-     case 0x6F: bitWrite(z80Ports_jsanchezv[5], 1, 0); break; //O
-     case 0x69: bitWrite(z80Ports_jsanchezv[5], 2, 0); break; //I
-     case 0x75: bitWrite(z80Ports_jsanchezv[5], 3, 0); break; //U
-     case 0x79: bitWrite(z80Ports_jsanchezv[5], 4, 0); break; //Y
+     case 0x70: case 0x50: bitWrite(z80Ports_jsanchezv[5], 0, 0); break; //P
+     case 0x6F: case 0x4F: bitWrite(z80Ports_jsanchezv[5], 1, 0); break; //O
+     case 0x69: case 0x49: bitWrite(z80Ports_jsanchezv[5], 2, 0); break; //I
+     case 0x75: case 0x55: bitWrite(z80Ports_jsanchezv[5], 3, 0); break; //U
+     case 0x79: case 0x59: bitWrite(z80Ports_jsanchezv[5], 4, 0); break; //Y
 
      //bitWrite(z80ports_in[6], 0, 0); //ENTER
-     case 0x6C: bitWrite(z80Ports_jsanchezv[6], 1, 0); break; //L
-     case 0x6B: bitWrite(z80Ports_jsanchezv[6], 2, 0); break; //K
-     case 0x6A: bitWrite(z80Ports_jsanchezv[6], 3, 0); break; //J
-     case 0x68: bitWrite(z80Ports_jsanchezv[6], 4, 0); break; //H
+     case 0x6C: case 0x4C: bitWrite(z80Ports_jsanchezv[6], 1, 0); break; //L
+     case 0x6B: case 0x4B: bitWrite(z80Ports_jsanchezv[6], 2, 0); break; //K
+     case 0x6A: case 0x4A: bitWrite(z80Ports_jsanchezv[6], 3, 0); break; //J
+     case 0x68: case 0x48: bitWrite(z80Ports_jsanchezv[6], 4, 0); break; //H
 
      case 0x20: bitWrite(z80Ports_jsanchezv[7], 0, 0); break; //Barra espaciadora
      //bitWrite(z80ports_in[7], 1, 0); break; //CONTROL
      case 0x2A: bitWrite(z80Ports_jsanchezv[7], 1, 0); break; //CONTROL *
-     case 0x6D: bitWrite(z80Ports_jsanchezv[7], 2, 0); break; //M
-     case 0x6E: bitWrite(z80Ports_jsanchezv[7], 3, 0); break; //N
-     case 0x62: bitWrite(z80Ports_jsanchezv[7], 4, 0); break; //B
+     case 0x6D: case 0x4D: bitWrite(z80Ports_jsanchezv[7], 2, 0); break; //M
+     case 0x6E: case 0x4E: bitWrite(z80Ports_jsanchezv[7], 3, 0); break; //N
+     case 0x62: case 0x42: bitWrite(z80Ports_jsanchezv[7], 4, 0); break; //B
     }
 
     contBuf++;

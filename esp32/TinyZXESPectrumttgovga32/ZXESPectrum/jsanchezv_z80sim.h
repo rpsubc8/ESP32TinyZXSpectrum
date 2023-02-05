@@ -75,7 +75,10 @@ public:
     #else
      void load_ram2Flash_jsanchezv(unsigned char id,unsigned char isSNA48K);
      void load_ram2Flash128_jsanchezv(unsigned char id);
-    #endif    
+    #endif
+    #ifdef use_lib_sna_uart
+     void load_ram2FlashFromUART_jsanchezv(unsigned char isSNA48K);
+    #endif
     void ResetCPU(void);
     #ifdef use_lib_cycle_32bits_jsanchezv
      unsigned int * GetAddr_tstates(void);

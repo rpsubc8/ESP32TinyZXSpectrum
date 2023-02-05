@@ -15,6 +15,12 @@
  //WEMOS D1 R32 board is currently not supported.
  //#define use_lib_board_wemos
 
+ //Enable load screen capture from putty
+ //#define use_lib_scr_uart
+
+ //Enable load SNA from putty
+ //#define use_lib_sna_uart
+
  //Use terminal keyboard, putty
  //#define use_lib_keyboard_uart
  

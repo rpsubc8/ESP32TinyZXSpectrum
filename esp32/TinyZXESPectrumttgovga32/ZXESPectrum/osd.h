@@ -18,7 +18,11 @@
 //void changeSna(String sna_filename); //No se usa
 #ifdef use_lib_wifi
 #else
- void changeSna2Flash(unsigned char id,unsigned char isSNA48K);
+ void changeSna2Flash(unsigned char id,unsigned char isSNA48K);  
+#endif 
+#ifdef use_lib_sna_uart
+ unsigned short int Leer_stream_UART(unsigned short int topeLeer, unsigned short int topeTimeOut,unsigned char *isTimeOut);
+ void changeSna2UART(unsigned char isSNA48K);
 #endif 
 #ifdef use_lib_wifi
  void changeSna2FlashFromWIFI(char *cadUrl,unsigned char isSNA48K);
@@ -54,5 +58,7 @@ unsigned char ShowTinyMenu(const char *cadTitle,const char **ptrValue,unsigned c
 #ifdef use_lib_keyboard_uart
  void keyboard_uart_poll(void);
 #endif 
+
+void SDLprintText(const char *cad,int x, int y, unsigned char color,unsigned char backcolor);
 
 #endif

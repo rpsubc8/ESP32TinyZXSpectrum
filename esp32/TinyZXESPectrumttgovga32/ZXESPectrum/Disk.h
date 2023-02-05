@@ -21,6 +21,10 @@ void load_rom2flash(unsigned char is48k,unsigned char id); //Para cargar rom de 
 #else
  void load_ram2Flash(unsigned char id,unsigned char isSNA48K);
 #endif
+
+#ifdef use_lib_sna_uart
+ void load_ram2FlashFromUART(unsigned char isSNA48K);
+#endif 
  
 #ifdef use_lib_wifi
  void load_ram2FlashFromWIFI(char * cadUrl,unsigned char isSNA48K); 
