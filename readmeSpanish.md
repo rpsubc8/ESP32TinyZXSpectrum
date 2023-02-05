@@ -121,8 +121,8 @@ Desde el Arduino IDE, no se permite dicha funcionalidad, dado que el monitor ser
 
 <br><br>
 <h1>SNA y SCR UART</h1>
-Se se activa la opción <b>use_lib_scr_uart</b> se permitirá leer archivos SCR (6912 bytes) de pantalla por el terminal. Así mismo si se activa la opción <b>use_lib_sna_uart</b>, se permitirá leer snapshots de 48K (49179 bytes), por ahora.<br>
-Al tener activa está opción, en el menú del OSC cuando queramos cargar un SCR o un SNA nos preguntará si queremos de UART o de Flash. Al elegir UART, nos aparecerá un mensaje en pantalla de esperando por datos de la UART, que si supera un timeout determinado, dejará de leer. En el momento que le enviemos los datos, empezará a mostrar los bytes cargados.<br>
+Si se activa la opción <b>use_lib_scr_uart</b> se permitirá leer archivos SCR (6912 bytes) de pantalla por el terminal. Así mismo si se activa la opción <b>use_lib_sna_uart</b>, se permitirá leer snapshots de 48K (49179 bytes), por ahora.<br>
+Al tener activa está opción, en el menú del OSD cuando queramos cargar un SCR o un SNA nos preguntará si queremos de UART o de Flash. Al elegir UART, nos aparecerá un mensaje en pantalla de esperando por datos de la UART, que si supera un timeout determinado, dejará de leer. En el momento que le enviemos los datos, empezará a mostrar los bytes cargados.<br>
 La forma de enviar los datos, es mediante conversión del archivo binario a formato hexadecimal ASCII, sin 0x, ni comas ni caracteres raros. Un ejemplo para un SCR válido sería:
 <pre>
 0000000000003000000038070000E001
