@@ -185,6 +185,8 @@ El archivo <b>gbConfig.h</b> se seleccionan las opciones:
  <li><b>use_lib_only_48k: </b> Sólo soporta el modo 48K, rom0, ram0, ram2 y ram5</li>
  <li><b>use_lib_fix_double_precision: </b> No usa el cálculo de frecuencia de video VGA con el propio ESP32, evitando posibles problemas de precisión con la mantisa. Es útil para ESP32's que calculen mal la frecuencia.</li>
  <li><b>use_lib_keyboard_uart:</b> Permite usar el teclado del PC desde el PC por terminal monitor VStudio o desde el putty, sin falta de tener teclado. Útil para no tener que usar el teclado físico PS/2 y para desarrollo.</li>
+ <li><b>use_lib_scr_uart</b> Permite cargar SCR (6912 bytes) por terminal monitor VStudio o desde el putty</li>
+ <li><b>use_lib_sna_uart</b> Permite cargar SNA 48K (49179 bytes) por terminal monitor VStudio o desde el putty</li>
 </ul>
 
 
