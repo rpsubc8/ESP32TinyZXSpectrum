@@ -39,6 +39,7 @@ I have made several modifications:
  <li>Option to remove the IEEE (double) rounding calculation from the VGA, to avoid accuracy issues. This anomaly was found as a result of David Crespo Tascón's failure to take video.</li>
  <li>Added 2 video modes 320x200 70Hz and 320x240 with fabgl data.</li>
  <li>Added keyboard support from usb serial terminal, VStudio monitor or putty.</li>
+ <li>Added support for reading SNA (only 48K) and SCR from usb serial terminal, VStudio monitor or putty.</li>
 </ul>
 
 <br><br> 
@@ -106,7 +107,7 @@ Loading is allowed:
 <h1>UART keyboard</h1>
 If the option <b>use_lib_keyboard_uart</b> is activated, it allows to use the PC keyboard from the VStudio monitor or from the putty (115200 bauds), in a simple way, since it is not by reading SCANCODE down, up: 
 <ul>
- <li><b>TAB, F2:</b> Display OSD</li>
+ <li><b>TAB key or F2 key:</b> Display OSD</li>
  <li><b>SHIFT+2 ("):</b> Send CONTROL + P to ZX48K</li>
  <li><b>BackSpace (delete):</b> Send SHIFT + 0 to the ZX48K</li>
  <li><b>ENTER:</b> Send ENTER on the ZX48K</li>
@@ -117,8 +118,35 @@ If the option <b>use_lib_keyboard_uart</b> is activated, it allows to use the PC
  <li><b>Down:</b> SHIFT + 6 and Kempston Down</li>
  <li><b>Right:</b> Kempston right</li>
  <li><b>Left:</b> Kempston left</li>
+ <li><b>A..Z, a..z: </b> a..z</li>
 </ul>
 We can do key combinations at exactly the same time, such as * and P, so it would be like pressing CONTROL and P on the zx48K, which is equivalent to displaying ". From the Arduino IDE, this functionality is not allowed, since the serial monitor requires sending the ENTER for each action. 
+
+
+<br><br>
+<h1>SNA and SCR UART</h1>
+Enabling the <b>use_lib_scr_uart</b> option will allow SCR files (6912 bytes) to be read from the screen by the terminal. Likewise, if the option <b>use_lib_sna_uart</b> is activated, it will allow to read 48K snapshots (49179 bytes), for now.<br>
+If this option is activated, when we want to load an SCR or an SNA, the OSC menu will ask us if we want to use UART or Flash. If we choose UART, a message will appear on the screen waiting for data from the UART, and if it exceeds a certain timeout, it will stop reading. As soon as we send the data, it will start to display the loaded bytes.<br>
+The way to send the data is by converting the binary file to ASCII hexadecimal format, without 0x, commas or strange characters. An example for a valid SCR would be:
+<pre>
+0000000000003000000038070000E001
+C1C03800070E0E0E0E00383800E0E387
+
+02020202020202020202020202020202
+02020202020202020202020202020202
+</pre>
+As you can see, a byte contains 2 hexadecimal nibbles, for example the value of a 193 byte would be C1.<br>
+It is normal to compose each line with 16 bytes, i.e. 32 nibbles. Each line will contain a carriage return. This conversion can be done conveniently with the utility:
+
+<a href='https://tomeko.net/online_tools/file_to_hex.php?lang=en'>https://tomeko.net/online_tools/file_to_hex.php?lang=en</a>
+
+We must uncheck the option to include 0x and comma separator, and we can leave the option to include new lines.
+<center><img src='https://raw.githubusercontent.com/rpsubc8/ESP32TinyZXSpectrum/main/preview/tooltomeko.gif'></center>
+
+An SCR (6912) in this format would occupy about 14688 bytes, which can be copied and pasted into the terminal. A 48K SNA (49179 bytes) in this format typically occupies 104504 bytes.<br>
+If we use <b>putty</b>, we must choose the Serial connection with 115200 baud:
+<center><img src='https://raw.githubusercontent.com/rpsubc8/ESP32TinyZXSpectrum/main/preview/puttyconfig.gif'></center>
+And once we see that everything is OK, we copy and paste the data.
 
 
 <br><br>
