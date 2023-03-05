@@ -187,6 +187,8 @@ El archivo <b>gbConfig.h</b> se seleccionan las opciones:
  <li><b>use_lib_keyboard_uart:</b> Permite usar el teclado del PC desde el PC por terminal monitor VStudio o desde el putty, sin falta de tener teclado. Útil para no tener que usar el teclado físico PS/2 y para desarrollo.</li>
  <li><b>use_lib_scr_uart</b> Permite cargar SCR (6912 bytes) por terminal monitor VStudio o desde el putty</li>
  <li><b>use_lib_sna_uart</b> Permite cargar SNA 48K (49179 bytes) por terminal monitor VStudio o desde el putty</li>
+ <li><b>use_optimice_writebyte</b> Mejora la velocidad de lectura y escritura a memoria, logrando un incremento mínimo de 20 fps (LIN KE FONG) o 10 fps (JLS) en la emulación. Esta opción consume 16 KB de SRAM.</li>
+ <li><b>use_optimice_writebyte_min_sram</b> Mejora la velocidad de lectura y escritura a memoria, logrando un incremento mínimo de 20 fps (LIN KE FONG) o 10 fps (JLS) en la emulación. Esta opción no consume SRAM.</li>
 </ul>
 
 
