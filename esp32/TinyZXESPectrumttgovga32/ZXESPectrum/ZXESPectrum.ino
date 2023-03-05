@@ -5135,7 +5135,8 @@ void loop() {
       gb_fps_time_ini_unified= gb_currentTime;
       unsigned int aux_fps= gb_fps_unified - gb_fps_ini_unified;
       gb_fps_ini_unified = gb_fps_unified;
-      Serial.printf ("fps:%d %d m:%d mx:%d v %d m:%d mx:%d %u %u\r\n",aux_fps,gb_stats_time_cur_unified,gb_stats_time_min_unified,gb_stats_time_max_unified,gb_stats_video_cur_unified,gb_stats_video_min_unified,gb_stats_video_max_unified,*gb_addr_states_jsanchezv,gb_time_state_jsanchez_ini);
+      //Serial.printf ("fps:%d %d m:%d mx:%d v %d m:%d mx:%d %u %u\r\n",aux_fps,gb_stats_time_cur_unified,gb_stats_time_min_unified,gb_stats_time_max_unified,gb_stats_video_cur_unified,gb_stats_video_min_unified,gb_stats_video_max_unified,*gb_addr_states_jsanchezv,gb_time_state_jsanchez_ini);
+      Serial.printf ("fps:%d %d m:%d mx:%d v %d m:%d mx:%d\r\n",aux_fps,gb_stats_time_cur_unified,gb_stats_time_min_unified,gb_stats_time_max_unified,gb_stats_video_cur_unified,gb_stats_video_min_unified,gb_stats_video_max_unified);
       gb_stats_time_min_unified = 500000;
       gb_stats_time_max_unified = 0;
       gb_stats_video_min_unified = 500000;
