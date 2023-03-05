@@ -192,6 +192,8 @@ The file <b>gbConfig.h</b> options are selected:
  <li><b>use_lib_fix_double_precision: </b> It doesn't use the VGA video frequency calculation with the ESP32 itself, avoiding possible accuracy problems with the mantissa. This is useful for ESP32's that miscalculate the frequency.</li>
  <li><b>use_lib_scr_uart</b> Allows loading SCR (6912 bytes) by VStudio terminal monitor or from putty</li>
  <li><b>use_lib_sna_uart</b> Allows to load SNA 48K (49179 bytes) via VStudio terminal monitor or from putty</li>
+ <li><b>use_optimice_writebyte</b> Improves read and write speed to memory, achieving a minimum increase of 20 fps (LIN KE FONG) or 10 fps (JLS) in emulation. This option consumes 16 KB of SRAM.</li>
+ <li><b>use_optimice_writebyte_min_sram</b> Improves read and write speed to memory, achieving a minimum increase of 20 fps (LIN KE FONG) or 10 fps (JLS) in emulation. This option does not consume SRAM.</li>
 </ul>
 
 
