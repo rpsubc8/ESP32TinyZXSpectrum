@@ -62,20 +62,37 @@ static uint8_t zx_data = 0;
 //static uint32_t _ticks = 0; //No se usa
 int cycles_per_step = CalcTStates();
 
-static uint8_t * gb_local_cache_rom[4] = {
- rom0,rom1,rom2,rom3
-};
+#ifdef use_optimice_writebyte
+ const unsigned char * gb_local_cache_rom[4] = {
+  rom0,rom1,rom2,rom3
+ };
+#else
+ static uint8_t * gb_local_cache_rom[4] = {
+  rom0,rom1,rom2,rom3
+ };
+#endif 
 
-static uint8_t * gb_local_cache_ram[8] =
-{
- ram0,ram1,ram2,ram3,ram4,ram5,ram6,ram7
-};
+#ifdef use_optimice_writebyte
+ unsigned char * gb_local_cache_ram[8] =
+ {
+  ram0,ram1,ram2,ram3,ram4,ram5,ram6,ram7
+ };
+#else
+ static uint8_t * gb_local_cache_ram[8] =
+ {
+  ram0,ram1,ram2,ram3,ram4,ram5,ram6,ram7
+ };
+#endif 
 
 extern "C" {
 //JJ uint8_t readbyte(uint16_t addr);
 inline uint8_t fast_readbyte(uint16_t addr);
 uint16_t readword(uint16_t addr);
-void writebyte(uint16_t addr, uint8_t data);
+#ifdef use_optimice_writebyte
+ //inline void writebyte(uint16_t addr, uint8_t data);
+#else
+ void writebyte(uint16_t addr, uint8_t data);
+#endif 
 void writeword(uint16_t addr, uint16_t data);
 uint8_t input(uint8_t portLow, uint8_t portHigh);
 void output(uint8_t portLow, uint8_t portHigh, uint8_t data);
@@ -121,6 +138,11 @@ void zx_reset() {
     sp3_mode = 0;
     sp3_rom = 0;
     rom_in_use = 0;
+    #ifdef use_optimice_writebyte
+     gb_real_read_ptr_ram[0]= (unsigned char*)gb_local_cache_rom[0];
+     gb_real_read_ptr_ram[3]= gb_local_cache_ram[0];
+     gb_real_write_ptr_ram[3]= gb_local_cache_ram[0];
+    #endif    
     cycles_per_step = CalcTStates();
 
     Z80Reset(&_zxCpu);
@@ -154,9 +176,43 @@ unsigned char gb_ptr_IdRomRam[4]={
  0,5,2,0
 }; //El ultimo es bank_latch
 
-//Lectura rapida
-extern "C" inline uint8_t fast_readbyte(uint16_t addr)
-{
+#ifdef use_optimice_writebyte
+ unsigned char * gb_real_ptr_ram[4];
+ const unsigned char * gb_real_ptr_rom[4]; 
+ unsigned char * gb_real_read_ptr_ram[4];
+ unsigned char * gb_real_write_ptr_ram[4];
+ //unsigned char ramFast[2];
+ unsigned char ramFast[0x4000];
+
+ void AsignarRealPtrRAM()
+ {//ram0 ram5 ram2 ram0
+  //gb_real_ptr_ram[0]= ram0;
+  memset(ramFast,0,sizeof(ramFast));
+  gb_real_ptr_ram[0]= ramFast;
+  gb_real_ptr_ram[1]= ram5;
+  gb_real_ptr_ram[2]= ram2;
+  gb_real_ptr_ram[3]= ram0;
+  
+  
+  gb_real_write_ptr_ram[0]= ramFast; //write
+  gb_real_write_ptr_ram[1]= ram5;
+  gb_real_write_ptr_ram[2]= ram2;
+  gb_real_write_ptr_ram[3]= ram0;
+  
+  gb_real_read_ptr_ram[0]= (unsigned char *)rom0; //read
+  gb_real_read_ptr_ram[1]= ram5;
+  gb_real_read_ptr_ram[2]= ram2;
+  gb_real_read_ptr_ram[3]= ram0;
+ }
+
+ extern "C" inline uint8_t fast_readbyte(uint16_t addr)
+ {
+  return (gb_real_read_ptr_ram[(addr>>14)][(addr & 0x3fff)]);
+ }
+#else
+ //Lectura rapida
+ extern "C" inline uint8_t fast_readbyte(uint16_t addr)
+ {
   unsigned char idRomRam = (addr>>14);  
   if (idRomRam == 0)
   {
@@ -192,7 +248,8 @@ extern "C" inline uint8_t fast_readbyte(uint16_t addr)
         // Serial.printf("Address: %x Returned address %x  Bank: %x\n",addr,addr-0xc000,bank_latch);
         break;
   }    */
-}
+ }
+#endif 
 
 //extern "C" uint8_t readbyte(uint16_t addr) {
 //    switch (addr) {
@@ -247,7 +304,16 @@ extern "C" inline uint8_t fast_readbyte(uint16_t addr)
 
 extern "C" uint16_t readword(uint16_t addr) { return ((fast_readbyte(addr + 1) << 8) | fast_readbyte(addr)); }
 
-extern "C" void writebyte(uint16_t addr, uint8_t data) {
+#ifdef use_optimice_writebyte 
+ inline void writebyte(uint16_t addr, uint8_t data) 
+ {
+  //unsigned char idRomRam = (addr>>14);
+  //gb_real_ptr_ram[idRomRam][(idRomRam==0) ? (addr & 0x01) : (addr & 0x3fff)] = data;
+  gb_real_write_ptr_ram[(addr>>14)][(addr & 0x3fff)] = data;
+ }
+#else
+ extern "C" void writebyte(uint16_t addr, uint8_t data) 
+ {
    //Modo rapido
   unsigned char idRomRam = (addr>>14);
   if (idRomRam != 0)
@@ -330,7 +396,8 @@ extern "C" void writebyte(uint16_t addr, uint8_t data) {
         break;
     }
     return;*/
-}
+ }
+#endif
 
 extern "C" void writeword(uint16_t addr, uint16_t data) {
     writebyte(addr, (uint8_t)data);
@@ -556,6 +623,11 @@ extern "C" void output(uint8_t portLow, uint8_t portHigh, uint8_t data) {
                 // rom_in_use=0;
                 bitWrite(rom_in_use, 1, sp3_rom);
                 bitWrite(rom_in_use, 0, rom_latch);
+                #ifdef use_optimice_writebyte
+                 gb_real_read_ptr_ram[0]= (unsigned char*)gb_local_cache_rom[rom_in_use];
+                 gb_real_read_ptr_ram[3]= gb_local_cache_ram[bank_latch];
+                 gb_real_write_ptr_ram[3]= gb_local_cache_ram[bank_latch];
+                #endif                
                 // Serial.printf("7FFD data: %x ROM latch: %x Video Latch: %x bank latch: %x page lock:
                 // %x\n",tmp_data,rom_latch,video_latch,bank_latch,paging_lock);
             }
@@ -566,7 +638,9 @@ extern "C" void output(uint8_t portLow, uint8_t portHigh, uint8_t data) {
             sp3_rom = bitRead(data, 2);
             bitWrite(rom_in_use, 1, sp3_rom);
             bitWrite(rom_in_use, 0, rom_latch);
-
+            #ifdef use_optimice_writebyte
+             gb_real_read_ptr_ram[0]= (unsigned char*)gb_local_cache_rom[rom_in_use];            
+            #endif
             // Serial.printf("1FFD data: %x mode: %x rom bits: %x ROM chip: %x\n",data,sp3_mode,sp3_rom, rom_in_use);
             break;
         }

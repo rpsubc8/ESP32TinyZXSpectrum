@@ -25,6 +25,11 @@ void zx_reset_jsanchezv()
  bank_latch_jsanchezv = 0; gb_ptr_IdRomRam_jsanchezv[3]=0;
  video_latch_jsanchezv = 0;
  rom_latch_jsanchezv = 0;
+ #ifdef use_optimice_writebyte
+  gb_real_read_ptr_ram[0]= (unsigned char*)gb_local_cache_rom_jsanchezv[0];
+  gb_real_read_ptr_ram[3]= gb_local_cache_ram_jsanchezv[0];
+  gb_real_write_ptr_ram[3]= gb_local_cache_ram_jsanchezv[0];
+ #endif
  paging_lock_jsanchezv = 0;
  sp3_mode_jsanchezv = 0;
  sp3_rom_jsanchezv = 0;
@@ -57,25 +62,55 @@ unsigned char delayContention_jsanchezv(unsigned int currentTstates)
 }
 
 //***********************************************************
-inline void jj_fast_poke8(uint16_t address, uint8_t value)
-{ 
- unsigned char idRomRam = (address>>14);
- #ifdef use_lib_delayContention
-  if (idRomRam == 1)
-  {
-   *gb_addr_states_jsanchezv += delayContention_jsanchezv(*gb_addr_states_jsanchezv);
-  }
-  gb_local_cache_ram_jsanchezv[(gb_ptr_IdRomRam_jsanchezv[idRomRam])][(address & 0x3fff)] = value;
-  *gb_addr_states_jsanchezv += 3;
- #else 
-  gb_local_cache_ram_jsanchezv[(gb_ptr_IdRomRam_jsanchezv[idRomRam])][(address & 0x3fff)] = value;
-  *gb_addr_states_jsanchezv += 3;
- #endif
- //printf ("Antes %d\n",*gb_addr_states_jsanchezv);
- //*gb_addr_states_jsanchezv += 3;
- //printf ("Despues %d\n",*gb_addr_states_jsanchezv);
- //fflush(stdout);
-}
+#ifdef use_optimice_writebyte
+ inline void jj_fast_poke8(uint16_t address, uint8_t value)
+ {
+  #ifdef use_lib_delayContention
+   unsigned char idRomRam = (address>>14);
+   if (idRomRam == 1)
+   {
+    *gb_addr_states_jsanchezv += delayContention_jsanchezv(*gb_addr_states_jsanchezv);   
+   }
+   #ifdef use_optimice_writebyte_min_sram
+    gb_real_write_ptr_ram[idRomRam][(idRomRam==0) ? 0 : (address & 0x3fff)] = value;
+   #else
+    gb_real_write_ptr_ram[idRomRam][(address & 0x3fff)] = value;
+   #endif
+   *gb_addr_states_jsanchezv += 3;
+  #else
+   #ifdef use_optimice_writebyte_min_sram
+    unsigned char idRomRam = (address>>14);
+    gb_real_write_ptr_ram[idRomRam][(idRomRam==0) ? 0 : (address & 0x3fff)] = value;
+   #else
+    gb_real_write_ptr_ram[(address>>14)][(address & 0x3fff)] = value;
+   #endif 
+   *gb_addr_states_jsanchezv += 3;
+  #endif 
+ }
+#else
+ inline void jj_fast_poke8(uint16_t address, uint8_t value)
+ {
+  unsigned char idRomRam = (address>>14);
+  #ifdef use_lib_delayContention
+   if (idRomRam == 1)
+   {
+    *gb_addr_states_jsanchezv += delayContention_jsanchezv(*gb_addr_states_jsanchezv);
+   }
+   gb_local_cache_ram_jsanchezv[(gb_ptr_IdRomRam_jsanchezv[idRomRam])][(address & 0x3fff)] = value;
+   *gb_addr_states_jsanchezv += 3;
+  #else
+   if (idRomRam != 0)
+   {
+    gb_local_cache_ram_jsanchezv[(gb_ptr_IdRomRam_jsanchezv[idRomRam])][(address & 0x3fff)] = value;
+   }
+   *gb_addr_states_jsanchezv += 3;
+  #endif
+  //printf ("Antes %d\n",*gb_addr_states_jsanchezv);
+  //*gb_addr_states_jsanchezv += 3;
+  //printf ("Despues %d\n",*gb_addr_states_jsanchezv);
+  //fflush(stdout);
+ }
+#endif 
 
 //*****************************************************************
 inline void jj_fast_poke16(uint16_t address, RegisterPair word)
@@ -85,27 +120,45 @@ inline void jj_fast_poke16(uint16_t address, RegisterPair word)
 }
 
 //***************************************************
-inline uint8_t jj_fast_peek8(uint16_t address)
-{ 
- unsigned char idRomRam = (address>>14);
- #ifdef use_lib_delayContention  
-  if (idRomRam == 1)
-  {
-   *gb_addr_states_jsanchezv += delayContention_jsanchezv(*gb_addr_states_jsanchezv);
-  }
-  *gb_addr_states_jsanchezv += 3;
-  if (idRomRam == 0)     
-   return (gb_local_cache_rom_jsanchezv[rom_in_use_jsanchezv][address]);
-  else 
-   return (gb_local_cache_ram_jsanchezv[(gb_ptr_IdRomRam_jsanchezv[idRomRam])][(address & 0x3fff)]);
- #else
-  *gb_addr_states_jsanchezv += 3;
-  if (idRomRam == 0)     
-   return (gb_local_cache_rom_jsanchezv[rom_in_use_jsanchezv][address]);
-  else 
-   return (gb_local_cache_ram_jsanchezv[(gb_ptr_IdRomRam_jsanchezv[idRomRam])][(address & 0x3fff)]);
- #endif
-}
+#ifdef use_optimice_writebyte
+ inline uint8_t jj_fast_peek8(uint16_t address)
+ {
+  #ifdef use_lib_delayContention
+   unsigned char idRomRam = (address>>14);
+   if (idRomRam == 1)
+   {
+    *gb_addr_states_jsanchezv += delayContention_jsanchezv(*gb_addr_states_jsanchezv);
+   }
+   *gb_addr_states_jsanchezv += 3;
+   return (gb_real_read_ptr_ram[idRomRam][(address & 0x3fff)]);
+  #else
+   *gb_addr_states_jsanchezv += 3;
+   return (gb_real_read_ptr_ram[(address>>14)][(address & 0x3fff)]);
+  #endif 
+ }
+#else
+ inline uint8_t jj_fast_peek8(uint16_t address)
+ {
+  unsigned char idRomRam = (address>>14);
+  #ifdef use_lib_delayContention  
+   if (idRomRam == 1)
+   {
+    *gb_addr_states_jsanchezv += delayContention_jsanchezv(*gb_addr_states_jsanchezv);
+   }
+   *gb_addr_states_jsanchezv += 3;
+   if (idRomRam == 0)     
+    return (gb_local_cache_rom_jsanchezv[rom_in_use_jsanchezv][address]);
+   else 
+    return (gb_local_cache_ram_jsanchezv[(gb_ptr_IdRomRam_jsanchezv[idRomRam])][(address & 0x3fff)]);
+  #else
+   *gb_addr_states_jsanchezv += 3;
+   if (idRomRam == 0)     
+    return (gb_local_cache_rom_jsanchezv[rom_in_use_jsanchezv][address]);
+   else 
+    return (gb_local_cache_ram_jsanchezv[(gb_ptr_IdRomRam_jsanchezv[idRomRam])][(address & 0x3fff)]);
+  #endif
+ }
+#endif 
 
 //****************************************************
 inline uint16_t jj_fast_peek16(uint16_t address)
@@ -351,6 +404,11 @@ void jj_fast_outPort(uint16_t port, uint8_t value)
       // rom_in_use=0;
       bitWrite(rom_in_use_jsanchezv, 1, sp3_rom_jsanchezv);
       bitWrite(rom_in_use_jsanchezv, 0, rom_latch_jsanchezv);
+      #ifdef use_optimice_writebyte
+       gb_real_read_ptr_ram[0]= (unsigned char*)gb_local_cache_rom_jsanchezv[rom_in_use_jsanchezv];
+       gb_real_read_ptr_ram[3]= gb_local_cache_ram_jsanchezv[bank_latch_jsanchezv];
+       gb_real_write_ptr_ram[3]= gb_local_cache_ram_jsanchezv[bank_latch_jsanchezv];
+      #endif
      }
      break;
     
@@ -359,6 +417,9 @@ void jj_fast_outPort(uint16_t port, uint8_t value)
      sp3_rom_jsanchezv = bitRead(value, 2);
      bitWrite(rom_in_use_jsanchezv, 1, sp3_rom_jsanchezv);
      bitWrite(rom_in_use_jsanchezv, 0, rom_latch_jsanchezv);
+     #ifdef use_optimice_writebyte
+      gb_real_read_ptr_ram[0]= (unsigned char*)gb_local_cache_rom_jsanchezv[rom_in_use_jsanchezv];
+     #endif     
      // Serial.printf("1FFD data: %x mode: %x rom bits: %x ROM chip: %x\n",data,sp3_mode,sp3_rom, rom_in_use);
      break;        
    }       

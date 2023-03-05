@@ -45,8 +45,11 @@ public:
     //JJ bool isActiveINT(void) override;
     
     uint8_t fetchOpcode(uint16_t address);
-    uint8_t peek8(uint16_t address);
-    void poke8(uint16_t address, uint8_t value);
+    #ifdef use_optimice_writebyte
+     void AsignarRealPtrRAM(void);
+    #endif 
+    inline uint8_t peek8(uint16_t address);
+    inline void poke8(uint16_t address, uint8_t value);
     uint16_t peek16(uint16_t address);
     void poke16(uint16_t address, RegisterPair word);
     uint8_t inPort(uint16_t port);

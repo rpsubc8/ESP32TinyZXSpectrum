@@ -50,11 +50,24 @@ void zx_loop(void);
 void zx_reset();
 void ReloadLocalCacheROMram(void);
 
-extern "C" uint8_t fast_readbyte(uint16_t addr);
+#ifdef use_optimice_writebyte
+ extern "C" inline uint8_t fast_readbyte(uint16_t addr);
+#else
+ extern "C" uint8_t fast_readbyte(uint16_t addr);
+#endif 
 //JJ extern "C" uint8_t readbyte(uint16_t addr);
-extern "C" void writebyte(uint16_t addr, uint8_t data);
+#ifdef use_optimice_writebyte
+ //extern "C" inline void writebyte(uint16_t addr, uint8_t data);
+ inline void writebyte(uint16_t addr, uint8_t data);
+#else
+ extern "C" void writebyte(uint16_t addr, uint8_t data);
+#endif 
 extern "C" uint16_t readword(uint16_t addr);
 extern "C" void writeword(uint16_t addr, uint16_t data);
+
+#ifdef use_optimice_writebyte
+ void AsignarRealPtrRAM(void);
+#endif 
 //#ifdef use_lib_sound_ay8912
 // extern "C" void ResetSound();
 //#endif 

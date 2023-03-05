@@ -2,6 +2,20 @@
  #define _GB_GLOBALS_H
  #include "gbConfig.h"
 
+ #ifdef use_optimice_writebyte
+  extern unsigned char * gb_real_ptr_ram[4];
+  extern const unsigned char * gb_real_ptr_rom[4]; 
+  extern unsigned char * gb_real_read_ptr_ram[4];
+  extern unsigned char * gb_real_write_ptr_ram[4];
+  #ifdef use_optimice_writebyte_min_sram
+   extern unsigned char ramFast[2];
+  #else 
+   extern unsigned char ramFast[0x4000];
+  #endif 
+  extern const unsigned char * gb_local_cache_rom[4];
+  extern unsigned char *gb_local_cache_ram[8];
+ #endif 
+
  //Punteros globales roms
  extern const char ** gb_ptr_list_roms_48k_title;
  extern const unsigned char ** gb_ptr_list_roms_48k_data;

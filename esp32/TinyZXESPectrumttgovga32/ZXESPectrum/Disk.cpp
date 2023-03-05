@@ -221,6 +221,11 @@ void load_tape2Flash(unsigned char id)
     {
         rom_latch = 0;
         rom_in_use = 0;
+        #ifdef use_optimice_writebyte
+         gb_real_read_ptr_ram[0]= (unsigned char*)gb_local_cache_rom[0];
+         gb_real_read_ptr_ram[3]= gb_local_cache_ram[0];
+         gb_real_write_ptr_ram[3]= gb_local_cache_ram[0];
+        #endif        
         bank_latch = 0; gb_ptr_IdRomRam[3]= 0;
         paging_lock = 1;
     }   
@@ -408,6 +413,11 @@ void load_tape2Flash(unsigned char id)
     paging_lock = bitRead(tmp_port, 5);
     bank_latch = tmp_latch; gb_ptr_IdRomRam[3] = tmp_latch;
     rom_in_use = rom_latch; 
+    #ifdef use_optimice_writebyte
+     gb_real_read_ptr_ram[0]= (unsigned char*)gb_local_cache_rom[rom_in_use];
+     gb_real_read_ptr_ram[3]= gb_local_cache_ram[bank_latch];
+     gb_real_write_ptr_ram[3]= gb_local_cache_ram[bank_latch];
+    #endif
         
     _zxCpu.pc = retaddr;
     //printf("SNA Ret address: %x\n",retaddr);
@@ -472,6 +482,11 @@ void load_tape2Flash(unsigned char id)
     {
         rom_latch = 0;
         rom_in_use = 0;
+        #ifdef use_optimice_writebyte
+         gb_real_read_ptr_ram[0]= (unsigned char*)gb_local_cache_rom[0];
+         gb_real_read_ptr_ram[3]= gb_local_cache_ram[0];
+         gb_real_write_ptr_ram[3]= gb_local_cache_ram[0];
+        #endif
         bank_latch = 0; gb_ptr_IdRomRam[3]=0;
         paging_lock = 1;
     }
@@ -480,6 +495,11 @@ void load_tape2Flash(unsigned char id)
     if (gb_cfg_arch_is48K != 1)
     {
         rom_in_use = 1;
+        #ifdef use_optimice_writebyte
+         gb_real_read_ptr_ram[0]= (unsigned char*)gb_local_cache_rom[1];
+         gb_real_read_ptr_ram[3]= gb_local_cache_ram[0];
+         gb_real_write_ptr_ram[3]= gb_local_cache_ram[0];
+        #endif        
         rom_latch = 1;
         paging_lock = 1;
         bank_latch = 0; gb_ptr_IdRomRam[3]=0;
@@ -633,10 +653,53 @@ void load_tape2Flash(unsigned char id)
  #endif 
 
  #ifdef use_lib_sna_uart  
+  unsigned char LoadWriteMemUARTBlock(unsigned char *ptrDst,unsigned short int tope)
+  {
+   unsigned char toReturn=0;
+
+   unsigned short int leidos=0;
+   unsigned short int bytesLeer= 1024;
+   unsigned short int timeout_uart_sna= 2000; //2000 ms
+   unsigned char isTimeOut=0;
+   unsigned int contDest=0;
+   unsigned int cont1024=0;
+   unsigned int contBuffer=0;
+
+   leidos= Leer_stream_UART(bytesLeer,timeout_uart_sna,&isTimeOut);
+
+   while (contBuffer < tope)
+   {    
+    if (leidos>0)
+    {    
+     //SDLprintText("131103/1024",50,20,7,0);
+     ptrDst[contDest]= gb_buffer_uart_dest[cont1024];
+     contDest++;
+     cont1024++;
+     if (cont1024 >= 1024)
+     {
+      isTimeOut=0;
+      bytesLeer= (tope-contBuffer)>=1024 ? 1024 : (tope-contBuffer);
+      leidos= Leer_stream_UART(bytesLeer,timeout_uart_sna,&isTimeOut);
+      if (leidos>0)
+      {
+      }
+      cont1024= 0;
+     }
+     if (isTimeOut)
+     {
+      toReturn= 1;
+      break;
+     }   
+    }
+   }
+
+   return toReturn;
+  }
+
   //Lee SNA 128K desde UART 131103 bytes
   void load_ram2FlashFromUART128()
   {
-   /*Pendiente      
+   //Pendiente      
    int contBuffer=0;   
    byte sp_h, sp_l;
    uint16_t retaddr;   
@@ -730,12 +793,21 @@ void load_tape2Flash(unsigned char id)
     Serial.setTimeout(use_lib_keyboard_uart_timeout);
    #endif
          
+   
+   LoadWriteMemUARTBlock(ram5,0x4000);
+   contBuffer+= 0x4000;
+   LoadWriteMemUARTBlock(ram2,0x4000);
+   contBuffer+= 0x8000;
 
-   //Pendiente uint16_t buf_p = 0x4000;
-   //buf_p= ram5;
-   //LoadWriteMemUARTBlock(buf_p,contBuffer,0x4000);
-   //contBuffer+= 0x4000;
+/*
+   leidos= Leer_stream_UART(bytesLeer,timeout_uart_sna,&isTimeOut);
+   byte retaddr_l = gb_ptr_list_sna_128k_data[id][contBuffer++];//lhandle.read();
+    byte retaddr_h = gb_ptr_list_sna_128k_data[id][contBuffer++];//lhandle.read();
+    retaddr = retaddr_l + retaddr_h * 0x100;
+    byte tmp_port = gb_ptr_list_sna_128k_data[id][contBuffer++];//lhandle.read();   
 */
+
+
 
 
 /*
@@ -835,9 +907,9 @@ void load_tape2Flash(unsigned char id)
     //printf("SNA Ret address: %x Stack: %x AF: %x Border: %x sna_size: %d rom: %d bank: %x\n", retaddr, _zxCpu.registers.word[Z80_SP], _zxCpu.registers.word[Z80_AF], borderTemp, sna_size, rom_in_use, bank_latch);
 */
 
-/* Pendiente
+
    }
-*/
+
 
   }
 
@@ -847,7 +919,7 @@ void load_tape2Flash(unsigned char id)
    char cadout[32];
    if (isSNA48K != 1)
    {
-    //Pendiente load_ram2FlashFromUART128();
+    load_ram2FlashFromUART128();
     return;
    }
    
@@ -884,6 +956,11 @@ void load_tape2Flash(unsigned char id)
    {
     rom_latch = 0;
     rom_in_use = 0;
+    #ifdef use_optimice_writebyte
+     gb_real_read_ptr_ram[0]= (unsigned char*)gb_local_cache_rom[0];
+     gb_real_read_ptr_ram[3]= gb_local_cache_ram[0];
+     gb_real_write_ptr_ram[3]= gb_local_cache_ram[0];
+    #endif    
     bank_latch = 0; gb_ptr_IdRomRam[3]=0;
     paging_lock = 1;
    }
@@ -891,6 +968,11 @@ void load_tape2Flash(unsigned char id)
    if (gb_cfg_arch_is48K != 1)
    {
     rom_in_use = 1;
+    #ifdef use_optimice_writebyte
+     gb_real_read_ptr_ram[0]= (unsigned char*)gb_local_cache_rom[1];
+     gb_real_read_ptr_ram[3]= gb_local_cache_ram[0];
+     gb_real_write_ptr_ram[3]= gb_local_cache_ram[0];
+    #endif    
     rom_latch = 1;
     paging_lock = 1;
     bank_latch = 0; gb_ptr_IdRomRam[3]=0;
@@ -1061,6 +1143,11 @@ void load_tape2Flash(unsigned char id)
     {
         rom_latch = 0;
         rom_in_use = 0;
+        #ifdef use_optimice_writebyte
+         gb_real_read_ptr_ram[0]= (unsigned char*)gb_local_cache_rom[0];
+         gb_real_read_ptr_ram[3]= gb_local_cache_ram[0];
+         gb_real_write_ptr_ram[3]= gb_local_cache_ram[0];
+        #endif        
         bank_latch = 0; gb_ptr_IdRomRam[3]=0;
         paging_lock = 1;
     }
@@ -1068,6 +1155,11 @@ void load_tape2Flash(unsigned char id)
     if (gb_cfg_arch_is48K != 1)
     {
         rom_in_use = 1;
+        #ifdef use_optimice_writebyte
+         gb_real_read_ptr_ram[0]= (unsigned char*)gb_local_cache_rom[1];
+         gb_real_read_ptr_ram[3]= gb_local_cache_ram[0];
+         gb_real_write_ptr_ram[3]= gb_local_cache_ram[0];
+        #endif        
         rom_latch = 1;
         paging_lock = 1;
         bank_latch = 0; gb_ptr_IdRomRam[3]=0;

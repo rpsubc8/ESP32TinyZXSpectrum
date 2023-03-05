@@ -1431,6 +1431,10 @@ if (skipFrame == 1){
     contBuffer++; //Incrementamos lectura aunque no usemos tr_dos
     byte tmp_latch = tmp_port & 0x7;
     bank_latch_jsanchezv = tmp_latch; gb_ptr_IdRomRam_jsanchezv[3] = bank_latch_jsanchezv;
+    #ifdef use_optimice_writebyte
+     gb_real_read_ptr_ram[3]= gb_local_cache_ram_jsanchezv[bank_latch_jsanchezv];
+     gb_real_write_ptr_ram[3]= gb_local_cache_ram_jsanchezv[bank_latch_jsanchezv];
+    #endif    
     
     contBuffer= 0x801B; //27+0x4000+0x4000
     switch (bank_latch_jsanchezv)
@@ -1469,6 +1473,11 @@ if (skipFrame == 1){
     paging_lock_jsanchezv = bitRead(tmp_port, 5);
     bank_latch_jsanchezv = tmp_latch; gb_ptr_IdRomRam_jsanchezv[3] = tmp_latch;
     rom_in_use_jsanchezv = rom_latch_jsanchezv; 
+    #ifdef use_optimice_writebyte
+     gb_real_read_ptr_ram[0]= (unsigned char*)gb_local_cache_rom_jsanchezv[rom_in_use_jsanchezv];
+     gb_real_read_ptr_ram[3]= gb_local_cache_ram_jsanchezv[bank_latch_jsanchezv];
+     gb_real_write_ptr_ram[3]= gb_local_cache_ram_jsanchezv[bank_latch_jsanchezv];
+    #endif    
         
     //_zxCpu.pc = retaddr;
     cpu.setRegPC(retaddr);
@@ -1519,10 +1528,15 @@ if (skipFrame == 1){
 
     if (gb_cfg_arch_is48K == 1)
     {
-        rom_latch_jsanchezv = 0;
-        rom_in_use_jsanchezv = 0;
-        bank_latch_jsanchezv = 0; gb_ptr_IdRomRam_jsanchezv[3] = 0;
-        paging_lock_jsanchezv = 1;
+     rom_latch_jsanchezv = 0;
+     rom_in_use_jsanchezv = 0;
+     bank_latch_jsanchezv = 0; gb_ptr_IdRomRam_jsanchezv[3] = 0;
+     paging_lock_jsanchezv = 1;
+     #ifdef use_optimice_writebyte
+      gb_real_read_ptr_ram[0]= (unsigned char*)gb_local_cache_rom_jsanchezv[0];
+      gb_real_read_ptr_ram[3]= gb_local_cache_ram_jsanchezv[0];
+      gb_real_write_ptr_ram[3]= gb_local_cache_ram_jsanchezv[0];
+     #endif     
     }
     //size_read = 0; //No se usa
 
@@ -1661,10 +1675,15 @@ if (skipFrame == 1){
 
     if (gb_cfg_arch_is48K == 1)
     {
-        rom_latch_jsanchezv = 0;
-        rom_in_use_jsanchezv = 0;
-        bank_latch_jsanchezv = 0; gb_ptr_IdRomRam_jsanchezv[3] = 0;
-        paging_lock_jsanchezv = 1;
+     rom_latch_jsanchezv = 0;
+     rom_in_use_jsanchezv = 0;
+     bank_latch_jsanchezv = 0; gb_ptr_IdRomRam_jsanchezv[3] = 0;
+     paging_lock_jsanchezv = 1;
+     #ifdef use_optimice_writebyte
+      gb_real_read_ptr_ram[0]= (unsigned char*)gb_local_cache_rom_jsanchezv[0];
+      gb_real_read_ptr_ram[3]= gb_local_cache_ram_jsanchezv[0];
+      gb_real_write_ptr_ram[3]= gb_local_cache_ram_jsanchezv[0];
+     #endif     
     }
     //size_read = 0; //No se usa
     // Read in the registers        
@@ -1780,10 +1799,15 @@ if (skipFrame == 1){
 
     if (gb_cfg_arch_is48K == 1)
     {
-        rom_latch_jsanchezv = 0;
-        rom_in_use_jsanchezv = 0;
-        bank_latch_jsanchezv = 0; gb_ptr_IdRomRam_jsanchezv[3] = 0;
-        paging_lock_jsanchezv = 1;
+     rom_latch_jsanchezv = 0;
+     rom_in_use_jsanchezv = 0;
+     bank_latch_jsanchezv = 0; gb_ptr_IdRomRam_jsanchezv[3] = 0;
+     paging_lock_jsanchezv = 1;
+     #ifdef use_optimice_writebyte
+      gb_real_read_ptr_ram[0]= (unsigned char*)gb_local_cache_rom_jsanchezv[0];
+      gb_real_read_ptr_ram[3]= gb_local_cache_ram_jsanchezv[0];
+      gb_real_write_ptr_ram[3]= gb_local_cache_ram_jsanchezv[0];
+     #endif     
     }
     size_read = 0;
 
@@ -1917,39 +1941,81 @@ uint8_t Z80sim::fetchOpcode(uint16_t address) {
 //JJ  #endif
 }
 
-uint8_t Z80sim::peek8(uint16_t address) {
- // 3 clocks for read byte from RAM
- tstates += 3;
- unsigned char idRomRam = (address>>14);
- if (idRomRam == 0)
-  return (gb_local_cache_rom_jsanchezv[rom_in_use_jsanchezv][address]);
- else
-  return (gb_local_cache_ram_jsanchezv[(gb_ptr_IdRomRam_jsanchezv[idRomRam])][(address & 0x3fff)]);     
- //JJ return z80Ram[address];    
- //printf ("peek8 add:%d\n",address);
- //unsigned char idRomRam = (address>>14);
- //if (idRomRam == 0)
- // return (rom0_jsanchezv[address]);
- //else
- // return (z80Ram[address]);
+#ifdef use_optimice_writebyte
+ unsigned char * gb_real_ptr_ram[4];
+ const unsigned char * gb_real_ptr_rom[4]; 
+ unsigned char * gb_real_read_ptr_ram[4];
+ unsigned char * gb_real_write_ptr_ram[4];
+ #ifdef use_optimice_writebyte_min_sram
+  unsigned char ramFast[2];
+ #else  
+  unsigned char ramFast[0x4000];
+ #endif 
+
+ void Z80sim::AsignarRealPtrRAM()
+ {//ram0 ram5 ram2 ram0
+  //gb_real_ptr_ram[0]= ram0;
+  memset(ramFast,0,sizeof(ramFast));
+  gb_real_ptr_ram[0]= ramFast;
+  gb_real_ptr_ram[1]= ram5_jsanchezv;
+  gb_real_ptr_ram[2]= ram2_jsanchezv;
+  gb_real_ptr_ram[3]= ram0_jsanchezv;
   
-// switch(idRomRam)
-// {
-//  case 0: return (rom0_jsanchezv[address]);  break;
-//  case 1: 
-//   //printf ("rram5 add:%d\n",address);
-//   return ram5_jsanchezv[(address & 0x3fff)]; 
-//   break;
-//  case 2:
-//   //printf ("rram2 add:%d\n",address); 
-//   return ram2_jsanchezv[(address & 0x3fff)]; 
-//   break;
-//  case 3: 
-//   //printf ("rram:%d\n",address); 
-//   return (z80Ram[address]);
-//   break;
-// }
-}
+  
+  gb_real_write_ptr_ram[0]= ramFast; //write
+  gb_real_write_ptr_ram[1]= ram5_jsanchezv;
+  gb_real_write_ptr_ram[2]= ram2_jsanchezv;
+  gb_real_write_ptr_ram[3]= ram0_jsanchezv;
+  
+  gb_real_read_ptr_ram[0]= (unsigned char *)rom0_jsanchezv; //read
+  gb_real_read_ptr_ram[1]= ram5_jsanchezv;
+  gb_real_read_ptr_ram[2]= ram2_jsanchezv;
+  gb_real_read_ptr_ram[3]= ram0_jsanchezv;
+ }
+#endif 
+
+#ifdef use_optimice_writebyte
+ inline uint8_t Z80sim::peek8(uint16_t address) 
+ {
+  tstates += 3;
+  return (gb_real_read_ptr_ram[(address>>14)][(address & 0x3fff)]);
+ }
+#else
+ uint8_t Z80sim::peek8(uint16_t address) 
+ {
+  // 3 clocks for read byte from RAM
+  tstates += 3;
+  unsigned char idRomRam = (address>>14);
+  if (idRomRam == 0)
+   return (gb_local_cache_rom_jsanchezv[rom_in_use_jsanchezv][address]);
+  else
+   return (gb_local_cache_ram_jsanchezv[(gb_ptr_IdRomRam_jsanchezv[idRomRam])][(address & 0x3fff)]);     
+  //JJ return z80Ram[address];    
+  //printf ("peek8 add:%d\n",address);
+  //unsigned char idRomRam = (address>>14);
+  //if (idRomRam == 0)
+  // return (rom0_jsanchezv[address]);
+  //else
+  // return (z80Ram[address]);
+   
+ // switch(idRomRam)
+ // {
+ //  case 0: return (rom0_jsanchezv[address]);  break;
+ //  case 1: 
+ //   //printf ("rram5 add:%d\n",address);
+ //   return ram5_jsanchezv[(address & 0x3fff)]; 
+ //   break;
+ //  case 2:
+ //   //printf ("rram2 add:%d\n",address); 
+ //   return ram2_jsanchezv[(address & 0x3fff)]; 
+ //   break;
+ //  case 3: 
+ //   //printf ("rram:%d\n",address); 
+ //   return (z80Ram[address]);
+ //   break;
+ // }
+ }
+#endif
 
 //Captura direccion memoria estados
 #ifdef use_lib_cycle_32bits_jsanchezv
@@ -1964,36 +2030,53 @@ uint8_t Z80sim::peek8(uint16_t address) {
  }
 #endif 
 
-void Z80sim::poke8(uint16_t address, uint8_t value) {
- // 3 clocks for write byte to RAM
- tstates += 3;
- unsigned char idRomRam = (address>>14);
- if (idRomRam != 0)
-  gb_local_cache_ram_jsanchezv[(gb_ptr_IdRomRam_jsanchezv[idRomRam])][(address & 0x3fff)] = value;   
- //JJ z80Ram[address] = value;
- //printf ("poke8 add:%d\n",address);
- //unsigned char idRomRam = (address>>14);
- //if (idRomRam != 0)
- // z80Ram[address] = value;
+#ifdef use_optimice_writebyte
+ inline void Z80sim::poke8(uint16_t address, uint8_t value)
+ {
+  #ifdef use_optimice_writebyte_min_sram
+   unsigned char idRomRam = (address>>14);
+   tstates += 3;
+   gb_real_write_ptr_ram[idRomRam][(idRomRam==0) ? 0 : (address & 0x3fff)] = value;
+  #else
+   tstates += 3;  
+   gb_real_write_ptr_ram[(address>>14)][(address & 0x3fff)] = value;
+  #endif 
+ }
+#else
+ void Z80sim::poke8(uint16_t address, uint8_t value)
+ {
+  // 3 clocks for write byte to RAM
+  tstates += 3;
+  unsigned char idRomRam = (address>>14);
+  if (idRomRam != 0)
+  {
+   gb_local_cache_ram_jsanchezv[(gb_ptr_IdRomRam_jsanchezv[idRomRam])][(address & 0x3fff)] = value;   
+  }
+  //JJ z80Ram[address] = value;
+  //printf ("poke8 add:%d\n",address);
+  //unsigned char idRomRam = (address>>14);
+  //if (idRomRam != 0)
+  // z80Ram[address] = value;
   
- //switch(idRomRam)
- //{
- // //case 0: return (rom0_jsanchezv[address]);  break;
- // case 1: 
- //  //if (value!=0)
- //  // printf ("wram5 add:%d val:%d add:%d\n",address,value,(address & 0x3fff)); 
- //  ram5_jsanchezv[(address & 0x3fff)] = value;
- //  break;
- // case 2: 
- //  //printf ("wram2 add:%d\n",address);
- //  ram2_jsanchezv[(address & 0x3fff)] = value; 
- //  break;
- // case 3:
- //  //printf ("wram:%d\n",address);
- //  z80Ram[address] = value; 
- //  break;
- //}  
-}
+  //switch(idRomRam)
+  //{
+  // //case 0: return (rom0_jsanchezv[address]);  break;
+  // case 1: 
+  //  //if (value!=0)
+  //  // printf ("wram5 add:%d val:%d add:%d\n",address,value,(address & 0x3fff)); 
+  //  ram5_jsanchezv[(address & 0x3fff)] = value;
+  //  break;
+  // case 2: 
+  //  //printf ("wram2 add:%d\n",address);
+  //  ram2_jsanchezv[(address & 0x3fff)] = value; 
+  //  break;
+  // case 3:
+  //  //printf ("wram:%d\n",address);
+  //  z80Ram[address] = value; 
+  //  break;
+  //}  
+ }
+#endif 
 
 uint16_t Z80sim::peek16(uint16_t address) {
  //printf ("peek16 add:%d\n",address);
@@ -2092,12 +2175,18 @@ void Z80sim::outPort(uint16_t port, uint8_t value) {
      if (!paging_lock_jsanchezv)
      {
       paging_lock_jsanchezv = bitRead(tmp_data, 5);
-      rom_latch_jsanchezv = bitRead(tmp_data, 4);
+      rom_latch_jsanchezv = bitRead(tmp_data, 4);      
       video_latch_jsanchezv = bitRead(tmp_data, 3);
-      bank_latch_jsanchezv = tmp_data & 0x7;
+      bank_latch_jsanchezv = tmp_data & 0x7; 
+      gb_ptr_IdRomRam_jsanchezv[3]= bank_latch_jsanchezv;
       // rom_in_use=0;
       bitWrite(rom_in_use_jsanchezv, 1, sp3_rom_jsanchezv);
       bitWrite(rom_in_use_jsanchezv, 0, rom_latch_jsanchezv);
+      #ifdef use_optimice_writebyte
+       gb_real_read_ptr_ram[0]= (unsigned char*)gb_local_cache_rom_jsanchezv[rom_in_use_jsanchezv];
+       gb_real_read_ptr_ram[3]= gb_local_cache_ram_jsanchezv[bank_latch_jsanchezv];
+       gb_real_write_ptr_ram[3]= gb_local_cache_ram_jsanchezv[bank_latch_jsanchezv];
+      #endif      
      }
     
     
@@ -2108,6 +2197,9 @@ void Z80sim::outPort(uint16_t port, uint8_t value) {
      sp3_rom_jsanchezv = bitRead(value, 2);
      bitWrite(rom_in_use_jsanchezv, 1, sp3_rom_jsanchezv);
      bitWrite(rom_in_use_jsanchezv, 0, rom_latch_jsanchezv);
+     #ifdef use_optimice_writebyte
+      gb_real_read_ptr_ram[0]= (unsigned char*)gb_local_cache_rom_jsanchezv[rom_in_use_jsanchezv];
+     #endif     
      // Serial.printf("1FFD data: %x mode: %x rom bits: %x ROM chip: %x\n",data,sp3_mode,sp3_rom, rom_in_use);
      break;        
    }       
@@ -2208,7 +2300,12 @@ void Z80sim::ResetCPU()
  rom_in_use_jsanchezv= 0;
  sp3_rom_jsanchezv = 0;
  sp3_mode_jsanchezv = 0;
- borderTemp_jsanchezv=7;  
+ borderTemp_jsanchezv=7;
+ #ifdef use_optimice_writebyte
+  gb_real_read_ptr_ram[0]= (unsigned char*)gb_local_cache_rom_jsanchezv[0];
+  gb_real_read_ptr_ram[3]= gb_local_cache_ram_jsanchezv[0];
+  gb_real_write_ptr_ram[3]= gb_local_cache_ram_jsanchezv[0];
+ #endif   
  //printf ("Reset desde ResetCPU\n");
  //fflush(stdout); 
 }
@@ -2328,11 +2425,23 @@ void Z80sim::runTestJJ(void)
   bank_latch_jsanchezv=0;
   video_latch_jsanchezv = 0;
   rom_latch_jsanchezv = 0;
+  #ifdef use_optimice_writebyte
+   gb_real_read_ptr_ram[0]= (unsigned char*)gb_local_cache_rom_jsanchezv[0];
+   gb_real_read_ptr_ram[3]= gb_local_cache_ram_jsanchezv[0];
+   gb_real_write_ptr_ram[3]= gb_local_cache_ram_jsanchezv[0];
+  #endif  
   paging_lock_jsanchezv = 0;
   rom_in_use_jsanchezv= 0;
   sp3_rom_jsanchezv = 0;
   sp3_mode_jsanchezv = 0;
   borderTemp_jsanchezv=7;  
+
+  #ifdef use_optimice_writebyte
+   #ifdef use_lib_log_serial
+    Serial.printf("Optimice writebyte Setup AsignarRealPtrRAM\n");
+   #endif 
+   AsignarRealPtrRAM();   
+  #endif       
 
   cpu.reset();
   gb_time_state_jsanchez_ini = this->tstates;
@@ -2638,6 +2747,12 @@ void setup()
     //JJ Serial.println(MSG_Z80_RESET);
     #ifdef use_lib_core_linkefong
      ReloadLocalCacheROMram(); //Recargo punteros RAM ROM
+     #ifdef use_optimice_writebyte
+      #ifdef use_lib_log_serial
+       Serial.printf("Optimice writebyte Setup AsignarRealPtrRAM\n");
+      #endif 
+      AsignarRealPtrRAM();      
+     #endif     
      zx_setup();     
      // make sure keyboard ports are FF
      memset((void *)z80ports_in,0x1f,32);//Optimice resize code

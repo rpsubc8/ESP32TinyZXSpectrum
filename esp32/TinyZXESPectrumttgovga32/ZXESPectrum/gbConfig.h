@@ -1,6 +1,18 @@
 #ifndef _GB_CONFIG_H
  #define _GB_CONFIG_H
 
+ //SELECT use_optimice_writebyte OR use_optimice_writebyte_min_sram
+ //use_optimice_writebyte required 16KB SRAM
+ //use_optimice_writebyte_min_sram not required 16KB SRAM
+ //#define use_optimice_writebyte
+ //#define use_optimice_writebyte_min_sram
+
+ #ifdef use_optimice_writebyte_min_sram
+  #ifndef use_optimice_writebyte
+   #define use_optimice_writebyte
+  #endif 
+ #endif
+
  //Not use double numbers (IEEE not fpu) calculate vga frequency
  //#define use_lib_fix_double_precision
 

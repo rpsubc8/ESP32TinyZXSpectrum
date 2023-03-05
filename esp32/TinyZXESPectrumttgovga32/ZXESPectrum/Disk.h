@@ -24,6 +24,7 @@ void load_rom2flash(unsigned char is48k,unsigned char id); //Para cargar rom de 
 
 #ifdef use_lib_sna_uart
  void load_ram2FlashFromUART(unsigned char isSNA48K);
+ unsigned char LoadWriteMemUARTBlock(unsigned char *ptrDst,unsigned short int tope);
 #endif 
  
 #ifdef use_lib_wifi

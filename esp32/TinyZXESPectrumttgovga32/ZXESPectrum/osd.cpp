@@ -418,13 +418,23 @@ void SetMode48K()
  #ifdef use_lib_core_linkefong
   rom_latch = 0;
   rom_in_use = 0;
+  #ifdef use_optimice_writebyte
+   gb_real_read_ptr_ram[0]= (unsigned char*)gb_local_cache_rom[0];
+   gb_real_read_ptr_ram[3]= gb_local_cache_ram[0];
+   gb_real_write_ptr_ram[3]= gb_local_cache_ram[0];
+  #endif  
   bank_latch = 0;
   paging_lock = 1;
  #else
   rom_latch_jsanchezv = 0;
   rom_in_use_jsanchezv = 0;
   bank_latch_jsanchezv = 0;
-  paging_lock_jsanchezv = 1; 
+  paging_lock_jsanchezv = 1;
+  #ifdef use_optimice_writebyte
+   gb_real_read_ptr_ram[0]= (unsigned char*)gb_local_cache_rom_jsanchezv[0];
+   gb_real_read_ptr_ram[3]= gb_local_cache_ram_jsanchezv[0];
+   gb_real_write_ptr_ram[3]= gb_local_cache_ram_jsanchezv[0];
+  #endif  
  #endif 
 }
 
@@ -433,6 +443,11 @@ void SetMode128K()
 {
  #ifdef use_lib_core_linkefong   
   rom_in_use = 1;
+  #ifdef use_optimice_writebyte
+   gb_real_read_ptr_ram[0]= (unsigned char*)gb_local_cache_rom[1];
+   gb_real_read_ptr_ram[3]= gb_local_cache_ram[0];
+   gb_real_write_ptr_ram[3]= gb_local_cache_ram[0];
+  #endif  
   rom_latch = 1;
   paging_lock = 1;
   bank_latch = 0;
@@ -448,7 +463,12 @@ void SetMode128K()
   video_latch_jsanchezv = 0;
   paging_lock_jsanchezv = 1;
   bank_latch_jsanchezv = 0;
-  video_latch_jsanchezv = 0; 
+  video_latch_jsanchezv = 0;
+  #ifdef use_optimice_writebyte
+   gb_real_read_ptr_ram[0]= (unsigned char*)gb_local_cache_rom_jsanchezv[1];
+   gb_real_read_ptr_ram[3]= gb_local_cache_ram_jsanchezv[0];
+   gb_real_write_ptr_ram[3]= gb_local_cache_ram_jsanchezv[0];
+  #endif  
  #endif 
 }
 
