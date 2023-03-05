@@ -1471,23 +1471,35 @@ void Z80::nmi(void) {
     REG_PC = REG_WZ = 0x0066;
 }
 
-static unsigned int gb_time_state_jsanchez_ini=0;
+//static unsigned int gb_time_state_jsanchez_ini=0;
 
 void Z80::jj_execute_one_frame(void)
 {
  unsigned int cpu_before,cpu_cur;
  unsigned int microsMedido,microsExacto;
- short int microsEspera;
+ //short int microsEspera;
+ unsigned short int microsEspera;
  unsigned int elapsed_cycles;
  unsigned int number_cycles= (gb_cfg_arch_is48K==1)? 69888:70908;
  unsigned char contCPU=0;
 
+ //unsigned int local_time_ini= (*gb_addr_states_jsanchezv);
+
+ //*gb_addr_states_jsanchezv=0;//reset big counter
+ gb_time_state_jsanchez_ini= *gb_addr_states_jsanchezv; 
  unsigned int auxTope = (gb_cfg_arch_is48K==1)? gb_time_state_jsanchez_ini+69887: gb_time_state_jsanchez_ini+70907;
+ if (auxTope< (*gb_addr_states_jsanchezv))
+ {//overflow Reset counter. soluciona chapucera. Tengo que dejarlo curioso
+  *gb_addr_states_jsanchezv=0;//reset big counter
+  gb_time_state_jsanchez_ini= *gb_addr_states_jsanchezv; 
+  auxTope = (gb_cfg_arch_is48K==1)? gb_time_state_jsanchez_ini+69887: gb_time_state_jsanchez_ini+70907;
+ }
+ //unsigned int auxTope = (gb_cfg_arch_is48K==1)? local_time_ini+69887: local_time_ini+70907;
  
  cpu_before= cpu_cur= micros(); //Medicion exacta
 
  //while (((*gb_addr_states_jsanchezv) - gb_time_state_jsanchez_ini) <= 69887)
- while ((*gb_addr_states_jsanchezv) <= auxTope) 
+ while ((*gb_addr_states_jsanchezv) <= auxTope)
  {
   execute();
 
@@ -1500,6 +1512,7 @@ void Z80::jj_execute_one_frame(void)
      cpu_cur= micros();
      microsMedido= (cpu_cur-cpu_before);    
      elapsed_cycles= *gb_addr_states_jsanchezv - gb_time_state_jsanchez_ini;
+     //elapsed_cycles= *gb_addr_states_jsanchezv - local_time_ini;
      microsExacto= 20000 * elapsed_cycles / number_cycles; //69888 o 70908
      microsEspera= (microsExacto - microsMedido);
 	 if ((microsEspera>0)&&(microsEspera<20000))

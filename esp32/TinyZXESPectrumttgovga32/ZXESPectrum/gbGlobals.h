@@ -215,7 +215,7 @@
   //extern int gb_z80_mouse_y;
   //extern int gb_z80_mouseBtn;
   
-  //extern unsigned int gb_time_state_jsanchez_ini;
+  extern unsigned int gb_time_state_jsanchez_ini;
   //extern unsigned int gb_fps_jsanchezv;
   //extern unsigned int gb_fps_time_ini_jsanchezv;
   //extern unsigned int gb_fps_ini_jsanchezv;
