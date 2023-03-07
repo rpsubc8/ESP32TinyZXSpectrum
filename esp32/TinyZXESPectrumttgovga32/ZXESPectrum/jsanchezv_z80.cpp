@@ -80,9 +80,11 @@ unsigned char delayContention_jsanchezv(unsigned int currentTstates)
   #else
    #ifdef use_optimice_writebyte_min_sram
     unsigned char idRomRam = (address>>14);
-    gb_real_write_ptr_ram[idRomRam][(idRomRam==0) ? 0 : (address & 0x3fff)] = value;
+    gb_real_write_ptr_ram[idRomRam][(address & ((idRomRam==0) ? 0x01 : 0x3fff))] = value;
+    //gb_real_write_ptr_ram[idRomRam][(idRomRam==0) ? 0 : (address & 0x3fff)] = value;
    #else
-    gb_real_write_ptr_ram[(address>>14)][(address & 0x3fff)] = value;
+    unsigned char idRomRam = (address>>14);
+    gb_real_write_ptr_ram[idRomRam][(address & 0x3fff)] = value;
    #endif 
    *gb_addr_states_jsanchezv += 3;
   #endif 
@@ -132,8 +134,9 @@ inline void jj_fast_poke16(uint16_t address, RegisterPair word)
    *gb_addr_states_jsanchezv += 3;
    return (gb_real_read_ptr_ram[idRomRam][(address & 0x3fff)]);
   #else
+   unsigned char idRomRam = (address>>14);  
    *gb_addr_states_jsanchezv += 3;
-   return (gb_real_read_ptr_ram[(address>>14)][(address & 0x3fff)]);
+   return (gb_real_read_ptr_ram[idRomRam][(address & 0x3fff)]);
   #endif 
  }
 #else

@@ -181,8 +181,11 @@ unsigned char gb_ptr_IdRomRam[4]={
  const unsigned char * gb_real_ptr_rom[4]; 
  unsigned char * gb_real_read_ptr_ram[4];
  unsigned char * gb_real_write_ptr_ram[4];
- //unsigned char ramFast[2];
- unsigned char ramFast[0x4000];
+ #ifdef use_optimice_writebyte_min_sram
+  unsigned char ramFast[2];
+ #else  
+  unsigned char ramFast[0x4000];
+ #endif 
 
  void AsignarRealPtrRAM()
  {//ram0 ram5 ram2 ram0
@@ -207,13 +210,14 @@ unsigned char gb_ptr_IdRomRam[4]={
 
  extern "C" inline uint8_t fast_readbyte(uint16_t addr)
  {
-  return (gb_real_read_ptr_ram[(addr>>14)][(addr & 0x3fff)]);
+  unsigned char idRomRam = (addr>>14);
+  return (gb_real_read_ptr_ram[idRomRam][(addr & 0x3fff)]);
  }
 #else
  //Lectura rapida
  extern "C" inline uint8_t fast_readbyte(uint16_t addr)
  {
-  unsigned char idRomRam = (addr>>14);  
+  unsigned char idRomRam = (addr>>14);
   if (idRomRam == 0)
   {
    return (gb_local_cache_rom[rom_in_use][addr]);
@@ -305,12 +309,22 @@ unsigned char gb_ptr_IdRomRam[4]={
 extern "C" uint16_t readword(uint16_t addr) { return ((fast_readbyte(addr + 1) << 8) | fast_readbyte(addr)); }
 
 #ifdef use_optimice_writebyte 
- inline void writebyte(uint16_t addr, uint8_t data) 
- {
-  //unsigned char idRomRam = (addr>>14);
-  //gb_real_ptr_ram[idRomRam][(idRomRam==0) ? (addr & 0x01) : (addr & 0x3fff)] = data;
-  gb_real_write_ptr_ram[(addr>>14)][(addr & 0x3fff)] = data;
- }
+ #ifdef use_optimice_writebyte_min_sram
+  inline void writebyte(uint16_t addr, uint8_t data)
+  {
+   unsigned char idRomRam= (addr>>14);
+   //gb_real_write_ptr_ram[idRomRam][(idRomRam==0) ? 0 : (addr & 0x3fff)] = data;
+   gb_real_write_ptr_ram[idRomRam][(addr & ((idRomRam==0) ? 0x01 : 0x3fff))] = data;
+  }
+ #else
+  inline void writebyte(uint16_t addr, uint8_t data) 
+  {
+   unsigned char idRomRam = (addr>>14);
+   gb_real_write_ptr_ram[idRomRam][(addr & 0x3fff)] = data;
+   //gb_real_ptr_ram[idRomRam][(idRomRam==0) ? (addr & 0x01) : (addr & 0x3fff)] = data;  
+   //gb_real_write_ptr_ram[(addr>>14)][(addr & 0x3fff)] = data;   
+  }
+ #endif 
 #else
  extern "C" void writebyte(uint16_t addr, uint8_t data) 
  {

@@ -1686,6 +1686,21 @@ if (skipFrame == 1){
       gb_real_write_ptr_ram[3]= gb_local_cache_ram_jsanchezv[0];
      #endif     
     }
+
+    if (gb_cfg_arch_is48K != 1)
+    {
+     rom_latch_jsanchezv = 1;
+     rom_in_use_jsanchezv = 1;
+     bank_latch_jsanchezv = 0; gb_ptr_IdRomRam_jsanchezv[3] = 0;
+     paging_lock_jsanchezv = 1;
+     #ifdef use_optimice_writebyte
+      gb_real_read_ptr_ram[0]= (unsigned char*)gb_local_cache_rom_jsanchezv[1];
+      gb_real_read_ptr_ram[3]= gb_local_cache_ram_jsanchezv[0];
+      gb_real_write_ptr_ram[3]= gb_local_cache_ram_jsanchezv[0];
+     #endif
+     video_latch_jsanchezv = 0;
+    }
+
     //size_read = 0; //No se usa
     // Read in the registers        
     cpu.setRegI(gb_list_sna_48k_data[id][0]);
@@ -1719,14 +1734,16 @@ if (skipFrame == 1){
     cpu.setRegA(gb_list_sna_48k_data[id][22]);
     sp_l = gb_list_sna_48k_data[id][23];//lhandle.read();
     sp_h = gb_list_sna_48k_data[id][24];//lhandle.read();
-    cpu.setRegSP(sp_l + sp_h * 0x100);
+    unsigned short int auxSP= sp_l + (unsigned short int )((unsigned short int )sp_h * 0x100);
+    cpu.setRegSP(auxSP);
+    //cpu.setRegSP(sp_l + sp_h * 0x100);
 
     switch (gb_list_sna_48k_data[id][25])
     {
      case 0: cpu.setIM(cpu.IM0); break;
      case 1: cpu.setIM(cpu.IM1); break;
-     case 2: cpu.setIM(cpu.IM2); break;
-	}
+     case 2: cpu.setIM(cpu.IM2); break;    
+	  }
 
     byte bordercol = gb_list_sna_48k_data[id][26];//lhandle.read();
     borderTemp_jsanchezv = bordercol;
@@ -1744,10 +1761,13 @@ if (skipFrame == 1){
      buf_p++;
     }    
     retaddr = peek16(thestack);    
-    unsigned short int auxSP = cpu.getRegSP();
-    auxSP++;
-    auxSP++;
-    cpu.setRegSP(auxSP);
+    #ifdef use_lib_log_serial
+     Serial.printf("retaddr %x\r\n", retaddr);
+    #endif    
+    auxSP = cpu.getRegSP();
+    //auxSP++;
+    //auxSP++;    
+    cpu.setRegSP((auxSP+2));
     cpu.setRegPC(retaddr);    
  }
  #endif
@@ -1978,8 +1998,9 @@ uint8_t Z80sim::fetchOpcode(uint16_t address) {
 #ifdef use_optimice_writebyte
  inline uint8_t Z80sim::peek8(uint16_t address) 
  {
+  unsigned char idRomRam = (address>>14);   
   tstates += 3;
-  return (gb_real_read_ptr_ram[(address>>14)][(address & 0x3fff)]);
+  return (gb_real_read_ptr_ram[idRomRam][(address & 0x3fff)]);
  }
 #else
  uint8_t Z80sim::peek8(uint16_t address) 
@@ -2039,8 +2060,9 @@ uint8_t Z80sim::fetchOpcode(uint16_t address) {
    tstates += 3;
    gb_real_write_ptr_ram[idRomRam][(idRomRam==0) ? 0 : (address & 0x3fff)] = value;
   #else
-   tstates += 3;  
-   gb_real_write_ptr_ram[(address>>14)][(address & 0x3fff)] = value;
+   unsigned char idRomRam = (address>>14);
+   tstates += 3;   
+   gb_real_write_ptr_ram[idRomRam][(address & 0x3fff)] = value;
   #endif 
  }
 #else
